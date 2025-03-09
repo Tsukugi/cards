@@ -11,12 +11,12 @@ public partial class Card : Node3D
     // If true, the card's DTO cannot be modified. Gameplay: Another card cant replace this one
     public bool IsPlaceable = true;
     [Export]
-    // If true, the card's display won't be visible. Gameplay: An empty board's field has this as true.
+    // If true, the card's display won't be visible. 
+    // Gameplay: An empty board's field has this as true. / A card is being placed from the hand, and I want to show an empty hand space.
     public bool IsEmptyField = false;
     [Export]
     // Gameplay: A board/hand can know which card is selected via this flag.
-    public bool IsSelected = false;
-
+    bool isSelected = false;
 
     public override void _Ready()
     {
@@ -26,13 +26,18 @@ public partial class Card : Node3D
 
     public override void _Process(double delta)
     {
-        OnSelectHandler(IsSelected);
+        OnSelectHandler(isSelected);
         OnFieldStateChangeHandler();
     }
 
-    void OnSelectHandler(bool isSelected)
+    public void SetIsSelected(bool value)
     {
-        selectedIndicator.Visible = isSelected;
+        isSelected = value;
+    }
+
+    void OnSelectHandler(bool value)
+    {
+        selectedIndicator.Visible = value;
     }
 
     void OnFieldStateChangeHandler()

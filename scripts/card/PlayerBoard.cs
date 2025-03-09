@@ -47,6 +47,11 @@ public partial class PlayerBoard : CardGroup
     }
     void PlaceCardInBoard()
     {
+        if (!selectedCard.IsPlaceable)
+        {
+            GD.PushWarning("[PlaceCardInBoard] This card place is not placeable!");
+            return;
+        }
         selectedCard.IsEmptyField = false;
         selectedCard.cardDTO = new CardDTO(); // TODO assign card;
         OnPlaceCard(CardToPlay);

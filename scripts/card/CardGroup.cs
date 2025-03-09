@@ -28,7 +28,7 @@ public partial class CardGroup : Node3D
 
     public void DeselectAllCards()
     {
-        GetCards().ForEach(card => { card.IsSelected = false; });
+        GetCards().ForEach(card => card.SetIsSelected(false));
     }
 
     public void SelectCard(int index)
@@ -42,7 +42,7 @@ public partial class CardGroup : Node3D
             GD.PushWarning("[SelectCard] Group is empty, clearing selection");
             return;
         }
-        cards[index].IsSelected = true;
+        cards[index].SetIsSelected(true);
         selectedCardIndex = index;
         selectedCard = cards[index];
     }
@@ -56,7 +56,7 @@ public partial class CardGroup : Node3D
             return;
         }
         DeselectAllCards();
-        card.IsSelected = true;
+        card.SetIsSelected(true);
         selectedCardIndex = cardInCardGroupIndex;
         selectedCard = card;
     }

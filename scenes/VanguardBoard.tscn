@@ -39,7 +39,7 @@ IsEmptyField = true
 
 [node name="Deck" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.473759, 5.14046e-08, 1.84817e-15, 0, -2.57023e-08, 0.483641, 4.14173e-08, 0.588, 2.11406e-08, 7.76151, 0.848381, 0.15969)
-IsEmptyField = true
+IsPlaceable = false
 
 [node name="Order" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.473759, 5.14046e-08, 1.84817e-15, 0, -2.57023e-08, 0.483641, 4.14173e-08, 0.588, 2.11406e-08, -7.89051, 3.07522, 0.301118)
