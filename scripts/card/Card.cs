@@ -3,25 +3,20 @@ using Godot;
 public partial class Card : Node3D
 {
     public static float cardSize = 4;
-
-    bool isSelected = false;
     public CardDTO cardDTO = null;
 
-    Node3D selectedIndicator;
+    Node3D cardDisplay, selectedIndicator;
 
     [Export]
+    // If true, the card's DTO cannot be modified. Gameplay: Another card cant replace this one
+    public bool IsPlaceable = true;
+    [Export]
+    // If true, the card's display won't be visible. Gameplay: An empty board's field has this as true.
     public bool IsEmptyField = false;
     [Export]
-    public bool IsSelected
-    {
-        get => isSelected; set
-        {
-            isSelected = value;
-        }
-    }
+    // Gameplay: A board/hand can know which card is selected via this flag.
+    public bool IsSelected = false;
 
-
-    Node3D cardDisplay;
 
     public override void _Ready()
     {
@@ -31,7 +26,7 @@ public partial class Card : Node3D
 
     public override void _Process(double delta)
     {
-        OnSelectHandler(isSelected);
+        OnSelectHandler(IsSelected);
         OnFieldStateChangeHandler();
     }
 

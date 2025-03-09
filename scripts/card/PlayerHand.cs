@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using Godot;
 
+
 public partial class PlayerHand : CardGroup
 {
+    public delegate void PlayCardEventHandler(Card card);
+    public event PlayCardEventHandler OnPlayCard;
+
     public override void _Ready()
     {
         SelectCard(selectedCardIndex);
@@ -16,22 +20,40 @@ public partial class PlayerHand : CardGroup
         Vector2 axis = axisInputHandler.GetAxis();
         InputAction action = actionInputHandler.GetAction();
         OnAxisChangeHandler(axis);
+
         switch (action)
         {
-            case InputAction.Details:
+            case InputAction.Ok:
                 {
-                    AddCardToHand();
+                    switch (playState)
+                    {
+                        case PlayState.Select: PlayCard(); break;
+                    }
                     break;
                 }
+
             case InputAction.Cancel:
                 {
-                    RemoveCardFromHand();
+                    break;
+                }
+            case InputAction.Details:
+                {
+                    switch (playState)
+                    {
+                        case PlayState.Select: AddCardToHand(); break;
+                    }
                     break;
                 }
         }
+
+    }
+    void PlayCard()
+    {
+        if (selectedCard is null) return;
+        OnPlayCard(selectedCard);
     }
 
-    void AddCardToHand()
+    public void AddCardToHand()
     {
         Card newCard = cardTemplate.Instantiate<Card>();
         AddChild(newCard);
@@ -41,14 +63,14 @@ public partial class PlayerHand : CardGroup
         RepositionHandCards();
     }
 
-    void RemoveCardFromHand()
+    public void RemoveCardFromHand(Card cardToRemove)
     {
-        RemoveChild(selectedCard);
-        selectedCard = null;
-        selectedCardIndex--;
-        if (selectedCardIndex < 0) selectedCardIndex = 0;
-        if (GetCards().Count == 0) return;
-        SelectCard(selectedCardIndex);
+        if (FindCardIndex(cardToRemove) == -1)
+        {
+            GD.PrintErr("[RemoveCardFromHand] Attempted to remove a non existent card from hand");
+            return;
+        }
+        RemoveChild(cardToRemove);
         RepositionHandCards();
     }
 
@@ -64,6 +86,7 @@ public partial class PlayerHand : CardGroup
         }
     }
 
+    /* Will try to position cards in a way that the selected card is centered*/
     void RepositionHandCards()
     {
         List<Card> cards = GetCards();
