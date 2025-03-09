@@ -8,6 +8,8 @@ public partial class Card : Node3D
     Node3D cardDisplay, selectedIndicator;
 
     [Export]
+    bool isFaceDown = false;
+    [Export]
     // If true, the card's DTO cannot be modified. Gameplay: Another card cant replace this one
     public bool IsPlaceable = true;
     [Export]
@@ -22,12 +24,21 @@ public partial class Card : Node3D
     {
         selectedIndicator = GetNode<Node3D>("SelectedIndicator");
         cardDisplay = GetNode<Node3D>("CardDisplay");
+        SetIsFaceDown(isFaceDown);
     }
 
     public override void _Process(double delta)
     {
         OnSelectHandler(isSelected);
         OnFieldStateChangeHandler();
+    }
+
+
+    public void SetIsFaceDown(bool value)
+    {
+        isFaceDown = value;
+        if (isFaceDown) cardDisplay.RotationDegrees = new Vector3(0, 0, 180);
+        else cardDisplay.RotationDegrees = new Vector3(0, 0, 0);
     }
 
     public void SetIsSelected(bool value)
