@@ -1,61 +1,80 @@
-[gd_scene load_steps=3 format=3 uid="uid://b1nh8nsmpqsbw"]
+[gd_scene load_steps=4 format=3 uid="uid://b1nh8nsmpqsbw"]
 
 [ext_resource type="Texture2D" uid="uid://denaiqmjji3qh" path="res://playmat.png" id="1_snpyj"]
 [ext_resource type="PackedScene" uid="uid://c30pqhqp2u0y6" path="res://scenes/card.tscn" id="2_egfk5"]
+[ext_resource type="Script" path="res://scripts/card/PlayerBoard.cs" id="2_f1iln"]
 
 [node name="Board" type="Sprite3D"]
 transform = Transform3D(2.11078, 0, 0, 0, -9.03797e-08, 1.70068, 0, -2.06765, -7.43392e-08, 0, 0, 0)
 texture = ExtResource("1_snpyj")
+script = ExtResource("2_f1iln")
 
 [node name="FrontGuard" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.473759, 5.14046e-08, 1.84817e-15, 0, -2.57023e-08, 0.483641, 4.14173e-08, 0.588, 2.11406e-08, -3.94119, 0.98986, 0.268095)
+IsEmptyField = true
 
 [node name="Vanguard" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.473759, 5.14046e-08, 1.84817e-15, 0, -2.57023e-08, 0.483641, 4.14173e-08, 0.588, 2.11406e-08, 0.0466694, 1.00789, 0.231039)
+IsEmptyField = true
 
 [node name="FrontGuard2" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.473759, 5.14046e-08, 1.84817e-15, 0, -2.57023e-08, 0.483641, 4.14173e-08, 0.588, 2.11406e-08, 3.9191, 1.0254, 0.195055)
+IsEmptyField = true
 
 [node name="RearGuard" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.473759, 5.14046e-08, 1.84817e-15, 0, -2.57023e-08, 0.483641, 4.14173e-08, 0.588, 2.11406e-08, -3.92591, -3.01011, 0.274944)
+IsEmptyField = true
 
 [node name="RearGuard2" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.473759, 5.14046e-08, 1.84817e-15, 0, -2.57023e-08, 0.483641, 4.14173e-08, 0.588, 2.11406e-08, 0.0185745, -2.99227, 0.238291)
+IsEmptyField = true
 
 [node name="RearGuard3" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.473759, 5.14046e-08, 1.84817e-15, 0, -2.57023e-08, 0.483641, 4.14173e-08, 0.588, 2.11406e-08, 3.89209, -2.97476, 0.202297)
+IsEmptyField = true
 
 [node name="Drop" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.473759, 5.14046e-08, 1.84817e-15, 0, -2.57023e-08, 0.483641, 4.14173e-08, 0.588, 2.11406e-08, 7.77282, -2.78624, 0.165937)
+IsEmptyField = true
 
 [node name="Deck" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.473759, 5.14046e-08, 1.84817e-15, 0, -2.57023e-08, 0.483641, 4.14173e-08, 0.588, 2.11406e-08, 7.76151, 0.848381, 0.15969)
+IsEmptyField = true
 
 [node name="Order" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.473759, 5.14046e-08, 1.84817e-15, 0, -2.57023e-08, 0.483641, 4.14173e-08, 0.588, 2.11406e-08, -7.89051, 3.07522, 0.301118)
+IsEmptyField = true
 
 [node name="Damage" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(0.00174019, 0.00462621, -0.483623, -0.473695, -0.00936378, -0.00183691, -0.00755837, 0.587908, 0.00377634, -7.38081, -0.73752, 0.303049)
+IsEmptyField = true
 
 [node name="Damage2" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(0.00174019, 0.00462621, -0.483623, -0.473695, -0.00936378, -0.00183691, -0.00755837, 0.587908, 0.00377634, -7.37822, -1.33432, 0.304068)
+IsEmptyField = true
 
 [node name="Damage3" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(0.00174019, 0.00462621, -0.483623, -0.473695, -0.00936378, -0.00183691, -0.00755837, 0.587908, 0.00377634, -7.37569, -1.91462, 0.305059)
+IsEmptyField = true
 
 [node name="Damage4" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(0.00174019, 0.00462621, -0.483623, -0.473695, -0.00936378, -0.00183691, -0.00755837, 0.587908, 0.00377634, -7.37322, -2.48356, 0.30603)
+IsEmptyField = true
 
 [node name="Damage5" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(0.00174019, 0.00462621, -0.483623, -0.473695, -0.00936378, -0.00183691, -0.00755837, 0.587908, 0.00377634, -7.37079, -3.04112, 0.306982)
+IsEmptyField = true
 
 [node name="Damage6" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(0.00174019, 0.00462621, -0.483623, -0.473695, -0.00936378, -0.00183691, -0.00755837, 0.587908, 0.00377634, -7.36827, -3.62143, 0.307973)
+IsEmptyField = true
 
 [node name="DriveCheck" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(-0.00180502, 0.00458786, 0.483623, 0.473755, 0.000898306, 0.00183696, -0.000709709, 0.587981, -0.00377638, 7.74801, 3.95255, 0.15439)
+IsEmptyField = true
 
 [node name="Guard" parent="." instance=ExtResource("2_egfk5")]
 transform = Transform3D(0.00180498, 0.00458781, -0.483623, -0.473755, 0.000898306, -0.00183691, 0.000709709, 0.587981, 0.00377634, 0.0247143, 4.01701, 0.225984)
+IsEmptyField = true
 
 [node name="DamageZone" type="Node3D" parent="."]

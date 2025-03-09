@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://c30pqhqp2u0y6"]
 
+[ext_resource type="Script" path="res://scripts/card/Card.cs" id="1_623t5"]
 [ext_resource type="BoxMesh" uid="uid://m6c665niqt0s" path="res://Material/cardFront.tres" id="1_d0q6u"]
-[ext_resource type="Script" path="res://scripts/Card.cs" id="1_wtr15"]
 [ext_resource type="BoxMesh" uid="uid://dn563cjoh3wan" path="res://Material/cardBack.tres" id="2_8u0w6"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvt6y"]
@@ -11,18 +11,22 @@ metallic = 0.63
 [sub_resource type="BoxMesh" id="BoxMesh_liovy"]
 material = SubResource("StandardMaterial3D_vvt6y")
 
-[node name="Root" type="Node3D"]
-script = ExtResource("1_wtr15")
-
-[node name="Front" type="MeshInstance3D" parent="."]
-transform = Transform3D(4.17, 0, 0, 0, 0.03, 0, 0, 0, 6.135, 0, 0.01, 0)
-mesh = ExtResource("1_d0q6u")
-
-[node name="Back" type="MeshInstance3D" parent="."]
-transform = Transform3D(4.17, 0, 0, 0, 0.03, 0, 0, 0, 6.135, 0, -0.01, 0)
-mesh = ExtResource("2_8u0w6")
+[node name="Card" type="Node3D"]
+script = ExtResource("1_623t5")
 
 [node name="SelectedIndicator" type="MeshInstance3D" parent="."]
 transform = Transform3D(4.519, 0, 0, 0, 0.0353317, 0, 0, 0, 6.59531, 0, 0, 0)
 visible = false
 mesh = SubResource("BoxMesh_liovy")
+
+[node name="CardDisplay" type="Node3D" parent="."]
+
+[node name="Back" type="MeshInstance3D" parent="CardDisplay"]
+transform = Transform3D(4.17, 0, 0, 0, 0.03, 0, 0, 0, 6.135, 0, -0.01, 0)
+mesh = ExtResource("2_8u0w6")
+skeleton = NodePath("../..")
+
+[node name="Front" type="MeshInstance3D" parent="CardDisplay"]
+transform = Transform3D(4.17, 0, 0, 0, 0.03, 0, 0, 0, 6.135, 0, 0.01, 0)
+mesh = ExtResource("1_d0q6u")
+skeleton = NodePath("../..")
