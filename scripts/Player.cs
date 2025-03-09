@@ -29,8 +29,7 @@ public partial class Player : Node3D
     {
         Vector2 axis = axisInputHandler.GetAxis();
         InputAction action = actionInputHandler.GetAction();
-        onAxisChangeHandler(axis);
-        if (action != InputAction.None) DebugLog(action.ToString());
+        OnAxisChangeHandler(axis);
         switch (action)
         {
             case InputAction.Details:
@@ -56,7 +55,7 @@ public partial class Player : Node3D
         }
     }
 
-    void onAxisChangeHandler(Vector2 axis)
+    void OnAxisChangeHandler(Vector2 axis)
     {
         List<Card> cards = GetCards(selectedGroup);
         switch ((int)axis.Y)
@@ -110,7 +109,7 @@ public partial class Player : Node3D
         List<Card> cards = GetCards(hand);
         for (int i = 0; i < cards.Count; i++)
         {
-            cards[i].Position = new Vector3((i - selectedCardIndex) * -cardSize, 0, 0);
+            cards[i].Position = new Vector3((i - selectedCardIndex) * -cardSize, 0, 0); // (cardIndex - selectedCardIndex) means the card that is the center
         }
     }
 
