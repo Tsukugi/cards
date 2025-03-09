@@ -1,11 +1,16 @@
 [gd_scene load_steps=2 format=3 uid="uid://c365gai2re3tw"]
 
-[ext_resource type="PackedScene" uid="uid://b1nh8nsmpqsbw" path="res://scenes/VanguardBoard.tscn" id="1_n1ao7"]
+[ext_resource type="PackedScene" uid="uid://dkeuhi85erx3b" path="res://scenes/player.tscn" id="2_euit6"]
 
 [node name="main" type="Node3D"]
 
-[node name="Board" parent="." instance=ExtResource("1_n1ao7")]
-transform = Transform3D(2.11078, 0, 0, 0, -9.03797e-08, 1.70068, 0, -2.06765, -7.43392e-08, 0, 0, 10)
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.960944, 0.214206, -0.175219, -0.0931396, 0.345882, 0.933644, 0.260597, 0.9135, -0.312422, 0, 32.8949, 0)
+light_energy = 3.992
+directional_shadow_mode = 0
 
-[node name="Board2" parent="." instance=ExtResource("1_n1ao7")]
-transform = Transform3D(-2.11078, 1.8076e-07, 6.49893e-15, 0, -9.03799e-08, 1.70068, 1.8453e-07, 2.06765, 7.43391e-08, 0, 0, -11)
+[node name="Player" parent="." instance=ExtResource("2_euit6")]
+IsDebugging = true
+
+[node name="Player2" parent="." instance=ExtResource("2_euit6")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, -1)

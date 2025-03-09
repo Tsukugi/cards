@@ -3,15 +3,16 @@
 [ext_resource type="Texture2D" uid="uid://dexy35b6rdm62" path="res://card.jpg" id="1_e7icy"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ygyq0"]
-albedo_color = Color(0.564962, 0.564962, 0.564961, 1)
+albedo_color = Color(0.454524, 0.454524, 0.454524, 1)
 albedo_texture = ExtResource("1_e7icy")
 metallic_specular = 0.17
 emission = Color(0.158472, 0.158472, 0.158472, 1)
 emission_operator = 1
 rim = 0.0
 rim_tint = 0.76
-uv1_scale = Vector3(3, 2, 1)
+refraction_scale = 0.26
+uv1_scale = Vector3(3, 2, 3)
+texture_filter = 1
 
 [resource]
 material = SubResource("StandardMaterial3D_ygyq0")
-flip_faces = true

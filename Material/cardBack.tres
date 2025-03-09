@@ -14,4 +14,3 @@ uv1_scale = Vector3(3, 2, 1)
 
 [resource]
 material = SubResource("StandardMaterial3D_n7vs7")
-flip_faces = true

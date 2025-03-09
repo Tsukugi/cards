@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://dkeuhi85erx3b"]
+
+[ext_resource type="PackedScene" uid="uid://b1nh8nsmpqsbw" path="res://scenes/VanguardBoard.tscn" id="1_4ykay"]
+[ext_resource type="Script" path="res://scripts/Player.cs" id="1_5iwxc"]
+[ext_resource type="PackedScene" uid="uid://c30pqhqp2u0y6" path="res://scenes/card.tscn" id="2_xklc7"]
+
+[node name="Player" type="Node3D"]
+script = ExtResource("1_5iwxc")
+
+[node name="Board" parent="." instance=ExtResource("1_4ykay")]
+transform = Transform3D(2.11078, 0.00258017, 0.0015606, -0.00193662, -0.000242606, 1.70068, 0.00263422, -2.06765, -0.000197624, 0, 0, 10)
+
+[node name="Hand" type="Node3D" parent="."]
+transform = Transform3D(-1, -4.37114e-08, 7.57103e-08, 0, 0.866025, 0.5, -8.74228e-08, 0.5, -0.866025, 0, 3, 17)
+
+[node name="Root" parent="Hand" instance=ExtResource("2_xklc7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 25, 30)
+fov = 45.0
