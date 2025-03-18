@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://dhr0v03l7g4a7"]
+
+[ext_resource type="Texture2D" uid="uid://bwmf2xs354nyj" path="res://AzurLane/board.png" id="1_36sk3"]
+[ext_resource type="PackedScene" uid="uid://c30pqhqp2u0y6" path="res://scenes/card.tscn" id="2_6xv5f"]
+
+[node name="AzurLaneBoard" type="Node3D"]
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(2.5, 0, 0, 0, -1.09278e-07, 2.5, 0, -2.5, -1.09278e-07, 0, 0, 0)
+texture = ExtResource("1_36sk3")
+
+[node name="Card" parent="." instance=ExtResource("2_6xv5f")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 0, 0)
