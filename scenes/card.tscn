@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://c30pqhqp2u0y6"]
 
-[ext_resource type="Script" path="res://scripts/card/CardField.cs" id="1_cplak"]
+[ext_resource type="Script" uid="uid://bdkqgu4a3pm64" path="res://scripts/card/CardField.cs" id="1_cplak"]
 [ext_resource type="BoxMesh" uid="uid://m6c665niqt0s" path="res://Material/cardFront.tres" id="1_d0q6u"]
 [ext_resource type="BoxMesh" uid="uid://dn563cjoh3wan" path="res://Material/cardBack.tres" id="2_8u0w6"]
 

@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://dkeuhi85erx3b"]
 
-[ext_resource type="Script" path="res://scripts/card/Player.cs" id="1_rebuc"]
+[ext_resource type="Script" uid="uid://b48uo52t6uim0" path="res://scripts/card/Player.cs" id="1_rebuc"]
 [ext_resource type="PackedScene" uid="uid://b1nh8nsmpqsbw" path="res://Vanguard/VanguardBoard.tscn" id="2_xp73y"]
-[ext_resource type="Script" path="res://scripts/card/PlayerHand.cs" id="3_ttcli"]
+[ext_resource type="Script" uid="uid://dsgt2jlw2jtvr" path="res://scripts/card/PlayerHand.cs" id="3_ttcli"]
 [ext_resource type="PackedScene" uid="uid://c30pqhqp2u0y6" path="res://scenes/card.tscn" id="4_j1xto"]
 
 [node name="Player" type="Node3D"]

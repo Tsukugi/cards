@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://denaiqmjji3qh" path="res://playmat.png" id="1_snpyj"]
 [ext_resource type="PackedScene" uid="uid://c30pqhqp2u0y6" path="res://scenes/card.tscn" id="2_egfk5"]
-[ext_resource type="Script" path="res://scripts/card/PlayerBoard.cs" id="2_f1iln"]
+[ext_resource type="Script" uid="uid://d0qraqbrytf3o" path="res://scripts/card/PlayerBoard.cs" id="2_f1iln"]
 
 [node name="Board" type="Sprite3D"]
 transform = Transform3D(2.11078, 0, 0, 0, -9.03799e-08, 1.70068, 0, -2.06765, -7.43391e-08, 0, 0, 0)

@@ -1,9 +1,9 @@
 [gd_scene load_steps=7 format=3 uid="uid://dhr0v03l7g4a7"]
 
 [ext_resource type="Texture2D" uid="uid://bwmf2xs354nyj" path="res://AzurLane/board.png" id="1_36sk3"]
-[ext_resource type="Script" path="res://scripts/card/PlayerBoard.cs" id="1_nlvle"]
+[ext_resource type="Script" uid="uid://d0qraqbrytf3o" path="res://scripts/card/PlayerBoard.cs" id="1_nlvle"]
 [ext_resource type="PackedScene" uid="uid://c30pqhqp2u0y6" path="res://scenes/card.tscn" id="2_6xv5f"]
-[ext_resource type="Script" path="res://scripts/card/Board.cs" id="2_lpmaf"]
+[ext_resource type="Script" uid="uid://bmjjv26ot6774" path="res://scripts/card/Board.cs" id="2_lpmaf"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lu2yg"]
 shading_mode = 0
