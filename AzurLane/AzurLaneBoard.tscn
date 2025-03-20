@@ -1,9 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://dhr0v03l7g4a7"]
+[gd_scene load_steps=6 format=3 uid="uid://dhr0v03l7g4a7"]
 
 [ext_resource type="Texture2D" uid="uid://bwmf2xs354nyj" path="res://AzurLane/board.png" id="1_36sk3"]
 [ext_resource type="Script" uid="uid://d0qraqbrytf3o" path="res://scripts/card/PlayerBoard.cs" id="1_nlvle"]
 [ext_resource type="PackedScene" uid="uid://c30pqhqp2u0y6" path="res://scenes/card.tscn" id="2_6xv5f"]
-[ext_resource type="Script" uid="uid://bmjjv26ot6774" path="res://scripts/card/Board.cs" id="2_lpmaf"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lu2yg"]
 shading_mode = 0
@@ -15,15 +14,12 @@ size = Vector2(13, 10)
 
 [node name="AzurLaneBoard" type="Node3D"]
 script = ExtResource("1_nlvle")
-boardSize = Vector2i(3, 2)
 
 [node name="Sprite3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(2.5, 0, 0, 0, 2.5, 0, 0, 0, 2.5, 0, 0, 0)
 mesh = SubResource("PlaneMesh_a2jcd")
 
 [node name="Units" type="Node3D" parent="."]
-script = ExtResource("2_lpmaf")
-boardSize = Vector2i(3, 2)
 
 [node name="FrontRow" parent="Units" instance=ExtResource("2_6xv5f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, -8)
@@ -43,8 +39,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 0)
 
 [node name="FlagshipDurability" type="Node3D" parent="."]
-script = ExtResource("2_lpmaf")
-boardSize = Vector2i(1, 10)
 
 [node name="Durability" parent="FlagshipDurability" instance=ExtResource("2_6xv5f")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -13.5, 0, 0)
@@ -76,15 +70,13 @@ transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -13.5,
 [node name="Durability10" parent="FlagshipDurability" instance=ExtResource("2_6xv5f")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -13.5, 0, -9)
 
-[node name="Deck" parent="." instance=ExtResource("2_6xv5f")]
+[node name="CubeDeck" parent="." instance=ExtResource("2_6xv5f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.1023, 0, 8.29573)
 
-[node name="CubeDeck" parent="." instance=ExtResource("2_6xv5f")]
+[node name="Deck" parent="." instance=ExtResource("2_6xv5f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2017, 0, -0.0664625)
 
 [node name="CostArea" type="Node3D" parent="."]
-script = ExtResource("2_lpmaf")
-boardSize = Vector2i(10, 1)
 
 [node name="Cost" parent="CostArea" instance=ExtResource("2_6xv5f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, 8.5)

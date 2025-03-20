@@ -10,4 +10,3 @@ light_energy = 3.992
 directional_shadow_mode = 0
 
 [node name="Player" parent="." instance=ExtResource("1_btuhc")]
-isPlayerActive = true

@@ -45,17 +45,19 @@ public partial class PlayerHand : Board
     }
     void PlayCard()
     {
-        if (selectedCard is null) return;
-        OnPlayCard(selectedCard);
+        if (SelectedCard is null) return;
+        OnPlayCard(SelectedCard);
     }
 
     public void AddCardToHand()
     {
-        CardField newCard = cardTemplate.Instantiate<CardField>();
+        Card newCard = cardTemplate.Instantiate<Card>();
+
+        int numCardsInHand = GetCardsInHand().Count;
         AddChild(newCard);
-        int cardSize = GetCards().Count - 1;
-        newCard.Position = new Vector3((cardSize + selectedCard.positionInBoard.X) * -cardSize, 0, 0); // Card size
+        newCard.Position = new Vector3((numCardsInHand + SelectCardPosition.X) * -numCardsInHand, 0, 0); // Card size
         newCard.RotationDegrees = new Vector3(0, 0, 1); // To add the card stacking
+        newCard.PositionInBoard = new Vector2I(numCardsInHand, 0);
         RepositionHandCards();
     }
 
@@ -67,23 +69,23 @@ public partial class PlayerHand : Board
 
     void OnAxisChangeHandler(Vector2I axis)
     {
-        List<CardField> cards = GetCards();
-        if (cards.Count == 0) return;
-        if (axis.X != 0)
-        {
-            GD.Print(selectedCard);
-            //  SelectCard(cards.GetSafely(selectedCard.positionInBoard.X + axis.X));
-            RepositionHandCards();
-        }
+        if (axis.X == 0) return;
+        SelectCard(SelectCardPosition + axis);
+        RepositionHandCards();
+    }
+
+    List<Card> GetCardsInHand()
+    {
+        return this.TryGetAllChildOfType<Card>();
     }
 
     /* Will try to position cards in a way that the selected card is centered*/
     void RepositionHandCards()
     {
-        List<CardField> cards = GetCards();
+        List<Card> cards = GetCardsInHand();
         for (int i = 0; i < cards.Count; i++)
         {
-            cards[i].Position = new Vector3((i - selectedCard.positionInBoard.X) * -cardSize, 0, 0); // (cardIndex - selectedCardIndex) means the card that is the center
+            cards[i].Position = new Vector3((i - SelectCardPosition.X) * -CardField.cardSize, 0, 0); // (cardIndex - selectedCardIndex) means the card that is the center
         }
     }
 }

@@ -1,5 +1,3 @@
-
-using System.Collections.Generic;
 using Godot;
 
 public partial class PlayerBoard : Board
@@ -47,24 +45,20 @@ public partial class PlayerBoard : Board
     }
     void PlaceCardInBoard()
     {
-        if (!selectedCard.IsPlaceable)
+        if (!SelectedCard.IsPlaceable)
         {
             GD.PushWarning("[PlaceCardInBoard] This card place is not placeable!");
             return;
         }
-        selectedCard.IsEmptyField = false;
-        selectedCard.cardDTO = new CardDTO(); // TODO assign card;
+        SelectedCard.IsEmptyField = false;
+        SelectedCard.cardDTO = new CardDTO(); // TODO assign card;
         OnPlaceCard(CardToPlay);
         CardToPlay = null;
     }
 
     void OnAxisChangeHandler(Vector2I axis)
     {
-        List<CardField> cards = GetCards();
-        if (cards.Count == 0) return;
-        if (axis.X != 0)
-        {
-            // SelectCard(cards.GetSafely(selectedCard.positionInBoard.X + axis.X));
-        }
+        if (axis == Vector2I.Zero) return;
+        SelectCard(SelectCardPosition + axis);
     }
 }

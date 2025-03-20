@@ -1,11 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://s57i3tk6c7m0"]
+[gd_scene load_steps=4 format=3 uid="uid://s57i3tk6c7m0"]
 
 [ext_resource type="Script" uid="uid://b48uo52t6uim0" path="res://scripts/card/Player.cs" id="1_dv172"]
 [ext_resource type="PackedScene" uid="uid://dhr0v03l7g4a7" path="res://AzurLane/AzurLaneBoard.tscn" id="2_1wl4u"]
 [ext_resource type="Script" uid="uid://dsgt2jlw2jtvr" path="res://scripts/card/PlayerHand.cs" id="3_ye0ug"]
-[ext_resource type="PackedScene" uid="uid://c30pqhqp2u0y6" path="res://scenes/card.tscn" id="4_2remj"]
 
-[node name="Player" type="Node3D"]
+[node name="AzurLanePlayer" type="Node3D"]
 script = ExtResource("1_dv172")
 
 [node name="Board" parent="." instance=ExtResource("2_1wl4u")]
@@ -13,8 +12,6 @@ script = ExtResource("1_dv172")
 [node name="Hand" type="Node3D" parent="."]
 transform = Transform3D(-1, -4.37114e-08, 7.57103e-08, 0, 0.866025, 0.5, -8.74228e-08, 0.5, -0.866025, 0, 3, 17)
 script = ExtResource("3_ye0ug")
-
-[node name="Root" parent="Hand" instance=ExtResource("4_2remj")]
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 25, 30)

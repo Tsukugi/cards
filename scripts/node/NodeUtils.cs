@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using Godot.Collections;
 
@@ -17,15 +18,23 @@ public static class NodeUtils
         }
     }
 
-    public static List<T> TryGetAllChildOfType<T>(this Node parent)
+    public static List<T> TryGetAllChildOfType<T>(this Node parent, bool includeInternal = false)
     {
         Array<Node> children = parent.GetChildren();
-        List<T> typedChildren = new();
+        List<T> typedChildren = [];
         foreach (Node child in children)
         {
-            if (child is not T typedChild) continue;
-            typedChildren.Add(typedChild);
+            if (child is not T typedChild)
+            {
+                if (!includeInternal) continue;
+                typedChildren.AddRange(child.TryGetAllChildOfType<T>());
+            }
+            else
+            {
+                typedChildren.Add(typedChild);
+            }
         }
+        GD.Print($"[TryGetAllChildOfType] {parent.Name} -> {typedChildren.Count} nodes matching type");
         return typedChildren;
     }
 

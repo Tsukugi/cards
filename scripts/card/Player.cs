@@ -20,13 +20,7 @@ public partial class Player : Node3D
     {
         hand = GetNode<PlayerHand>("Hand");
         board = GetNode<PlayerBoard>("Board");
-        groups = new() { hand, board };
-        SelectBoard(hand);
-        hand.SelectCard();
-        SetPlayState(PlayState.Select);
-
-        board.positionInBoard = new Vector2I(0, 0);
-        hand.positionInBoard = new Vector2I(0, 1);
+        groups = [hand, board];
 
         hand.OnPlayCard -= OnPlayCard;
         hand.OnPlayCard += OnPlayCard;
@@ -34,6 +28,8 @@ public partial class Player : Node3D
         board.OnPlaceCard += OnPlaceCard;
         board.OnCancelPlaceCard -= OnCancelPlaceCard;
         board.OnCancelPlaceCard += OnCancelPlaceCard;
+
+        Callable.From(StartGameForPlayer).CallDeferred();
     }
 
     public override void _Process(double delta)
@@ -42,7 +38,18 @@ public partial class Player : Node3D
         OnAxisChangeHandler(axisInputHandler.GetAxis());
     }
 
-    void OnAxisChangeHandler(Vector2 axis)
+    void StartGameForPlayer (){
+        SelectBoard(hand);
+        hand.AddCardToHand();
+        hand.AddCardToHand();
+        hand.AddCardToHand();
+        hand.AddCardToHand();
+        hand.AddCardToHand();
+        hand.SelectCard(Vector2I.Zero);
+        SetPlayState(PlayState.Select);
+    }
+
+    void OnAxisChangeHandler(Vector2I axis)
     {
         if (axis.Y != 0)
         {
@@ -50,8 +57,8 @@ public partial class Player : Node3D
             {
                 case PlayState.Select:
                     {
-                        selectedBoardPosition.Y = groups.Count.ApplyCircularBounds((int)(selectedBoardPosition.Y + axis.Y));
-                        SelectBoard(groups[(int)selectedBoardPosition.Y]);
+                        selectedBoardPosition.Y = groups.Count.ApplyCircularBounds(selectedBoardPosition.Y + axis.Y);
+                        SelectBoard(groups[selectedBoardPosition.Y]);
                         break;
                     }
             }
@@ -68,7 +75,6 @@ public partial class Player : Node3D
 
     void OnCancelPlaceCard(Card cardPlaced)
     {
-        hand.SelectCard(cardPlaced);
         cardPlaced.IsEmptyField = false;
         SetPlayState(PlayState.Select);
         SelectBoard(hand);
@@ -77,7 +83,7 @@ public partial class Player : Node3D
     void OnPlaceCard(Card cardPlaced)
     {
         hand.RemoveCardFromHand(cardPlaced);
-        hand.SelectCard();
+        hand.DeselectAllCards();
         SetPlayState(PlayState.Select);
         SelectBoard(hand);
     }
