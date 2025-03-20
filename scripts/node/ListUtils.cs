@@ -1,6 +1,15 @@
+using System.Collections.Generic;
+using Godot;
+
 public static class ListUtils
 {
 
+    public static T GetSafely<T>(this List<T> list, int index)
+    {
+        if (IsInsideBounds(list.Count, index)) return list[index];
+        else if (index < 0) return list[^1];
+        else return list[0];
+    }
     // Applies circular selection.  size -> 0 || -1 -> size -1
     public static int ApplyCircularBounds(this int size, int index)
     {

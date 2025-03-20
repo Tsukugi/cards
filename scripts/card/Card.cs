@@ -1,14 +1,13 @@
 using Godot;
 
-public partial class Card : Node3D
+public partial class Card : CardField
 {
-    public static float cardSize = 4;
-    public CardDTO cardDTO = null;
 
     Node3D cardDisplay, selectedIndicator;
-
     [Export]
     bool isFaceDown = false;
+    // Gameplay: A board/hand can know which card is selected via this flag.
+    bool isSelected = false;
     [Export]
     // If true, the card's DTO cannot be modified. Gameplay: Another card cant replace this one
     public bool IsPlaceable = true;
@@ -17,8 +16,9 @@ public partial class Card : Node3D
     // Gameplay: An empty board's field has this as true. / A card is being placed from the hand, and I want to show an empty hand space.
     public bool IsEmptyField = false;
     [Export]
-    // Gameplay: A board/hand can know which card is selected via this flag.
-    bool isSelected = false;
+
+    public CardDTO cardDTO = null;
+
 
     public override void _Ready()
     {
@@ -26,13 +26,21 @@ public partial class Card : Node3D
         cardDisplay = GetNode<Node3D>("CardDisplay");
         SetIsFaceDown(isFaceDown);
     }
-
     public override void _Process(double delta)
     {
         OnSelectHandler(isSelected);
         OnFieldStateChangeHandler();
     }
 
+    void OnSelectHandler(bool value)
+    {
+        selectedIndicator.Visible = value;
+    }
+
+    void OnFieldStateChangeHandler()
+    {
+        cardDisplay.Visible = !IsEmptyField;
+    }
 
     public void SetIsFaceDown(bool value)
     {
@@ -46,13 +54,4 @@ public partial class Card : Node3D
         isSelected = value;
     }
 
-    void OnSelectHandler(bool value)
-    {
-        selectedIndicator.Visible = value;
-    }
-
-    void OnFieldStateChangeHandler()
-    {
-        cardDisplay.Visible = !IsEmptyField;
-    }
 }

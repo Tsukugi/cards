@@ -8,10 +8,11 @@ public partial class Player : Node3D
     bool isPlayerActive = false;
     protected readonly AxisInputHandler axisInputHandler = new();
     protected readonly ActionInputHandler actionInputHandler = new();
-    CardGroup selectedGroup;
+    Board selectedBoard;
+    Vector2I selectedBoardPosition = new(0, 1);
     PlayerHand hand;
     PlayerBoard board;
-    List<CardGroup> groups = new();
+    List<Board> groups = new();
 
     PlayState playState = PlayState.Select;
 
@@ -20,11 +21,12 @@ public partial class Player : Node3D
         hand = GetNode<PlayerHand>("Hand");
         board = GetNode<PlayerBoard>("Board");
         groups = new() { hand, board };
-        int orderedIndex = 0;
-        groups.ForEach(group => { group.GroupIndex = orderedIndex; orderedIndex++; }); // Try to assign automatically GroupIndexes in order
-        SelectGroup(hand);
-        hand.SelectCard(0);
+        SelectBoard(hand);
+        hand.SelectCard();
         SetPlayState(PlayState.Select);
+
+        board.positionInBoard = new Vector2I(0, 0);
+        hand.positionInBoard = new Vector2I(0, 1);
 
         hand.OnPlayCard -= OnPlayCard;
         hand.OnPlayCard += OnPlayCard;
@@ -48,20 +50,20 @@ public partial class Player : Node3D
             {
                 case PlayState.Select:
                     {
-                        int newGroupIndex = groups.Count.ApplyCircularBounds((int)(selectedGroup.GroupIndex + axis.Y));
-                        SelectGroup(groups[newGroupIndex]);
+                        selectedBoardPosition.Y = groups.Count.ApplyCircularBounds((int)(selectedBoardPosition.Y + axis.Y));
+                        SelectBoard(groups[(int)selectedBoardPosition.Y]);
                         break;
                     }
             }
         }
     }
 
-    void SelectGroup(CardGroup newSelectedCardGroup)
+    void SelectBoard(Board newSelectedBoard)
     {
-        selectedGroup = newSelectedCardGroup;
+        selectedBoard = newSelectedBoard;
         groups.ForEach(group => group.SetIsGroupActive(false));
-        selectedGroup.SetIsGroupActive(true);
-        GD.Print("Selected Group: " + selectedGroup.Name);
+        selectedBoard.SetIsGroupActive(true);
+        GD.Print("Selected Group: " + selectedBoard.Name);
     }
 
     void OnCancelPlaceCard(Card cardPlaced)
@@ -69,22 +71,22 @@ public partial class Player : Node3D
         hand.SelectCard(cardPlaced);
         cardPlaced.IsEmptyField = false;
         SetPlayState(PlayState.Select);
-        SelectGroup(hand);
+        SelectBoard(hand);
     }
 
     void OnPlaceCard(Card cardPlaced)
     {
         hand.RemoveCardFromHand(cardPlaced);
-        hand.SelectCard(0);
+        hand.SelectCard();
         SetPlayState(PlayState.Select);
-        SelectGroup(hand);
+        SelectBoard(hand);
     }
     void OnPlayCard(Card cardToPlay)
     {
         board.CardToPlay = cardToPlay;
         cardToPlay.IsEmptyField = true;
         SetPlayState(PlayState.PlaceCard);
-        SelectGroup(board);
+        SelectBoard(board);
     }
 
 

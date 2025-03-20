@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Godot;
 
-public partial class PlayerBoard : CardGroup
+public partial class PlayerBoard : Board
 {
     public delegate void PlaceCardEventHandler(Card card);
     public event PlaceCardEventHandler OnPlaceCard;
@@ -11,7 +11,7 @@ public partial class PlayerBoard : CardGroup
 
     public override void _Process(double delta)
     {
-        if (!isGroupActive) return;
+        if (!isBoardActive) return;
         OnAxisChangeHandler(axisInputHandler.GetAxis());
         OnActionHandler(actionInputHandler.GetAction());
     }
@@ -58,14 +58,13 @@ public partial class PlayerBoard : CardGroup
         CardToPlay = null;
     }
 
-    void OnAxisChangeHandler(Vector2 axis)
+    void OnAxisChangeHandler(Vector2I axis)
     {
-        List<Card> cards = GetCards();
+        List<CardField> cards = GetCards();
         if (cards.Count == 0) return;
         if (axis.X != 0)
         {
-            int newSelectedCardIndex = selectedCardIndex + (int)axis.X;
-            SelectCard(cards.Count.ApplyCircularBounds(newSelectedCardIndex));
+            // SelectCard(cards.GetSafely(selectedCard.positionInBoard.X + axis.X));
         }
     }
 }

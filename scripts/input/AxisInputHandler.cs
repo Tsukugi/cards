@@ -5,26 +5,26 @@ using Godot;
 
 public partial class AxisInputHandler
 {
-    Vector2 moveDirection = Vector2.Zero;
+    Vector2I moveDirection = Vector2I.Zero;
     public AxisType InputAxisType = AxisType.EightAxis;
     public AxisKeys Keys = new();
 
 
     public bool GetAxisChange()
     {
-        Vector2 axis = GetAxis();
+        Vector2I axis = GetAxis();
         return moveDirection != axis;
     }
 
-    public Vector2 GetAxis()
+    public Vector2I GetAxis()
     {
-        Vector2 axis = InputAxisType switch
+        Vector2I axis = InputAxisType switch
         {
             AxisType.XAxis => GetXAxis(),
             AxisType.YAxis => GetYAxis(),
             AxisType.FourAxis => GetFourAxis(),
             AxisType.EightAxis => GetFullAxis(),
-            _ => Vector2.Zero,
+            _ => Vector2I.Zero,
         };
         return axis;
     }
@@ -34,32 +34,32 @@ public partial class AxisInputHandler
         return Input.IsActionJustPressed(key);
     }
 
-    Vector2 GetXAxis()
+    Vector2I GetXAxis()
     {
-        Vector2 axis = Vector2.Zero;
+        Vector2I axis = Vector2I.Zero;
         if (IsPressed(Keys.Right)) axis.X++;
         if (IsPressed(Keys.Left)) axis.X--;
         return axis;
     }
-    Vector2 GetYAxis()
+    Vector2I GetYAxis()
     {
-        Vector2 axis = Vector2.Zero;
+        Vector2I axis = Vector2I.Zero;
         if (IsPressed(Keys.Down)) axis.Y++;
         if (IsPressed(Keys.Up)) axis.Y--;
         return axis;
     }
-    Vector2 GetFourAxis()
+    Vector2I GetFourAxis()
     {
-        Vector2 axis = Vector2.Zero;
-        if (IsPressed(Keys.Right)) return Vector2.Right;
-        if (IsPressed(Keys.Left)) return Vector2.Left;
-        if (IsPressed(Keys.Down)) return Vector2.Down;
-        if (IsPressed(Keys.Up)) return Vector2.Up;
+        Vector2I axis = Vector2I.Zero;
+        if (IsPressed(Keys.Right)) return Vector2I.Right;
+        if (IsPressed(Keys.Left)) return Vector2I.Left;
+        if (IsPressed(Keys.Down)) return Vector2I.Down;
+        if (IsPressed(Keys.Up)) return Vector2I.Up;
         return axis;
     }
-    Vector2 GetFullAxis()
+    Vector2I GetFullAxis()
     {
-        Vector2 axis = Vector2.Zero;
+        Vector2I axis = Vector2I.Zero;
         if (IsPressed(Keys.Right)) axis.X++;
         if (IsPressed(Keys.Left)) axis.X--;
         if (IsPressed(Keys.Down)) axis.Y++;

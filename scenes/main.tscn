@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c365gai2re3tw"]
 
-[ext_resource type="PackedScene" uid="uid://dkeuhi85erx3b" path="res://scenes/player.tscn" id="2_euit6"]
+[ext_resource type="PackedScene" uid="uid://s57i3tk6c7m0" path="res://AzurLane/AzurLanePlayer.tscn" id="1_btuhc"]
 
 [node name="main" type="Node3D"]
 
@@ -9,7 +9,5 @@ transform = Transform3D(-0.960944, 0.214206, -0.175219, -0.0931396, 0.345882, 0.
 light_energy = 3.992
 directional_shadow_mode = 0
 
-[node name="Player" parent="." instance=ExtResource("2_euit6")]
-
-[node name="Player2" parent="." instance=ExtResource("2_euit6")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, -1)
+[node name="Player" parent="." instance=ExtResource("1_btuhc")]
+isPlayerActive = true

@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://c30pqhqp2u0y6"]
 
-[ext_resource type="Script" path="res://scripts/card/Card.cs" id="1_623t5"]
+[ext_resource type="Script" path="res://scripts/card/CardField.cs" id="1_cplak"]
 [ext_resource type="BoxMesh" uid="uid://m6c665niqt0s" path="res://Material/cardFront.tres" id="1_d0q6u"]
 [ext_resource type="BoxMesh" uid="uid://dn563cjoh3wan" path="res://Material/cardBack.tres" id="2_8u0w6"]
 
@@ -12,7 +12,7 @@ metallic = 0.63
 material = SubResource("StandardMaterial3D_vvt6y")
 
 [node name="Card" type="Node3D"]
-script = ExtResource("1_623t5")
+script = ExtResource("1_cplak")
 
 [node name="SelectedIndicator" type="MeshInstance3D" parent="."]
 transform = Transform3D(4.519, 0, 0, 0, 0.0353317, 0, 0, 0, 6.59531, 0, 0, 0)
