@@ -8,9 +8,10 @@ public partial class Card : CardField
 
     [Export]
     bool isFaceDown = false;
+    [Export]
+    bool isSideWays = false;
 
-    public CardDTO cardDTO = null;
-
+    public CardDTO cardDTO = new();
 
     public override void _Ready()
     {
@@ -22,6 +23,7 @@ public partial class Card : CardField
         selectedIndicator = GetNode<Node3D>("SelectedIndicator");
         cardDisplay = GetNode<Node3D>("CardDisplay");
         SetIsFaceDown(isFaceDown);
+        SetIsSideWays(isSideWays);
     }
 
     void OnSelectCardPositionHandler(Vector2I position, OnProvidedCardEvent cardCallback)
@@ -30,7 +32,7 @@ public partial class Card : CardField
         SetIsSelected(isSelectingThisCard);
         if (isSelectingThisCard)
         {
-            GD.Print($"[OnSelectCardPositionHandler] Card {Name} is active");
+            // GD.Print($"[OnSelectCardPositionHandler] Card {Name} is active");
             cardCallback(this);
         }
     }
@@ -59,7 +61,14 @@ public partial class Card : CardField
     public void SetIsFaceDown(bool value)
     {
         isFaceDown = value;
-        if (isFaceDown) cardDisplay.RotationDegrees = new Vector3(0, 0, 180);
-        else cardDisplay.RotationDegrees = new Vector3(0, 0, 0);
+        if (isFaceDown) cardDisplay.RotationDegrees = cardDisplay.RotationDegrees.WithZ(180);
+        else cardDisplay.RotationDegrees = cardDisplay.RotationDegrees.WithZ(0);
+    }
+
+    public void SetIsSideWays(bool value)
+    {
+        isSideWays = value;
+        if (isSideWays) RotationDegrees = RotationDegrees.WithY(90);
+        else RotationDegrees = RotationDegrees.WithY(0);
     }
 }

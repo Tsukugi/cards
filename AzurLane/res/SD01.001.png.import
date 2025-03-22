@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bwmf2xs354nyj"
-path.s3tc="res://.godot/imported/board.png-46cdc5031dfa81549673c7555a3e8618.s3tc.ctex"
+uid="uid://mlu6tffsl3g3"
+path.s3tc="res://.godot/imported/SD01.001.png-2c20aa0ae2f4a722c081053bd529adfa.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://AzurLane/board.png"
-dest_files=["res://.godot/imported/board.png-46cdc5031dfa81549673c7555a3e8618.s3tc.ctex"]
+source_file="res://AzurLane/res/SD01.001.png"
+dest_files=["res://.godot/imported/SD01.001.png-2c20aa0ae2f4a722c081053bd529adfa.s3tc.ctex"]
 
 [params]
 

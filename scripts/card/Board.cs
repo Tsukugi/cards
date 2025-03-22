@@ -83,7 +83,7 @@ public partial class Board : Node3D
         return newAddedPosition;
     }
 
-    public void SelectCard(Vector2I position)
+    public void SelectCardField(Vector2I position)
     {
         if (OnSelectCardPosition is null) return;
         SelectCardPosition = position;
@@ -98,7 +98,7 @@ public partial class Board : Node3D
         isBoardActive = value;
         if (isBoardActive)
         {
-            SelectCard(SelectCardPosition);
+            SelectCardField(SelectCardPosition);
             GD.Print($"[SetIsBoardActive] Active Board: {Name}");
         }
     }

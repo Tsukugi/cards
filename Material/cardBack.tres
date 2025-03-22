@@ -1,10 +1,10 @@
 [gd_resource type="BoxMesh" load_steps=3 format=3 uid="uid://dn563cjoh3wan"]
 
-[ext_resource type="Texture2D" uid="uid://ltixqbrhx0s2" path="res://back.jpg" id="1_8ffd2"]
+[ext_resource type="Texture2D" uid="uid://dce8mo6j6cgm7" path="res://AzurLane/res/Back.png" id="1_loia6"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n7vs7"]
 albedo_color = Color(0.564962, 0.564962, 0.564961, 1)
-albedo_texture = ExtResource("1_8ffd2")
+albedo_texture = ExtResource("1_loia6")
 metallic_specular = 0.17
 emission = Color(0.158472, 0.158472, 0.158472, 1)
 emission_operator = 1

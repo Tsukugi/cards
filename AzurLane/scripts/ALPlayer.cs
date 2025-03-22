@@ -1,8 +1,12 @@
 
+using System.Collections.Generic;
 using Godot;
 
 public partial class ALPlayer : Player
 {
+    public List<ALCardDTO> Deck = [];
+    public ALCardDTO Flagship = new();
+
     EALTurnPhase currentPhase = EALTurnPhase.Reset;
     public override void _Ready()
     {
@@ -18,8 +22,10 @@ public partial class ALPlayer : Player
         hand.AddCardToHand();
         hand.AddCardToHand();
         hand.AddCardToHand();
-        hand.SelectCard(Vector2I.Zero);
-        board.SelectCard(new Vector2I(1, 1));
+        hand.SelectCardField(Vector2I.Zero);
+
+        board.SelectCardField(Vector2I.One); // Flagship position
+        board.ReplaceCardDTO(Flagship);
         SetPlayState(EPlayState.Select);
     }
 

@@ -23,7 +23,7 @@ public partial class PlayerBoard : Board
                 {
                     switch (player.GetPlayState())
                     {
-                        case EPlayState.PlaceCard: PlaceCardInBoard(); break;
+                        case EPlayState.PlaceCard: PlaceCardInBoardFromHand(CardToPlay); break;
                     }
                     break;
                 }
@@ -51,8 +51,8 @@ public partial class PlayerBoard : Board
         }
 
         SelectCardPosition = card.PositionInBoard;
-        SelectCard(SelectCardPosition);
-        GD.Print($"[PlayerBoard.OnAxisChangeHandler] SelectCard in board for position {SelectCardPosition}");
+        SelectCardField(SelectCardPosition);
+        GD.Print($"[PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {SelectCardPosition}");
     }
 
     void CancelPlaceCard()
@@ -61,17 +61,22 @@ public partial class PlayerBoard : Board
         CardToPlay = null;
     }
 
-    void PlaceCardInBoard()
+    public void ReplaceCardDTO(CardDTO CardToAssign)
+    {
+        SelectedCard.IsEmptyField = false;
+        SelectedCard.cardDTO = CardToAssign;
+    }
+
+    public void PlaceCardInBoardFromHand(Card CardToPlace)
     {
         if (!SelectedCard.CanPlayerPlaceInThisField())
         {
-            GD.PushWarning("[PlaceCardInBoard] This card place is not placeable!");
+            GD.PrintErr("[PlaceCardInBoardFromHand] This card place is not placeable!");
             return;
         }
-        GD.PushWarning($"[PlaceCardInBoard] Placing {CardToPlay}!");
-        SelectedCard.IsEmptyField = false;
-        SelectedCard.cardDTO = CardToPlay.cardDTO; // TODO assign card;
-        OnPlaceCard(CardToPlay);
+        GD.Print($"[PlaceCardInBoardFromHand] Placing {CardToPlace.cardDTO.name}!");
+        ReplaceCardDTO(CardToPlace.cardDTO);
+        OnPlaceCard(CardToPlace);
         CardToPlay = null;
     }
 }
