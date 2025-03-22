@@ -4,12 +4,12 @@
 [ext_resource type="Script" uid="uid://c3a4wxjq03brp" path="res://scripts/card/Card.cs" id="1_ktuci"]
 [ext_resource type="BoxMesh" uid="uid://dn563cjoh3wan" path="res://Material/cardBack.tres" id="2_8u0w6"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvt6y"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vxt6y"]
 albedo_color = Color(0.92638, 0.912398, 1.54018e-06, 1)
 metallic = 0.63
 
-[sub_resource type="BoxMesh" id="BoxMesh_liovy"]
-material = SubResource("StandardMaterial3D_vvt6y")
+[sub_resource type="BoxMesh" id="BoxMesh_lioxy"]
+material = SubResource("StandardMaterial3D_vxt6y")
 
 [node name="Card" type="Node3D"]
 script = ExtResource("1_ktuci")
@@ -17,7 +17,7 @@ script = ExtResource("1_ktuci")
 [node name="SelectedIndicator" type="MeshInstance3D" parent="."]
 transform = Transform3D(4.519, 0, 0, 0, 0.0353317, 0, 0, 0, 6.59531, 0, 0, 0)
 visible = false
-mesh = SubResource("BoxMesh_liovy")
+mesh = SubResource("BoxMesh_lioxy")
 
 [node name="CardDisplay" type="Node3D" parent="."]
 

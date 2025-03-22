@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://rtutaodwr2t7"]
+[gd_scene load_steps=6 format=3 uid="uid://dp7bqacq615oo"]
 
 [ext_resource type="Script" uid="uid://u4loqtnkjdnn" path="res://AzurLane/scripts/ALCard.cs" id="1_hunl0"]
 [ext_resource type="BoxMesh" uid="uid://dn563cjoh3wan" path="res://Material/cardBack.tres" id="2_2htw4"]
