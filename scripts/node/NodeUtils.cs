@@ -34,7 +34,7 @@ public static class NodeUtils
                 typedChildren.Add(typedChild);
             }
         }
-        GD.Print($"[TryGetAllChildOfType] {parent.Name} -> {typedChildren.Count} nodes matching type");
+        //GD.Print($"[TryGetAllChildOfType] {parent.Name} -> {typedChildren.Count} nodes matching type");
         return typedChildren;
     }
 

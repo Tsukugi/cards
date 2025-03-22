@@ -17,14 +17,13 @@ public partial class PlayerHand : Board
         Vector2I axis = axisInputHandler.GetAxis();
         InputAction action = actionInputHandler.GetAction();
         OnAxisChangeHandler(axis);
-
         switch (action)
         {
             case InputAction.Ok:
                 {
-                    switch (playState)
+                    switch (player.GetPlayState())
                     {
-                        case PlayState.Select: PlayCard(); break;
+                        case EPlayState.Select: PlayCard(); break;
                     }
                     break;
                 }
@@ -35,9 +34,9 @@ public partial class PlayerHand : Board
                 }
             case InputAction.Details:
                 {
-                    switch (playState)
+                    switch (player.GetPlayState())
                     {
-                        case PlayState.Select: AddCardToHand(); break;
+                        case EPlayState.Select: AddCardToHand(); break;
                     }
                     break;
                 }
@@ -46,7 +45,7 @@ public partial class PlayerHand : Board
     }
     void PlayCard()
     {
-        if (SelectedCard is null) return;
+        if (SelectedCard is null) { GD.Print($"[PlayCard] No selected card available"); return; }
         OnPlayCard(SelectedCard);
     }
 
@@ -64,6 +63,7 @@ public partial class PlayerHand : Board
 
     public void RemoveCardFromHand(CardField cardToRemove)
     {
+        GD.Print($"[RemoveCardFromHand] Removing {cardToRemove}");
         RemoveChild(cardToRemove);
         RepositionHandCards();
     }
@@ -105,7 +105,8 @@ public partial class PlayerHand : Board
         List<Card> cards = GetCardsInHand();
         for (int i = 0; i < cards.Count; i++)
         {
-            cards[i].Position = new Vector3((i - SelectCardPosition.X) * -CardField.cardSize, 0, 0); // (cardIndex - selectedCardIndex) means the card that is the center
+            cards[i].PositionInBoard.X = i; // This reassigns the position in board to fill gaps
+            cards[i].Position = new Vector3((i - SelectCardPosition.X) * -cards[i].CardWidth, 0, 0); // (cardIndex - SelectCardPosition.X) means the card that is the center
         }
     }
 }

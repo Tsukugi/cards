@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Godot;
 
@@ -11,20 +10,17 @@ public partial class Board : Node3D
     public event CardPositionEvent OnSelectCardPosition;
     public event BoardEvent OnClearSelection;
 
-
-
-    Player player;
+    protected Player player;
     protected bool isBoardActive = false; // If false, the board should not use any Input
 
     protected PackedScene cardTemplate = GD.Load<PackedScene>("scenes/card.tscn");
     protected readonly AxisInputHandler axisInputHandler = new();
     protected readonly ActionInputHandler actionInputHandler = new();
-    public PlayState playState = PlayState.Select;
     public Card SelectedCard = null;
     public Vector2I SelectCardPosition = Vector2I.Zero;
     [Export]
     public Vector2I BoardPositionInGrid = new();
-
+    public bool IsBoardActive { get => isBoardActive; }
 
     public override void _Ready()
     {
@@ -65,7 +61,7 @@ public partial class Board : Node3D
         {
             for (int sideOffset = -(currentRange * sideOffsetRange); sideOffset <= (currentRange * sideOffsetRange); sideOffset++)
             {
-                var newOffset = FindPosition(axis, currentRange, sideOffset);
+                var newOffset = FindOffsetBasedOnAxis(axis, currentRange, sideOffset);
                 var newPosition = startingPosition + newOffset;
                 Card? card = FindCard(cards, newPosition);
                 GD.Print($"[SearchForCardInBoard] {startingPosition} + {newOffset} = {newPosition}");
@@ -76,7 +72,7 @@ public partial class Board : Node3D
         return null;
     }
 
-    static Vector2I FindPosition(Vector2I axis, int range, int sideOffset)
+    static Vector2I FindOffsetBasedOnAxis(Vector2I axis, int range, int sideOffset)
     {
         Vector2I newAddedPosition = Vector2I.Zero;
         if (axis == Vector2I.Right) newAddedPosition = new Vector2I(range, sideOffset);

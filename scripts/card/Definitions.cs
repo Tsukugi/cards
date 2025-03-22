@@ -1,4 +1,4 @@
-public enum PlayState
+public enum EPlayState
 {
     Select,
     PlaceCard,

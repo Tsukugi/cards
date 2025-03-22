@@ -1,11 +1,11 @@
 [gd_scene load_steps=4 format=3 uid="uid://s57i3tk6c7m0"]
 
-[ext_resource type="Script" uid="uid://b48uo52t6uim0" path="res://scripts/card/Player.cs" id="1_dv172"]
+[ext_resource type="Script" uid="uid://biyxii1wtj4x7" path="res://AzurLane/scripts/ALPlayer.cs" id="1_vpce2"]
 [ext_resource type="PackedScene" uid="uid://dhr0v03l7g4a7" path="res://AzurLane/AzurLaneBoard.tscn" id="2_1wl4u"]
 [ext_resource type="Script" uid="uid://dsgt2jlw2jtvr" path="res://scripts/card/PlayerHand.cs" id="3_ye0ug"]
 
 [node name="AzurLanePlayer" type="Node3D"]
-script = ExtResource("1_dv172")
+script = ExtResource("1_vpce2")
 
 [node name="Board" parent="." instance=ExtResource("2_1wl4u")]
 

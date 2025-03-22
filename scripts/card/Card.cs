@@ -8,16 +8,6 @@ public partial class Card : CardField
 
     [Export]
     bool isFaceDown = false;
-    [Export]
-    // Gameplay: A board/hand can know which card is selected via this flag.
-    bool isSelected = false;
-    [Export]
-    // If true, the card's DTO cannot be modified. Gameplay: Another card cant replace this one
-    public bool IsPlaceable = true;
-    [Export]
-    // If true, the card's display won't be visible. 
-    // Gameplay: An empty board's field has this as true. / A card is being placed from the hand, and I want to show an empty hand space.
-    public bool IsEmptyField = false;
 
     public CardDTO cardDTO = null;
 
@@ -55,9 +45,10 @@ public partial class Card : CardField
         OnFieldStateChangeHandler();
     }
 
-    void OnSelectHandler(bool value)
+
+    void OnSelectHandler(bool isSelected)
     {
-        selectedIndicator.Visible = value;
+        selectedIndicator.Visible = isSelected && board.IsBoardActive;
     }
 
     void OnFieldStateChangeHandler()
@@ -71,11 +62,4 @@ public partial class Card : CardField
         if (isFaceDown) cardDisplay.RotationDegrees = new Vector3(0, 0, 180);
         else cardDisplay.RotationDegrees = new Vector3(0, 0, 0);
     }
-
-    public void SetIsSelected(bool value)
-    {
-        if (value) GD.Print($"[SetIsSelected] {PositionInBoard}");
-        isSelected = value;
-    }
-
 }

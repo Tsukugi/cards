@@ -21,18 +21,18 @@ public partial class PlayerBoard : Board
         {
             case InputAction.Ok:
                 {
-                    switch (playState)
+                    switch (player.GetPlayState())
                     {
-                        case PlayState.PlaceCard: PlaceCardInBoard(); break;
+                        case EPlayState.PlaceCard: PlaceCardInBoard(); break;
                     }
                     break;
                 }
 
             case InputAction.Cancel:
                 {
-                    switch (playState)
+                    switch (player.GetPlayState())
                     {
-                        case PlayState.PlaceCard: CancelPlaceCard(); break;
+                        case EPlayState.PlaceCard: CancelPlaceCard(); break;
                     }
                     break;
                 }
@@ -63,16 +63,15 @@ public partial class PlayerBoard : Board
 
     void PlaceCardInBoard()
     {
-        if (!SelectedCard.IsPlaceable)
+        if (!SelectedCard.CanPlayerPlaceInThisField())
         {
             GD.PushWarning("[PlaceCardInBoard] This card place is not placeable!");
             return;
         }
+        GD.PushWarning($"[PlaceCardInBoard] Placing {CardToPlay}!");
         SelectedCard.IsEmptyField = false;
-        SelectedCard.cardDTO = new CardDTO(); // TODO assign card;
+        SelectedCard.cardDTO = CardToPlay.cardDTO; // TODO assign card;
         OnPlaceCard(CardToPlay);
         CardToPlay = null;
     }
-
-
 }
