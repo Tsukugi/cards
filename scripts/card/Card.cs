@@ -3,8 +3,8 @@ using Godot;
 public partial class Card : CardField
 {
     public delegate void OnProvidedCardEvent(Card card);
-    Node3D cardDisplay, selectedIndicator;
-    Board board;
+    protected Node3D cardDisplay, selectedIndicator;
+    protected Board board;
 
     [Export]
     bool isFaceDown = false;
