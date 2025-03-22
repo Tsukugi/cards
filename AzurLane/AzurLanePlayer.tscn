@@ -12,6 +12,7 @@ script = ExtResource("1_dv172")
 [node name="Hand" type="Node3D" parent="."]
 transform = Transform3D(-1, -4.37114e-08, 7.57103e-08, 0, 0.866025, 0.5, -8.74228e-08, 0.5, -0.866025, 0, 3, 17)
 script = ExtResource("3_ye0ug")
+BoardPositionInGrid = Vector2i(0, 1)
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 25, 30)

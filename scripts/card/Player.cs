@@ -1,9 +1,13 @@
 
 using Godot;
-using System.Collections.Generic;
 
 public partial class Player : Node3D
 {
+    public delegate void SelectPlayerBoardPositionEvent(Vector2I position, Board.BoardProvidedCallback boardEvent);
+    public delegate void SelectPlayerBoardEvent(Board board);
+    public event SelectPlayerBoardPositionEvent OnPlayerBoardPositionSelect;
+    public event SelectPlayerBoardEvent OnPlayerBoardSelect;
+
     [Export]
     bool isPlayerActive = false;
     protected readonly AxisInputHandler axisInputHandler = new();
@@ -12,7 +16,6 @@ public partial class Player : Node3D
     Vector2I selectedBoardPosition = new(0, 1);
     PlayerHand hand;
     PlayerBoard board;
-    List<Board> groups = new();
 
     PlayState playState = PlayState.Select;
 
@@ -20,7 +23,6 @@ public partial class Player : Node3D
     {
         hand = GetNode<PlayerHand>("Hand");
         board = GetNode<PlayerBoard>("Board");
-        groups = [hand, board];
 
         hand.OnPlayCard -= OnPlayCard;
         hand.OnPlayCard += OnPlayCard;
@@ -28,6 +30,10 @@ public partial class Player : Node3D
         board.OnPlaceCard += OnPlaceCard;
         board.OnCancelPlaceCard -= OnCancelPlaceCard;
         board.OnCancelPlaceCard += OnCancelPlaceCard;
+        board.OnEdgeBoardRequest -= OnEdgeBoardRequestHandler;
+        board.OnEdgeBoardRequest += OnEdgeBoardRequestHandler;
+        hand.OnEdgeBoardRequest -= OnEdgeBoardRequestHandler;
+        hand.OnEdgeBoardRequest += OnEdgeBoardRequestHandler;
 
         Callable.From(StartGameForPlayer).CallDeferred();
     }
@@ -38,7 +44,8 @@ public partial class Player : Node3D
         OnAxisChangeHandler(axisInputHandler.GetAxis());
     }
 
-    void StartGameForPlayer (){
+    void StartGameForPlayer()
+    {
         SelectBoard(hand);
         hand.AddCardToHand();
         hand.AddCardToHand();
@@ -46,31 +53,26 @@ public partial class Player : Node3D
         hand.AddCardToHand();
         hand.AddCardToHand();
         hand.SelectCard(Vector2I.Zero);
+        board.SelectCard(new Vector2I(1, 1));
         SetPlayState(PlayState.Select);
     }
 
     void OnAxisChangeHandler(Vector2I axis)
     {
-        if (axis.Y != 0)
-        {
-            switch (playState)
-            {
-                case PlayState.Select:
-                    {
-                        selectedBoardPosition.Y = groups.Count.ApplyCircularBounds(selectedBoardPosition.Y + axis.Y);
-                        SelectBoard(groups[selectedBoardPosition.Y]);
-                        break;
-                    }
-            }
-        }
+
     }
 
-    void SelectBoard(Board newSelectedBoard)
+    void OnEdgeBoardRequestHandler(Vector2I axis)
     {
-        selectedBoard = newSelectedBoard;
-        groups.ForEach(group => group.SetIsGroupActive(false));
-        selectedBoard.SetIsGroupActive(true);
-        GD.Print("Selected Group: " + selectedBoard.Name);
+        if (axis == Vector2I.Down) SelectBoard(hand);
+        else if (axis == Vector2I.Up) SelectBoard(board);
+    }
+
+    void SelectBoard(Board board)
+    {
+        if (OnPlayerBoardSelect is null) return;
+        OnPlayerBoardSelect(board);
+        selectedBoard = board;
     }
 
     void OnCancelPlaceCard(Card cardPlaced)
@@ -83,7 +85,6 @@ public partial class Player : Node3D
     void OnPlaceCard(Card cardPlaced)
     {
         hand.RemoveCardFromHand(cardPlaced);
-        hand.DeselectAllCards();
         SetPlayState(PlayState.Select);
         SelectBoard(hand);
     }
@@ -99,12 +100,11 @@ public partial class Player : Node3D
     void SetPlayState(PlayState state)
     {
         PlayState oldState = playState;
-
         var task = this.Wait(0.1f, () => // This delay allows to avoid trigering different PlayState events on the same frame
           {
-              groups.ForEach(group => group.playState = state);
+              //  groups.ForEach(group => group.playState = state);
               playState = state;
-              GD.Print("Play State: " + oldState + " -> " + playState);
+              GD.Print("[SetPlayState] " + oldState + " -> " + playState);
           });
     }
 }

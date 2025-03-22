@@ -7,6 +7,7 @@ public partial class PlayerHand : Board
 {
     public delegate void PlayCardEventHandler(Card card);
     public event PlayCardEventHandler OnPlayCard;
+    public event BoardEdgeEvent OnEdgeBoardRequest;
 
 
     public override void _Process(double delta)
@@ -69,9 +70,28 @@ public partial class PlayerHand : Board
 
     void OnAxisChangeHandler(Vector2I axis)
     {
-        if (axis.X == 0) return;
-        SelectCard(SelectCardPosition + axis);
+        if (axis == Vector2I.Zero) return;
+
+        Vector2I newPosition = SelectCardPosition + axis;
+
+        // Going up should select the board
+        if (axis == Vector2I.Up)
+        {
+            if (OnEdgeBoardRequest is not null) OnEdgeBoardRequest(axis);
+            return;
+        }
+
+        Card? card = FindCardInTree(newPosition);
+        if (card is null) // We didn't find a card with the specified position
+        {
+            if (OnEdgeBoardRequest is not null) OnEdgeBoardRequest(axis);
+            return;
+        }
+
+        SelectCardPosition = newPosition;
+        SelectCard(SelectCardPosition);
         RepositionHandCards();
+        GD.Print($"[PlayerHand.OnAxisChangeHandler] SelectCard in board for position {newPosition}");
     }
 
     List<Card> GetCardsInHand()

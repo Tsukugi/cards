@@ -2,12 +2,13 @@ using Godot;
 
 public partial class Card : CardField
 {
-
+    public delegate void OnProvidedCardEvent(Card card);
     Node3D cardDisplay, selectedIndicator;
     Board board;
 
     [Export]
     bool isFaceDown = false;
+    [Export]
     // Gameplay: A board/hand can know which card is selected via this flag.
     bool isSelected = false;
     [Export]
@@ -33,11 +34,15 @@ public partial class Card : CardField
         SetIsFaceDown(isFaceDown);
     }
 
-    void OnSelectCardPositionHandler(Vector2I position)
+    void OnSelectCardPositionHandler(Vector2I position, OnProvidedCardEvent cardCallback)
     {
-        if (position != PositionInBoard) return;
-        GD.Print($"{Name} is active");
-        SetIsSelected(true);
+        bool isSelectingThisCard = position == PositionInBoard;
+        SetIsSelected(isSelectingThisCard);
+        if (isSelectingThisCard)
+        {
+            GD.Print($"[OnSelectCardPositionHandler] Card {Name} is active");
+            cardCallback(this);
+        }
     }
     void OnUnselectCardHandler()
     {
@@ -69,7 +74,7 @@ public partial class Card : CardField
 
     public void SetIsSelected(bool value)
     {
-        if (value) GD.Print(PositionInBoard);
+        if (value) GD.Print($"[SetIsSelected] {PositionInBoard}");
         isSelected = value;
     }
 

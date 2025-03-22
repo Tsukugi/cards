@@ -2,3 +2,5 @@
 
 # CA1050: Declare types in namespaces
 dotnet_diagnostic.CA1050.severity = silent
+# CS8632: Nullable types
+dotnet_diagnostic.CS8632.severity = silent
