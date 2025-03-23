@@ -1,4 +1,6 @@
 
+using System;
+using System.Collections.Generic;
 using Godot;
 
 public partial class Player : Node3D
@@ -91,6 +93,17 @@ public partial class Player : Node3D
               playState = state;
               GD.Print("[SetPlayState] " + oldState + " -> " + playState);
           });
+    }
+
+    protected static T DrawCard<T>(List<T> deck)
+    {
+        if (deck.Count <= 0)
+        {
+            throw new Exception($"[DrawCard] No cards available in deck {deck}");
+        }
+        T cardToDraw = deck[0];
+        deck.RemoveAt(0);
+        return cardToDraw;
     }
 
     public EPlayState GetPlayState() => playState;

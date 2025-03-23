@@ -1,12 +1,37 @@
-[gd_scene load_steps=6 format=3 uid="uid://dhr0v03l7g4a7"]
+[gd_scene load_steps=12 format=3 uid="uid://dhr0v03l7g4a7"]
 
 [ext_resource type="Texture2D" uid="uid://bwmf2xs354nyj" path="res://AzurLane/res/board.png" id="1_36sk3"]
 [ext_resource type="Script" uid="uid://d0qraqbrytf3o" path="res://scripts/card/PlayerBoard.cs" id="1_nlvle"]
 [ext_resource type="PackedScene" uid="uid://dp7bqacq615oo" path="res://AzurLane/AzurLaneCard.tscn" id="2_6xv5f"]
+[ext_resource type="Texture2D" uid="uid://clctwp27haqqa" path="res://AzurLane/res/Cube01.png" id="2_n0ao8"]
+[ext_resource type="Script" uid="uid://c3a4wxjq03brp" path="res://scripts/card/Card.cs" id="3_n0ao8"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b4tj3"]
+albedo_color = Color(0.584314, 0.741176, 1, 1)
+albedo_texture = ExtResource("2_n0ao8")
+metallic = 0.68
+metallic_specular = 0.18
+emission_enabled = true
+emission = Color(0.439969, 0.55055, 0.857331, 1)
+emission_energy_multiplier = 0.43
+uv1_scale = Vector3(3, 2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wge7q"]
+material = SubResource("StandardMaterial3D_b4tj3")
+size = Vector3(2, 2, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n0ao8"]
+transparency = 1
+blend_mode = 1
+no_depth_test = true
+albedo_color = Color(0.027451, 0.196078, 0.607843, 0.482353)
+
+[sub_resource type="BoxMesh" id="BoxMesh_n0ao8"]
+material = SubResource("StandardMaterial3D_n0ao8")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lu2yg"]
-shading_mode = 0
 albedo_texture = ExtResource("1_36sk3")
+metallic = 1.0
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_a2jcd"]
 material = SubResource("StandardMaterial3D_lu2yg")
@@ -15,7 +40,21 @@ size = Vector2(13, 10)
 [node name="AzurLaneBoard" type="Node3D"]
 script = ExtResource("1_nlvle")
 
-[node name="Sprite3D" type="MeshInstance3D" parent="."]
+[node name="PhaseButton" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.425475, 0.332519, 0.841666, 0.211625, 0.867703, -0.449785, -0.879878, 0.369489, 0.298817, 13.0294, 1.61365, -7.93489)
+mesh = SubResource("BoxMesh_wge7q")
+script = ExtResource("3_n0ao8")
+PositionInBoard = Vector2i(3, 0)
+
+[node name="CardDisplay" type="Node3D" parent="PhaseButton"]
+
+[node name="SelectedIndicator" type="Node3D" parent="PhaseButton"]
+
+[node name="Indicator" type="MeshInstance3D" parent="PhaseButton/SelectedIndicator"]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+mesh = SubResource("BoxMesh_n0ao8")
+
+[node name="Mat" type="MeshInstance3D" parent="."]
 transform = Transform3D(2.5, 0, 0, 0, 2.5, 0, 0, 0, 2.5, 0, 0, 0)
 mesh = SubResource("PlaneMesh_a2jcd")
 

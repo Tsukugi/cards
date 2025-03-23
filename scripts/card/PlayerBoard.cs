@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 
 public partial class PlayerBoard : Board
@@ -61,10 +62,10 @@ public partial class PlayerBoard : Board
         CardToPlay = null;
     }
 
-    public void ReplaceCardDTO(CardDTO CardToAssign)
+    public void UpdateSelectedCardDTO(CardDTO cardDTO)
     {
         SelectedCard.IsEmptyField = false;
-        SelectedCard.cardDTO = CardToAssign;
+        SelectedCard.UpdateDTO(cardDTO);
     }
 
     public void PlaceCardInBoardFromHand(Card CardToPlace)
@@ -74,9 +75,22 @@ public partial class PlayerBoard : Board
             GD.PrintErr("[PlaceCardInBoardFromHand] This card place is not placeable!");
             return;
         }
-        GD.Print($"[PlaceCardInBoardFromHand] Placing {CardToPlace.cardDTO.name}!");
-        ReplaceCardDTO(CardToPlace.cardDTO);
+        CardDTO cardDTO = CardToPlace.GetAttributes();
+        GD.Print($"[PlaceCardInBoardFromHand] Placing {cardDTO.name}!");
+        UpdateSelectedCardDTO(cardDTO);
         OnPlaceCard(CardToPlace);
         CardToPlay = null;
     }
+
+    public void SetAllCardsAsActive()
+    {
+        List<Card> cards = this.TryGetAllChildOfType<Card>(true);
+
+        foreach (Card card in cards)
+        {
+            card.SetIsSideWays(false);
+        }
+    }
+
+    public static Card FindLastEmptyFieldInRow(List<Card> row) => row.Find(card => card.IsEmptyField == true);
 }

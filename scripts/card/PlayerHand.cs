@@ -34,10 +34,6 @@ public partial class PlayerHand : Board
                 }
             case InputAction.Details:
                 {
-                    switch (player.GetPlayState())
-                    {
-                        case EPlayState.Select: AddCardToHand(); break;
-                    }
                     break;
                 }
         }
@@ -49,7 +45,7 @@ public partial class PlayerHand : Board
         OnPlayCard(SelectedCard);
     }
 
-    public void AddCardToHand()
+    public void AddCardToHand(CardDTO cardDTO)
     {
         Card newCard = cardTemplate.Instantiate<Card>();
 
@@ -58,6 +54,7 @@ public partial class PlayerHand : Board
         newCard.Position = new Vector3((numCardsInHand + SelectCardPosition.X) * -numCardsInHand, 0, 0); // Card size
         newCard.RotationDegrees = new Vector3(0, 0, 1); // To add the card stacking
         newCard.PositionInBoard = new Vector2I(numCardsInHand, 0);
+        newCard.UpdateDTO(cardDTO);
         RepositionHandCards();
     }
 

@@ -1,7 +1,6 @@
-public class CardDTO
+public class CardDTO : BaseDTO
 {
-    public string id;
     public string name;
-    public string frontImageSrc;
-
+    public string imageSrc;
+    public string backImageSrc;
 }

@@ -5,7 +5,8 @@
 [ext_resource type="BoxMesh" uid="uid://m6c665niqt0s" path="res://Material/cardFront.tres" id="3_l2p5i"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvt6y"]
-albedo_color = Color(0.92638, 0.912398, 1.54018e-06, 1)
+transparency = 1
+albedo_color = Color(0.356863, 0.509804, 1, 0.32549)
 metallic = 0.63
 
 [sub_resource type="BoxMesh" id="BoxMesh_liovy"]
@@ -15,8 +16,7 @@ material = SubResource("StandardMaterial3D_vvt6y")
 script = ExtResource("1_hunl0")
 
 [node name="SelectedIndicator" type="MeshInstance3D" parent="."]
-transform = Transform3D(4.519, 0, 0, 0, 0.0353317, 0, 0, 0, 6.59531, 0, 0, 0)
-visible = false
+transform = Transform3D(4.519, 0, 0, 0, 0.0837386, 0, 0, 0, 6.59531, 0, 0, 0)
 mesh = SubResource("BoxMesh_liovy")
 
 [node name="CardDisplay" type="Node3D" parent="."]

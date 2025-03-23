@@ -1,0 +1,96 @@
+[
+    {
+        "id": "SD01-Cube",
+        "name": "Cube",
+        "type": "Cube",
+        "imageSrc": "Cube01.png",
+        "backImageSrc": "CubeBack.png"
+    },
+    {
+        "id": "SD01-001",
+        "name": "Washington",
+        "power": 400,
+        "skills": [],
+        "type": "Flagship",
+        "durability": 5,
+        "imageSrc": "SD01-001.png",
+        "backImageSrc": "SD01-001B.png"
+    },
+    {
+        "id": "SD01-002",
+        "name": "Cassin",
+        "power": 300,
+        "skills": [],
+        "type": "Ship",
+        "cost": 1,
+        "supportValue": 100,
+        "supportScope": "Hand",
+        "imageSrc": "SD01-002.png"
+    },
+    {
+        "id": "SD01-003",
+        "name": "Downes",
+        "power": 400,
+        "skills": [],
+        "type": "Ship",
+        "cost": 2,
+        "supportValue": 100,
+        "supportScope": "Hand",
+        "imageSrc": "SD01-003.png"
+    },
+    {
+        "id": "SD01-004",
+        "name": "Sims",
+        "power": 400,
+        "skills": [],
+        "type": "Ship",
+        "cost": 2,
+        "supportValue": 100,
+        "supportScope": "Battlefield",
+        "imageSrc": "SD01-004.png"
+    },
+    {
+        "id": "SD01-005",
+        "name": "Hammann",
+        "power": 500,
+        "skills": [],
+        "type": "Ship",
+        "cost": 3,
+        "supportValue": 100,
+        "supportScope": "Hand",
+        "imageSrc": "SD01-005.png"
+    },
+    {
+        "id": "SD01-006",
+        "name": "Atlanta",
+        "power": 500,
+        "skills": [],
+        "type": "Ship",
+        "cost": 3,
+        "supportValue": 100,
+        "supportScope": "Both",
+        "imageSrc": "SD01-006.png"
+    },
+    {
+        "id": "SD01-007",
+        "name": "Juneau",
+        "power": 600,
+        "skills": [],
+        "type": "Ship",
+        "cost": 4,
+        "supportValue": 100,
+        "supportScope": "Both",
+        "imageSrc": "SD01-007.png"
+    },
+    {
+        "id": "SD01-008",
+        "name": "Anchorage",
+        "power": 500,
+        "skills": [],
+        "type": "Ship",
+        "cost": 6,
+        "supportValue": 100,
+        "supportScope": "Battlefield",
+        "imageSrc": "SD01-008.png"
+    }
+]

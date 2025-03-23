@@ -2,6 +2,7 @@ using Godot;
 
 public partial class Card : CardField
 {
+    readonly string resourcePath = "res://AzurLane/res/";
     public delegate void OnProvidedCardEvent(Card card);
     protected Node3D cardDisplay, selectedIndicator;
     protected Board board;
@@ -11,7 +12,7 @@ public partial class Card : CardField
     [Export]
     bool isSideWays = false;
 
-    public CardDTO cardDTO = new();
+    protected CardDTO cardDTO = new();
 
     public override void _Ready()
     {
@@ -71,4 +72,35 @@ public partial class Card : CardField
         if (isSideWays) RotationDegrees = RotationDegrees.WithY(90);
         else RotationDegrees = RotationDegrees.WithY(0);
     }
+
+    public void UpdateDTO(CardDTO newCardDTO)
+    {
+        cardDTO = newCardDTO;
+        if (cardDTO.imageSrc is not null)
+        {
+            UpdateImageTexture(
+                cardDisplay.GetNode<MeshInstance3D>("Front"),
+                newCardDTO.imageSrc);
+        }
+        if (cardDTO.backImageSrc is not null)
+        {
+            UpdateImageTexture(
+                cardDisplay.GetNode<MeshInstance3D>("Back"),
+                newCardDTO.backImageSrc);
+        }
+    }
+
+
+    void UpdateImageTexture(MeshInstance3D target, string path)
+    {
+        var material = target.GetActiveMaterial(0).Duplicate(); // I wanna break the reference on the prefab
+        if (material is StandardMaterial3D material3D)
+        {
+            var texture = GD.Load($"{resourcePath}{path}");
+            material3D.AlbedoTexture = (CompressedTexture2D)texture;
+            target.SetSurfaceOverrideMaterial(0, material3D);
+        }
+    }
+
+    public CardDTO GetAttributes() => cardDTO;
 }
