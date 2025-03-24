@@ -3,6 +3,8 @@ using Godot;
 
 public partial class Board : Node3D
 {
+    public delegate void PlaceCardEvent(Card card);
+    public delegate void CardTriggerEvent(Card card);
     public delegate void BoardProvidedCallback(Board board);
     public delegate void BoardEdgeEvent(Vector2I axis);
     public delegate void BoardEvent();

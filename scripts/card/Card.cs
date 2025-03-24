@@ -91,7 +91,7 @@ public partial class Card : CardField
     }
 
 
-    void UpdateImageTexture(MeshInstance3D target, string path)
+    protected void UpdateImageTexture(MeshInstance3D target, string path)
     {
         var material = target.GetActiveMaterial(0).Duplicate(); // I wanna break the reference on the prefab
         if (material is StandardMaterial3D material3D)

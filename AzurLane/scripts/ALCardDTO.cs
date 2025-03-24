@@ -4,7 +4,7 @@ public class ALCardDTO : CardDTO
     
 
     // Flagship, Ship
-    public string power;
+    public int power;
     public string[] skills;
 
     // Flagship 
@@ -14,5 +14,5 @@ public class ALCardDTO : CardDTO
     public int supportValue = 0;
     public string supportScope = "Hand"; // Hand, Battlefield
     // Ship, Event
-    public int cost;
+    public int cost = 0;
 }

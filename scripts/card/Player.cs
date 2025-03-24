@@ -24,18 +24,7 @@ public partial class Player : Node3D
     {
         hand = GetNode<PlayerHand>("Hand");
         board = GetNode<PlayerBoard>("Board");
-
-        hand.OnPlayCard -= OnPlayCardHandler;
-        hand.OnPlayCard += OnPlayCardHandler;
-        board.OnPlaceCard -= OnPlaceCardHandler;
-        board.OnPlaceCard += OnPlaceCardHandler;
-        board.OnCancelPlaceCard -= OnCancelPlaceCardHandler;
-        board.OnCancelPlaceCard += OnCancelPlaceCardHandler;
-        board.OnEdgeBoardRequest -= OnEdgeBoardRequestHandler;
-        board.OnEdgeBoardRequest += OnEdgeBoardRequestHandler;
-        hand.OnEdgeBoardRequest -= OnEdgeBoardRequestHandler;
-        hand.OnEdgeBoardRequest += OnEdgeBoardRequestHandler;
-
+        InitializeEvents();
     }
 
     public override void _Process(double delta)
@@ -44,12 +33,57 @@ public partial class Player : Node3D
         OnAxisChangeHandler(axisInputHandler.GetAxis());
     }
 
+    protected void InitializeEvents()
+    {
+        hand.OnPlayCardStart -= OnPlayCardStartHandler;
+        hand.OnPlayCardStart += OnPlayCardStartHandler;
+        board.OnPlaceCardStart -= OnPlaceCardStartHandler;
+        board.OnPlaceCardStart += OnPlaceCardStartHandler;
+        board.OnPlaceCardEnd -= OnPlaceCardEndHandler;
+        board.OnPlaceCardEnd += OnPlaceCardEndHandler;
+        board.OnPlaceCardCancel -= OnPlaceCardCancelHandler;
+        board.OnPlaceCardCancel += OnPlaceCardCancelHandler;
+        board.OnEdgeBoardRequest -= OnEdgeBoardRequestHandler;
+        board.OnEdgeBoardRequest += OnEdgeBoardRequestHandler;
+        hand.OnEdgeBoardRequest -= OnEdgeBoardRequestHandler;
+        hand.OnEdgeBoardRequest += OnEdgeBoardRequestHandler;
+        GD.Print("[InitializeEvents] Default Player events initialized");
+    }
+
+
     void OnAxisChangeHandler(Vector2I axis)
     {
 
     }
+    protected void OnPlaceCardCancelHandler(Card cardPlaced)
+    {
+        cardPlaced.IsEmptyField = false;
+        SetPlayState(EPlayState.Select);
+        SelectBoard(hand);
+    }
 
-    void OnEdgeBoardRequestHandler(Vector2I axis)
+    protected void OnPlaceCardStartHandler(Card cardPlaced)
+    {
+        GD.Print($"[OnPlaceCardStartHandler] No requirements for {cardPlaced.Name}");
+        board.PlaceCardInBoardFromHand(cardPlaced);
+    }
+
+    protected void OnPlaceCardEndHandler(Card cardPlaced)
+    {
+        hand.RemoveCardFromHand(cardPlaced);
+        SetPlayState(EPlayState.Select);
+        SelectBoard(hand);
+    }
+
+    protected void OnPlayCardStartHandler(Card cardToPlay)
+    {
+        board.CardToPlay = cardToPlay;
+        cardToPlay.IsEmptyField = true;
+        SetPlayState(EPlayState.PlaceCard);
+        SelectBoard(board);
+    }
+
+    protected void OnEdgeBoardRequestHandler(Vector2I axis)
     {
         if (axis == Vector2I.Down) SelectBoard(hand);
         else if (axis == Vector2I.Up) SelectBoard(board);
@@ -61,28 +95,6 @@ public partial class Player : Node3D
         OnPlayerBoardSelect(board);
         selectedBoard = board;
     }
-
-    void OnCancelPlaceCardHandler(Card cardPlaced)
-    {
-        cardPlaced.IsEmptyField = false;
-        SetPlayState(EPlayState.Select);
-        SelectBoard(hand);
-    }
-
-    void OnPlaceCardHandler(Card cardPlaced)
-    {
-        hand.RemoveCardFromHand(cardPlaced);
-        SetPlayState(EPlayState.Select);
-        SelectBoard(hand);
-    }
-    void OnPlayCardHandler(Card cardToPlay)
-    {
-        board.CardToPlay = cardToPlay;
-        cardToPlay.IsEmptyField = true;
-        SetPlayState(EPlayState.PlaceCard);
-        SelectBoard(board);
-    }
-
 
     protected void SetPlayState(EPlayState state)
     {

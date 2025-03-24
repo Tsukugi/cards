@@ -3,9 +3,10 @@ using Godot;
 
 public partial class PlayerBoard : Board
 {
-    public delegate void PlaceCardEventHandler(Card card);
-    public event PlaceCardEventHandler OnPlaceCard;
-    public event PlaceCardEventHandler OnCancelPlaceCard;
+    public event PlaceCardEvent OnPlaceCardStart;
+    public event PlaceCardEvent OnPlaceCardEnd;
+    public event PlaceCardEvent OnPlaceCardCancel;
+    public event CardTriggerEvent OnCardTrigger;
     public event BoardEdgeEvent OnEdgeBoardRequest;
     public Card CardToPlay = null;
 
@@ -24,7 +25,8 @@ public partial class PlayerBoard : Board
                 {
                     switch (player.GetPlayState())
                     {
-                        case EPlayState.PlaceCard: PlaceCardInBoardFromHand(CardToPlay); break;
+                        case EPlayState.PlaceCard: StartPlaceCard(CardToPlay); break;
+                        case EPlayState.Select: OnCardTrigger(SelectedCard); break;
                     }
                     break;
                 }
@@ -58,7 +60,7 @@ public partial class PlayerBoard : Board
 
     void CancelPlaceCard()
     {
-        OnCancelPlaceCard(CardToPlay);
+        OnPlaceCardCancel(CardToPlay);
         CardToPlay = null;
     }
 
@@ -68,18 +70,23 @@ public partial class PlayerBoard : Board
         SelectedCard.UpdateDTO(cardDTO);
     }
 
-    public void PlaceCardInBoardFromHand(Card CardToPlace)
+    public void PlaceCardInBoardFromHand(Card cardToPlace)
     {
         if (!SelectedCard.CanPlayerPlaceInThisField())
         {
             GD.PrintErr("[PlaceCardInBoardFromHand] This card place is not placeable!");
             return;
         }
-        CardDTO cardDTO = CardToPlace.GetAttributes();
+        CardDTO cardDTO = cardToPlace.GetAttributes();
         GD.Print($"[PlaceCardInBoardFromHand] Placing {cardDTO.name}!");
         UpdateSelectedCardDTO(cardDTO);
-        OnPlaceCard(CardToPlace);
+        OnPlaceCardEnd(cardToPlace);
         CardToPlay = null;
+    }
+
+    protected void StartPlaceCard(Card cardtoPlace)
+    {
+        if (OnPlaceCardStart is not null) OnPlaceCardStart(cardtoPlace);
     }
 
     public void SetAllCardsAsActive()

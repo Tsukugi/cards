@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://biyxii1wtj4x7" path="res://AzurLane/scripts/ALPlayer.cs" id="1_vpce2"]
 [ext_resource type="PackedScene" uid="uid://dhr0v03l7g4a7" path="res://AzurLane/AzurLaneBoard.tscn" id="2_1wl4u"]
-[ext_resource type="Script" uid="uid://dsgt2jlw2jtvr" path="res://scripts/card/PlayerHand.cs" id="3_ye0ug"]
+[ext_resource type="Script" uid="uid://lhhhy72pnqs7" path="res://AzurLane/scripts/ALHand.cs" id="3_vpce2"]
 
 [node name="AzurLanePlayer" type="Node3D"]
 script = ExtResource("1_vpce2")
@@ -10,8 +10,8 @@ script = ExtResource("1_vpce2")
 [node name="Board" parent="." instance=ExtResource("2_1wl4u")]
 
 [node name="Hand" type="Node3D" parent="."]
-transform = Transform3D(-1, -4.37114e-08, 7.57103e-08, 0, 0.866025, 0.5, -8.74228e-08, 0.5, -0.866025, 0, 3, 17)
-script = ExtResource("3_ye0ug")
+transform = Transform3D(1, 0, 0, 0, 0.866025, -0.5, 0, 0.5, 0.866025, 0, 3, 17)
+script = ExtResource("3_vpce2")
 BoardPositionInGrid = Vector2i(0, 1)
 
 [node name="Camera3D" type="Camera3D" parent="."]

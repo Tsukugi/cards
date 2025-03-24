@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Godot.Collections;
+using Newtonsoft.Json;
 
 public static class NodeUtils
 {
@@ -42,5 +43,13 @@ public static class NodeUtils
     {
         await caller.ToSignal(caller.GetTree().CreateTimer(seconds), "timeout");
         if (callback is System.Action onTimeout) onTimeout();
+    }
+
+    public static T ConvertObject<T>(object M) where T : class
+    {
+        // Serialize the original object to json
+        // Desarialize the json object to the new type 
+        var obj = JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(M));
+        return obj;
     }
 }

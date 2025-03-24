@@ -6,49 +6,43 @@ using Godot;
 public partial class PlayerHand : Board
 {
     public delegate void PlayCardEventHandler(Card card);
-    public event PlayCardEventHandler OnPlayCard;
+    public event PlayCardEventHandler OnPlayCardStart;
     public event BoardEdgeEvent OnEdgeBoardRequest;
 
 
     public override void _Process(double delta)
     {
         if (!isBoardActive) return;
-
         Vector2I axis = axisInputHandler.GetAxis();
-        InputAction action = actionInputHandler.GetAction();
         OnAxisChangeHandler(axis);
+        ManageAction();
+    }
+
+    protected void ManageAction()
+    {
+        InputAction action = actionInputHandler.GetAction();
         switch (action)
         {
             case InputAction.Ok:
                 {
                     switch (player.GetPlayState())
                     {
-                        case EPlayState.Select: PlayCard(); break;
+                        case EPlayState.Select: StartPlayCard(SelectedCard); break;
                     }
                     break;
                 }
-
-            case InputAction.Cancel:
-                {
-                    break;
-                }
-            case InputAction.Details:
-                {
-                    break;
-                }
         }
-
     }
-    void PlayCard()
+
+    protected void StartPlayCard(Card card)
     {
-        if (SelectedCard is null) { GD.Print($"[PlayCard] No selected card available"); return; }
-        OnPlayCard(SelectedCard);
+        if (card is null) { GD.Print($"[PlayCard] No selected card available"); return; }
+        if (OnPlayCardStart is not null) OnPlayCardStart(card);
     }
 
     public void AddCardToHand(CardDTO cardDTO)
     {
         Card newCard = cardTemplate.Instantiate<Card>();
-
         int numCardsInHand = GetCardsInHand().Count;
         AddChild(newCard);
         newCard.Position = new Vector3((numCardsInHand + SelectCardPosition.X) * -numCardsInHand, 0, 0); // Card size
@@ -91,19 +85,19 @@ public partial class PlayerHand : Board
         GD.Print($"[PlayerHand.OnAxisChangeHandler] SelectCardField in board for position {newPosition}");
     }
 
-    List<Card> GetCardsInHand()
+    protected List<Card> GetCardsInHand()
     {
         return this.TryGetAllChildOfType<Card>();
     }
 
     /* Will try to position cards in a way that the selected card is centered*/
-    void RepositionHandCards()
+    protected void RepositionHandCards()
     {
         List<Card> cards = GetCardsInHand();
         for (int i = 0; i < cards.Count; i++)
         {
             cards[i].PositionInBoard.X = i; // This reassigns the position in board to fill gaps
-            cards[i].Position = new Vector3((i - SelectCardPosition.X) * -cards[i].CardWidth, 0, 0); // (cardIndex - SelectCardPosition.X) means the card that is the center
+            cards[i].Position = new Vector3((i - SelectCardPosition.X) * cards[i].CardWidth, 0, 0); // (cardIndex - SelectCardPosition.X) means the card that is the center
         }
     }
 }
