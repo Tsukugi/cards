@@ -66,6 +66,7 @@ public partial class PlayerBoard : Board
 
     public void UpdateSelectedCardDTO(CardDTO cardDTO)
     {
+        GD.Print($"[UpdateSelectedCardDTO] Updating DTO {cardDTO.name}!");
         SelectedCard.IsEmptyField = false;
         SelectedCard.UpdateDTO(cardDTO);
     }

@@ -10,19 +10,8 @@ public partial class ALCard : Card
 
     public void UpdateDTO(ALCardDTO newCardDTO)
     {
+        base.UpdateDTO(newCardDTO);
         cardDTO = newCardDTO;
-        if (cardDTO.imageSrc is not null)
-        {
-            UpdateImageTexture(
-                cardDisplay.GetNode<MeshInstance3D>("Front"),
-                newCardDTO.imageSrc);
-        }
-        if (cardDTO.backImageSrc is not null)
-        {
-            UpdateImageTexture(
-                cardDisplay.GetNode<MeshInstance3D>("Back"),
-                newCardDTO.backImageSrc);
-        }
     }
 
     public void SetIsInActiveState(bool isActive)

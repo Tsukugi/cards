@@ -22,6 +22,7 @@ public partial class ALPlayer : Player
         InitializeEvents();
 
         database.LoadData();
+
         Callable.From(StartGameForPlayer).CallDeferred();
     }
 

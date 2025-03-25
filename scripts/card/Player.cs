@@ -64,7 +64,6 @@ public partial class Player : Node3D
 
     protected void OnPlaceCardStartHandler(Card cardPlaced)
     {
-        GD.Print($"[OnPlaceCardStartHandler] No requirements for {cardPlaced.Name}");
         board.PlaceCardInBoardFromHand(cardPlaced);
     }
 
@@ -77,6 +76,7 @@ public partial class Player : Node3D
 
     protected void OnPlayCardStartHandler(Card cardToPlay)
     {
+        GD.Print($"[OnPlayCardStartHandler] Card to play {cardToPlay} {cardToPlay.GetAttributes().name}");
         board.CardToPlay = cardToPlay;
         cardToPlay.IsEmptyField = true;
         SetPlayState(EPlayState.PlaceCard);

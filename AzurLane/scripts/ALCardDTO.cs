@@ -2,7 +2,6 @@ public class ALCardDTO : CardDTO
 {
     public string type = "Ship"; // Ship, Flagship, Cube, Event
     
-
     // Flagship, Ship
     public int power;
     public string[] skills;
