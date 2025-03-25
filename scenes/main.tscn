@@ -29,3 +29,12 @@ shadow_enabled = true
 spot_range = 20.0
 spot_angle = 70.0
 spot_angle_attenuation = 0.250001
+
+[node name="SpotLight3D2" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.0432532, 0.999064, 0, -0.999064, 0.0432532, 0, 7.92927, 17.5729)
+light_color = Color(1, 1, 0.807843, 1)
+light_energy = 5.0
+shadow_enabled = true
+spot_range = 20.0
+spot_angle = 70.0
+spot_angle_attenuation = 0.250001

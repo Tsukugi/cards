@@ -4,7 +4,8 @@ public partial class Card : CardField
 {
     readonly string resourcePath = "res://AzurLane/res/";
     public delegate void OnProvidedCardEvent(Card card);
-    protected Node3D cardDisplay, selectedIndicator = null, front = null, back = null, side = null;
+    protected Node3D cardDisplay, selectedIndicator = null;
+    protected MeshInstance3D front = null, back = null, side = null;
     protected Board board;
 
     [Export]
@@ -23,9 +24,9 @@ public partial class Card : CardField
         board.OnSelectCardPosition += OnSelectCardPositionHandler;
         cardDisplay = GetNode<Node3D>("CardDisplay");
         selectedIndicator = GetNodeOrNull<Node3D>("CardDisplay/SelectedIndicator");
-        front = GetNodeOrNull<Node3D>("CardDisplay/Front");
-        back = GetNodeOrNull<Node3D>("CardDisplay/Back");
-        side = GetNodeOrNull<Node3D>("CardDisplay/Side");
+        front = GetNodeOrNull<MeshInstance3D>("CardDisplay/Front");
+        back = GetNodeOrNull<MeshInstance3D>("CardDisplay/Back");
+        side = GetNodeOrNull<MeshInstance3D>("CardDisplay/Side");
         SetIsFaceDown(isFaceDown);
         SetIsSideWays(isSideWays);
     }
@@ -85,16 +86,12 @@ public partial class Card : CardField
         if (cardDTO.imageSrc is not null)
         {
             IsEmptyField = false;
-            UpdateImageTexture(
-                cardDisplay.GetNode<MeshInstance3D>("Front"),
-                newCardDTO.imageSrc);
+            UpdateImageTexture(front, newCardDTO.imageSrc);
         }
         if (cardDTO.backImageSrc is not null)
         {
             IsEmptyField = false;
-            UpdateImageTexture(
-                cardDisplay.GetNode<MeshInstance3D>("Back"),
-                newCardDTO.backImageSrc);
+            UpdateImageTexture(back, newCardDTO.backImageSrc);
         }
     }
 

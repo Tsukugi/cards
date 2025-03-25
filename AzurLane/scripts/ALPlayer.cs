@@ -5,15 +5,14 @@ using Godot;
 
 public partial class ALPlayer : Player
 {
-    public List<ALCardDTO> Deck = [];
-    public List<ALCardDTO> CubeDeck = [];
+    public List<ALCardDTO> Deck = [], CubeDeck = [], Retreat = [];
     public ALCardDTO Flagship = new();
     readonly ALDatabase database = new();
 
     new ALBoard board;
     new ALHand hand;
-    Node3D costArea, durabilityArea;
-    ALCard deckNode, cubeDeckNode, flagshipNode;
+    Node3D costArea, durabilityArea, unitsArea;
+    ALCard deckNode, cubeDeckNode, flagshipNode, retreatNode;
 
     EALTurnPhase currentPhase = EALTurnPhase.Reset;
     public override void _Ready()
@@ -22,6 +21,7 @@ public partial class ALPlayer : Player
         hand = GetNode<ALHand>("Hand");
         board = GetNode<ALBoard>("Board");
         costArea = board.GetNode<Node3D>("CostArea");
+        unitsArea = board.GetNode<Node3D>("Units");
         durabilityArea = board.GetNode<Node3D>("FlagshipDurability");
         InitializeEvents();
 
@@ -40,6 +40,9 @@ public partial class ALPlayer : Player
         board.OnPlaceCardCancel -= OnPlaceCardCancelHandler; // Unload default event
         board.OnPlaceCardCancel -= OnCostPlaceCardCancelHandler;
         board.OnPlaceCardCancel += OnCostPlaceCardCancelHandler;
+        board.OnPlaceCardStart -= OnPlaceCardStartHandler;
+        board.OnPlaceCardStart -= OnALPlaceCardStartHandler;
+        board.OnPlaceCardStart += OnALPlaceCardStartHandler;
         GD.Print("[InitializeEvents] ALPlayer events initialized");
     }
 
@@ -71,7 +74,6 @@ public partial class ALPlayer : Player
         }
     }
 
-
     void StartGameForPlayer()
     {
         SetPlayState(EPlayState.Wait);
@@ -80,14 +82,16 @@ public partial class ALPlayer : Player
         // Deck setup
         deckNode = board.GetCardInPosition(new Vector2I(3, 1)); // Deck position
         deckNode.CardStack = Deck.Count; // Set it as deck size
-        deckNode.UpdateAttributes(Deck[0]);
+        deckNode.UpdateAttributes(Deck[^1]); // Use last card as template
         // CubeDeck setup
         cubeDeckNode = board.GetCardInPosition(new Vector2I(-1, 2)); // Cube deck position
         cubeDeckNode.CardStack = CubeDeck.Count; // Set it as deck size
-        cubeDeckNode.UpdateAttributes(CubeDeck[0]);
+        cubeDeckNode.UpdateAttributes(CubeDeck[^1]); // Use last card as template
         // Flagship setup
         flagshipNode = board.GetCardInPosition(Vector2I.One); // Flagship position
         flagshipNode.UpdateAttributes(Flagship);
+        // Retreat setup
+        retreatNode = board.GetCardInPosition(new Vector2I(10, 2)); // Retreat node position
 
         // Player preparation
         SelectBoard(hand);
@@ -97,6 +101,8 @@ public partial class ALPlayer : Player
 
         StartTurn();
     }
+
+    // Turn and Phases
 
     void StartTurn()
     {
@@ -147,9 +153,9 @@ public partial class ALPlayer : Player
 
     void EndTurn()
     {
+        // TODO Switch to the other player
         StartTurn();
     }
-
 
     void ApplyPhase(EALTurnPhase phase)
     {
@@ -173,6 +179,103 @@ public partial class ALPlayer : Player
     }
 
 
+    // Event handlers
+    protected void OnCostPlayCardStartHandler(Card cardToPlay)
+    {
+        if (currentPhase != EALTurnPhase.Main)
+        {
+            GD.PrintErr($"[OnCostPlayCardStartHandler] Cannot place cards outside main phase");
+            return;
+        }
+
+        ALCard card = CastToALCard(cardToPlay);
+        ALCardDTO attributes = card.GetAttributes();
+
+        var activeCubes = GetActiveCubesInBoard();
+
+        GD.Print($"[OnCostPlayCardStartHandler] Cost {attributes.cost} - Active cubes {activeCubes.Count}");
+
+        if (attributes.cost > activeCubes.Count)
+        {
+            GD.PrintErr("[OnCostPlayCardStartHandler] Player doesn't have enough cubes to play this card");
+            return;
+        }
+
+        for (int i = 0; i < attributes.cost; i++)
+        {
+            activeCubes[activeCubes.Count - 1 - i].SetIsInActiveState(false); // Last match
+        }
+
+        OnPlayCardStartHandler(card);
+    }
+
+    protected void OnCostPlaceCardCancelHandler(Card cardToRestore)
+    {
+        ALCard card = CastToALCard(cardToRestore);
+
+        ALCardDTO attributes = card.GetAttributes();
+        List<ALCard> cubes = GetCubesInBoard();
+        GD.Print($"[OnCostPlaceCardCancelHandler] Reverting cubes spent for {attributes.name}");
+
+        for (int i = 0; i < attributes.cost; i++)
+        {
+            cubes[cubes.Count - 1 - i].SetIsInActiveState(true); // Last match
+        }
+
+        OnPlaceCardCancelHandler(card);
+    }
+
+    protected void OnALPlaceCardStartHandler(Card fieldToPlace)
+    {
+        ALCard cardToPlace = CastToALCard(fieldToPlace);
+        ALCard fieldBeingPlaced = board.GetSelectedCard();
+        ALCardDTO existingCard = fieldBeingPlaced.GetAttributes();
+
+        GD.Print($"[OnALPlaceCardStartHandler] {fieldBeingPlaced.Name} {existingCard.name} ");
+        if (!fieldBeingPlaced.IsEmptyField)
+        {
+            GD.Print($"[OnALPlaceCardStartHandler] Sending {existingCard.name} to retreat area");
+            AddToRetreatAreaOnTop(existingCard);
+        }
+        OnPlaceCardStartHandler(cardToPlace);
+    }
+
+    protected void OnCardTriggerHandler(Card card)
+    {
+        if (card is ALPhaseButton)
+        {
+            if (currentPhase == EALTurnPhase.Main) PlayNextPhase(currentPhase);
+            if (currentPhase == EALTurnPhase.Battle) PlayNextPhase(currentPhase);
+        }
+    }
+
+    // Utils 
+
+    static ALCard CastToALCard(Card card)
+    {
+        if (card is not ALCard alCard)
+        {
+            GD.PrintErr($"[OnCostPlayCardStartHandler] Cannot play a card not belonging to AzurLane TCG, {card.Name} is {card.GetType()} ");
+            return null;
+        }
+        return alCard;
+    }
+
+    // Nodes
+
+    static ALCardDTO DrawCard(List<ALCardDTO> deck, ALCard relatedField)
+    {
+        var res = Player.DrawCard(deck);
+        UpdateDeckStackSize(relatedField, deck.Count);
+        return res;
+    }
+
+    static void UpdateDeckStackSize(ALCard deck, int size)
+    {
+        deck.CardStack = size;
+        if (deck.CardStack == 0) deck.IsEmptyField = true;
+    }
+
     void DrawCardToHand(int num = 1)
     {
         for (int i = 0; i < num; i++)
@@ -180,6 +283,12 @@ public partial class ALPlayer : Player
             ALCardDTO cardToDraw = DrawCard(Deck, deckNode);
             hand.AddCardToHand(cardToDraw);
         }
+    }
+
+    void AddToRetreatAreaOnTop(ALCardDTO cardToAdd)
+    {
+        Retreat.Insert(0, cardToAdd);
+        retreatNode.UpdateAttributes(cardToAdd);
     }
 
     void ApplyFlagshipDurability()
@@ -217,87 +326,11 @@ public partial class ALPlayer : Player
     {
         // We wanna only reset units and cost area cards in AzurLane TCG
         costArea.TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
+        unitsArea.TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
     }
 
     List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
-
-    // Events
-    void OnCostPlayCardStartHandler(Card cardToPlay)
-    {
-        if (currentPhase != EALTurnPhase.Main)
-        {
-            GD.PrintErr($"[OnCostPlayCardStartHandler] Cannot place cards outside main phase");
-            return;
-        }
-
-        if (cardToPlay is not ALCard card)
-        {
-            GD.PrintErr($"[OnCostPlayCardStartHandler] Cannot play a card not belonging to AzurLane TCG, {cardToPlay.Name} is {cardToPlay.GetType()} ");
-            return;
-        }
-
-        ALCardDTO attributes = card.GetAttributes();
-
-        var activeCubes = GetActiveCubesInBoard();
-
-        GD.Print($"[OnCostPlayCardStartHandler] Cost {attributes.cost} - Active cubes {activeCubes.Count}");
-
-        if (attributes.cost > activeCubes.Count)
-        {
-            GD.PrintErr("[OnCostPlayCardStartHandler] Player doesn't have enough cubes to play this card");
-            return;
-        }
-
-        for (int i = 0; i < attributes.cost; i++)
-        {
-            activeCubes[activeCubes.Count - 1 - i].SetIsInActiveState(false); // Last match
-        }
-
-        OnPlayCardStartHandler(card);
-    }
-
-    void OnCostPlaceCardCancelHandler(Card cardToRestore)
-    {
-        if (cardToRestore is not ALCard card)
-        {
-            GD.PrintErr($"[OnCostPlayCardStartHandler] Cannot play a card not belonging to AzurLane TCG, {cardToRestore.Name} is {cardToRestore.GetType()} ");
-            return;
-        }
-
-        ALCardDTO attributes = card.GetAttributes();
-        List<ALCard> cubes = GetCubesInBoard();
-        GD.Print($"[OnCostPlayCardCancelHandler] Clearing cost");
-
-        for (int i = 0; i < attributes.cost; i++)
-        {
-            cubes[cubes.Count - 1 - i].SetIsInActiveState(true); // Last match
-        }
-
-        OnPlaceCardCancelHandler(card);
-    }
-
-    void OnCardTriggerHandler(Card card)
-    {
-        if (card is ALPhaseButton)
-        {
-            if (currentPhase == EALTurnPhase.Main) PlayNextPhase(currentPhase);
-            if (currentPhase == EALTurnPhase.Battle) PlayNextPhase(currentPhase);
-        }
-    }
-
-    static ALCardDTO DrawCard(List<ALCardDTO> deck, ALCard relatedField)
-    {
-        var res = Player.DrawCard(deck);
-        UpdateDeckStackSize(relatedField, deck.Count);
-        return res;
-    }
-
-    static void UpdateDeckStackSize(ALCard deck, int size)
-    {
-        deck.CardStack = size;
-        if (deck.CardStack == 0) deck.IsEmptyField = true;
-    }
 }
 
 public enum EALTurnPhase
