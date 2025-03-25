@@ -8,9 +8,9 @@ public partial class ALCard : Card
     bool isInActiveState = true;
     public new ALCardDTO GetAttributes() => cardDTO;
 
-    public void UpdateDTO(ALCardDTO newCardDTO)
+    public void UpdateAttributes(ALCardDTO newCardDTO)
     {
-        base.UpdateDTO(newCardDTO);
+        base.UpdateAttributes(newCardDTO);
         cardDTO = newCardDTO;
     }
 

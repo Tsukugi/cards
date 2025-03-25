@@ -1,8 +1,15 @@
-[gd_scene load_steps=6 format=3 uid="uid://dp7bqacq615oo"]
+[gd_scene load_steps=8 format=3 uid="uid://dp7bqacq615oo"]
 
 [ext_resource type="Script" uid="uid://u4loqtnkjdnn" path="res://AzurLane/scripts/ALCard.cs" id="1_hunl0"]
 [ext_resource type="BoxMesh" uid="uid://dn563cjoh3wan" path="res://Material/cardBack.tres" id="2_2htw4"]
 [ext_resource type="BoxMesh" uid="uid://m6c665niqt0s" path="res://Material/cardFront.tres" id="3_l2p5i"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hunl0"]
+albedo_color = Color(0.377919, 0.377919, 0.377919, 1)
+metallic = 0.68
+
+[sub_resource type="BoxMesh" id="BoxMesh_hunl0"]
+material = SubResource("StandardMaterial3D_hunl0")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvt6y"]
 transparency = 1
@@ -15,19 +22,24 @@ material = SubResource("StandardMaterial3D_vvt6y")
 [node name="Card" type="Node3D"]
 script = ExtResource("1_hunl0")
 
-[node name="SelectedIndicator" type="MeshInstance3D" parent="."]
-transform = Transform3D(4.519, 0, 0, 0, 0.0837386, 0, 0, 0, 6.59531, 0, 0, 0)
-mesh = SubResource("BoxMesh_liovy")
-
 [node name="CardDisplay" type="Node3D" parent="."]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
 
 [node name="Back" type="MeshInstance3D" parent="CardDisplay"]
-transform = Transform3D(4.17, 0, 0, 0, 0.03, 0, 0, 0, 6.135, 0, -0.01, 0)
+transform = Transform3D(-4.17, 0, -5.36339e-07, 0, 0.03, 0, 3.64553e-07, 0, -6.135, 0, -0.01, 0)
 mesh = ExtResource("2_2htw4")
 skeleton = NodePath("../..")
 
 [node name="Front" type="MeshInstance3D" parent="CardDisplay"]
-transform = Transform3D(4.17, 0, 0, 0, 0.03, 0, 0, 0, 6.135, 0, 0.01, 0)
+transform = Transform3D(-4.17, 0, -5.36339e-07, 0, 0.03, 0, 3.64553e-07, 0, -6.135, 0, 0.01, 0)
 mesh = ExtResource("3_l2p5i")
+skeleton = NodePath("../..")
+
+[node name="Side" type="MeshInstance3D" parent="CardDisplay"]
+transform = Transform3D(4.17244, 0, 0, 0, 0.0488292, 0, 0, 0, 6.15213, 0, 0, 0)
+mesh = SubResource("BoxMesh_hunl0")
+
+[node name="SelectedIndicator" type="MeshInstance3D" parent="CardDisplay"]
+transform = Transform3D(4.519, 0, 0, 0, 0.119382, 0, 0, 0, 6.59531, 0, 0, 0)
+mesh = SubResource("BoxMesh_liovy")
 skeleton = NodePath("../..")

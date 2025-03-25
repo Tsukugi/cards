@@ -104,4 +104,6 @@ public partial class Board : Node3D
             GD.Print($"[SetIsBoardActive] Active Board: {Name}");
         }
     }
+
+    public Card GetSelectedCard() => SelectedCard;
 }

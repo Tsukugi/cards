@@ -4,7 +4,7 @@ public partial class Card : CardField
 {
     readonly string resourcePath = "res://AzurLane/res/";
     public delegate void OnProvidedCardEvent(Card card);
-    protected Node3D cardDisplay, selectedIndicator;
+    protected Node3D cardDisplay, selectedIndicator = null, front = null, back = null, side = null;
     protected Board board;
 
     [Export]
@@ -21,8 +21,11 @@ public partial class Card : CardField
         board.OnClearSelection += OnUnselectCardHandler;
         board.OnSelectCardPosition -= OnSelectCardPositionHandler;
         board.OnSelectCardPosition += OnSelectCardPositionHandler;
-        selectedIndicator = GetNode<Node3D>("SelectedIndicator");
         cardDisplay = GetNode<Node3D>("CardDisplay");
+        selectedIndicator = GetNodeOrNull<Node3D>("CardDisplay/SelectedIndicator");
+        front = GetNodeOrNull<Node3D>("CardDisplay/Front");
+        back = GetNodeOrNull<Node3D>("CardDisplay/Back");
+        side = GetNodeOrNull<Node3D>("CardDisplay/Side");
         SetIsFaceDown(isFaceDown);
         SetIsSideWays(isSideWays);
     }
@@ -46,17 +49,20 @@ public partial class Card : CardField
     {
         OnSelectHandler(isSelected);
         OnFieldStateChangeHandler();
+        cardDisplay.Scale = cardDisplay.Scale.WithY(CardStack);
     }
 
 
     void OnSelectHandler(bool isSelected)
     {
-        selectedIndicator.Visible = isSelected && board.IsBoardActive;
+        if (selectedIndicator is not null) selectedIndicator.Visible = isSelected && board.IsBoardActive;
     }
 
     void OnFieldStateChangeHandler()
     {
-        cardDisplay.Visible = !IsEmptyField;
+        if (front is not null) front.Visible = !IsEmptyField;
+        if (back is not null) back.Visible = !IsEmptyField;
+        if (side is not null) side.Visible = !IsEmptyField;
     }
 
     public void SetIsFaceDown(bool value)
@@ -69,21 +75,23 @@ public partial class Card : CardField
     public void SetIsSideWays(bool value)
     {
         isSideWays = value;
-        if (isSideWays) RotationDegrees = RotationDegrees.WithY(90);
-        else RotationDegrees = RotationDegrees.WithY(0);
+        if (isSideWays) cardDisplay.RotationDegrees = cardDisplay.RotationDegrees.WithY(90);
+        else cardDisplay.RotationDegrees = cardDisplay.RotationDegrees.WithY(0);
     }
 
-    public void UpdateDTO(CardDTO newCardDTO)
+    public void UpdateAttributes(CardDTO newCardDTO)
     {
         cardDTO = newCardDTO;
         if (cardDTO.imageSrc is not null)
         {
+            IsEmptyField = false;
             UpdateImageTexture(
                 cardDisplay.GetNode<MeshInstance3D>("Front"),
                 newCardDTO.imageSrc);
         }
         if (cardDTO.backImageSrc is not null)
         {
+            IsEmptyField = false;
             UpdateImageTexture(
                 cardDisplay.GetNode<MeshInstance3D>("Back"),
                 newCardDTO.backImageSrc);

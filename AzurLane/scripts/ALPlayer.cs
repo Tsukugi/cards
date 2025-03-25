@@ -8,10 +8,12 @@ public partial class ALPlayer : Player
     public List<ALCardDTO> Deck = [];
     public List<ALCardDTO> CubeDeck = [];
     public ALCardDTO Flagship = new();
-    ALDatabase database = new();
+    readonly ALDatabase database = new();
 
     new ALBoard board;
     new ALHand hand;
+    Node3D costArea;
+    ALCard deckNode, cubeDeckNode, flagshipNode;
 
     EALTurnPhase currentPhase = EALTurnPhase.Reset;
     public override void _Ready()
@@ -19,6 +21,7 @@ public partial class ALPlayer : Player
         base._Ready();
         hand = GetNode<ALHand>("Hand");
         board = GetNode<ALBoard>("Board");
+        costArea = board.GetNode<Node3D>("CostArea");
         InitializeEvents();
 
         database.LoadData();
@@ -69,21 +72,27 @@ public partial class ALPlayer : Player
     {
         SetPlayState(EPlayState.Wait);
         BuildDeck();
-        SelectBoard(hand);
-        DrawCardToHand(5);
         hand.SelectCardField(Vector2I.Zero);
 
         // Deck setup
         board.SelectCardField(new Vector2I(3, 1)); // Deck position
-        board.SelectedCard.CardStack = Deck.Count; // Set it as deck size
-        board.UpdateSelectedCardDTO(Deck[0]);
+        deckNode = board.GetSelectedCard();
+        deckNode.CardStack = Deck.Count; // Set it as deck size
+        deckNode.UpdateAttributes(Deck[0]);
         // CubeDeck setup
         board.SelectCardField(new Vector2I(-1, 2)); // Cube deck position
-        board.SelectedCard.CardStack = CubeDeck.Count; // Set it as deck size
-        board.UpdateSelectedCardDTO(CubeDeck[0]);
+        cubeDeckNode = board.GetSelectedCard();
+        cubeDeckNode.CardStack = CubeDeck.Count; // Set it as deck size
+        cubeDeckNode.UpdateAttributes(CubeDeck[0]);
         // Flagship setup
         board.SelectCardField(Vector2I.One); // Flagship position
-        board.UpdateSelectedCardDTO(Flagship);
+        flagshipNode = board.GetSelectedCard();
+        flagshipNode.UpdateAttributes(Flagship);
+
+        // Player preparation
+        SelectBoard(hand);
+        DrawCardToHand(5);
+
 
         StartTurn();
     }
@@ -104,10 +113,10 @@ public partial class ALPlayer : Player
     void PlayPreparationPhase()
     {
         // Draw 1 card
-        // Place 1 face up cube
+        // Place 1 face up cube if possible
         GD.Print($"[PlayPreparationPhase]");
         currentPhase = EALTurnPhase.Preparation;
-        DrawCubeToBoard();
+        TryDrawCubeToBoard();
         DrawCardToHand();
         PlayNextPhase(currentPhase);
     }
@@ -168,32 +177,48 @@ public partial class ALPlayer : Player
         {
             ALCardDTO cardToDraw = DrawCard(Deck);
             hand.AddCardToHand(cardToDraw);
+            UpdateDeckStackSize(deckNode, Deck.Count);
         }
     }
 
-    void DrawCubeToBoard()
+    void TryDrawCubeToBoard()
     {
-        ALCardDTO cardToDraw = DrawCard(CubeDeck);
-        Card cubeField = PlayerBoard.FindLastEmptyFieldInRow(
-            board.GetNode("CostArea").TryGetAllChildOfType<Card>());
-        board.SelectCardField(cubeField.PositionInBoard);
-        board.UpdateSelectedCardDTO(cardToDraw);
+        try
+        {
+            ALCardDTO cardToDraw = DrawCard(CubeDeck);
+            Card cubeField = PlayerBoard.FindLastEmptyFieldInRow(
+                board.GetNode("CostArea").TryGetAllChildOfType<Card>());
+            board.SelectCardField(cubeField.PositionInBoard);
+            board.SelectedCard.UpdateAttributes(cardToDraw);
+            UpdateDeckStackSize(cubeDeckNode, CubeDeck.Count);
+        }
+        catch (Exception e)
+        {
+            GD.Print(e); // Expected when cube deck is empty
+            return;
+        }
     }
 
     void SetBoardCardsAsActive()
     {
         // We wanna only reset units and cost area cards in AzurLane TCG
-        board.GetNode("CostArea").TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
+        costArea.TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
     }
 
-    List<ALCard> GetActiveCubesInBoard() => board.GetNode("CostArea").TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
+    List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
 
     // Events
     void OnCostPlayCardStartHandler(Card cardToPlay)
     {
+        if (currentPhase != EALTurnPhase.Main)
+        {
+            GD.PrintErr($"[OnCostPlayCardStartHandler] Cannot place cards outside main phase");
+            return;
+        }
+
         if (cardToPlay is not ALCard card)
         {
-            GD.PrintErr($"[OnPlayCardHandler] Cannot play a card not belonging to AzurLane TCG, {cardToPlay.Name} is {cardToPlay.GetType()} ");
+            GD.PrintErr($"[OnCostPlayCardStartHandler] Cannot play a card not belonging to AzurLane TCG, {cardToPlay.Name} is {cardToPlay.GetType()} ");
             return;
         }
 
@@ -202,11 +227,11 @@ public partial class ALPlayer : Player
 
         var activeCubes = GetActiveCubesInBoard();
 
-        GD.Print($"[OnPlayCardHandler] Cost {attributes.cost} - Active cubes {activeCubes.Count}");
+        GD.Print($"[OnCostPlayCardStartHandler] Cost {attributes.cost} - Active cubes {activeCubes.Count}");
 
         if (attributes.cost > activeCubes.Count)
         {
-            GD.PrintErr("[OnPlayCardHandler] Player doesn't have enough cubes to play this card");
+            GD.PrintErr("[OnCostPlayCardStartHandler] Player doesn't have enough cubes to play this card");
             return;
         }
 
@@ -220,11 +245,17 @@ public partial class ALPlayer : Player
 
     void OnCardTriggerHandler(Card card)
     {
-        if (card is ALPhaseButton phaseButton)
+        if (card is ALPhaseButton)
         {
             if (currentPhase == EALTurnPhase.Main) PlayNextPhase(currentPhase);
             if (currentPhase == EALTurnPhase.Battle) PlayNextPhase(currentPhase);
         }
+    }
+
+    void UpdateDeckStackSize(ALCard deck, int size)
+    {
+        deck.CardStack = size;
+        if (deck.CardStack == 0) deck.IsEmptyField = true;
     }
 
 }

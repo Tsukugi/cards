@@ -64,13 +64,6 @@ public partial class PlayerBoard : Board
         CardToPlay = null;
     }
 
-    public void UpdateSelectedCardDTO(CardDTO cardDTO)
-    {
-        GD.Print($"[UpdateSelectedCardDTO] Updating DTO {cardDTO.name}!");
-        SelectedCard.IsEmptyField = false;
-        SelectedCard.UpdateDTO(cardDTO);
-    }
-
     public void PlaceCardInBoardFromHand(Card cardToPlace)
     {
         if (!SelectedCard.CanPlayerPlaceInThisField())
@@ -80,7 +73,7 @@ public partial class PlayerBoard : Board
         }
         CardDTO cardDTO = cardToPlace.GetAttributes();
         GD.Print($"[PlaceCardInBoardFromHand] Placing {cardDTO.name}!");
-        UpdateSelectedCardDTO(cardDTO);
+        SelectedCard.UpdateAttributes(cardDTO);
         OnPlaceCardEnd(cardToPlace);
         CardToPlay = null;
     }
