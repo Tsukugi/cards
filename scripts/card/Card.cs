@@ -13,7 +13,7 @@ public partial class Card : CardField
     [Export]
     bool isSideWays = false;
 
-    protected CardDTO cardDTO = new();
+    CardDTO attributes = new();
 
     public override void _Ready()
     {
@@ -80,21 +80,22 @@ public partial class Card : CardField
         else cardDisplay.RotationDegrees = cardDisplay.RotationDegrees.WithY(0);
     }
 
-    public void UpdateAttributes(CardDTO newCardDTO)
+    public T GetAttributes<T>() where T : CardDTO => attributes as T;
+    public void UpdateAttributes<T>(T newCardDTO) where T : CardDTO
     {
-        cardDTO = newCardDTO;
-        if (cardDTO.imageSrc is not null)
+        attributes = newCardDTO;
+        if (attributes.imageSrc is not null)
         {
             IsEmptyField = false;
             UpdateImageTexture(front, newCardDTO.imageSrc);
         }
-        if (cardDTO.backImageSrc is not null)
+        if (attributes.backImageSrc is not null)
         {
             IsEmptyField = false;
             UpdateImageTexture(back, newCardDTO.backImageSrc);
         }
+        GD.Print($"[Card.UpdateAttributes] {attributes.name}");
     }
-
 
     protected void UpdateImageTexture(MeshInstance3D target, string path)
     {
@@ -107,5 +108,4 @@ public partial class Card : CardField
         }
     }
 
-    public CardDTO GetAttributes() => cardDTO;
 }

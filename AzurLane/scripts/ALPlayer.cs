@@ -188,10 +188,10 @@ public partial class ALPlayer : Player
             return;
         }
 
-        ALCard card = CastToALCard(cardToPlay);
-        ALCardDTO attributes = card.GetAttributes();
+        ALCard card = cardToPlay.CastToALCard();
+        ALCardDTO attributes = card.GetAttributes<ALCardDTO>();
 
-        var activeCubes = GetActiveCubesInBoard();
+        List<ALCard> activeCubes = GetActiveCubesInBoard();
 
         GD.Print($"[OnCostPlayCardStartHandler] Cost {attributes.cost} - Active cubes {activeCubes.Count}");
 
@@ -211,9 +211,9 @@ public partial class ALPlayer : Player
 
     protected void OnCostPlaceCardCancelHandler(Card cardToRestore)
     {
-        ALCard card = CastToALCard(cardToRestore);
+        ALCard card = cardToRestore.CastToALCard();
 
-        ALCardDTO attributes = card.GetAttributes();
+        ALCardDTO attributes = card.GetAttributes<ALCardDTO>();
         List<ALCard> cubes = GetCubesInBoard();
         GD.Print($"[OnCostPlaceCardCancelHandler] Reverting cubes spent for {attributes.name}");
 
@@ -227,14 +227,13 @@ public partial class ALPlayer : Player
 
     protected void OnALPlaceCardStartHandler(Card fieldToPlace)
     {
-        ALCard cardToPlace = CastToALCard(fieldToPlace);
-        ALCard fieldBeingPlaced = board.GetSelectedCard();
-        ALCardDTO existingCard = fieldBeingPlaced.GetAttributes();
+        ALCard cardToPlace = fieldToPlace.CastToALCard();
+        ALCard fieldBeingPlaced = board.GetSelectedCard<ALCard>();
 
-        GD.Print($"[OnALPlaceCardStartHandler] {fieldBeingPlaced.Name} {existingCard.name} ");
         if (!fieldBeingPlaced.IsEmptyField)
         {
-            GD.Print($"[OnALPlaceCardStartHandler] Sending {existingCard.name} to retreat area");
+            ALCardDTO existingCard = fieldBeingPlaced.GetAttributes<ALCardDTO>();
+            GD.Print($"[OnALPlaceCardStartHandler] Sending {existingCard} to retreat area");
             AddToRetreatAreaOnTop(existingCard);
         }
         OnPlaceCardStartHandler(cardToPlace);
@@ -249,18 +248,6 @@ public partial class ALPlayer : Player
         }
     }
 
-    // Utils 
-
-    static ALCard CastToALCard(Card card)
-    {
-        if (card is not ALCard alCard)
-        {
-            GD.PrintErr($"[OnCostPlayCardStartHandler] Cannot play a card not belonging to AzurLane TCG, {card.Name} is {card.GetType()} ");
-            return null;
-        }
-        return alCard;
-    }
-
     // Nodes
 
     static ALCardDTO DrawCard(List<ALCardDTO> deck, ALCard relatedField)
@@ -268,6 +255,20 @@ public partial class ALPlayer : Player
         var res = Player.DrawCard(deck);
         UpdateDeckStackSize(relatedField, deck.Count);
         return res;
+    }
+
+    static void AddCardToDeck(ALCardDTO cardToAdd, List<ALCardDTO> deck, ALCard boardField, bool top = true)
+    {
+        if (top)
+        {
+            deck.Insert(0, cardToAdd);
+        }
+        else
+        {
+            deck.Add(cardToAdd);
+            boardField.UpdateAttributes(cardToAdd); // Update image src to show bottom card 
+        }
+        UpdateDeckStackSize(boardField, deck.Count);
     }
 
     static void UpdateDeckStackSize(ALCard deck, int size)
@@ -287,13 +288,13 @@ public partial class ALPlayer : Player
 
     void AddToRetreatAreaOnTop(ALCardDTO cardToAdd)
     {
-        Retreat.Insert(0, cardToAdd);
-        retreatNode.UpdateAttributes(cardToAdd);
+        // We add to the bottom as the deck works flipped down
+        AddCardToDeck(cardToAdd, Retreat, retreatNode, false);
     }
 
     void ApplyFlagshipDurability()
     {
-        int durability = flagshipNode.GetAttributes().durability;
+        int durability = flagshipNode.GetAttributes<ALCardDTO>().durability;
         List<ALCard> durabilityList = durabilityArea.TryGetAllChildOfType<ALCard>();
         for (int i = 0; i < durability; i++)
         {

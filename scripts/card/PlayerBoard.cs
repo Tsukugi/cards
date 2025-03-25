@@ -26,7 +26,7 @@ public partial class PlayerBoard : Board
                     switch (player.GetPlayState())
                     {
                         case EPlayState.PlaceCard: StartPlaceCard(CardToPlay); break;
-                        case EPlayState.Select: OnCardTrigger(SelectedCard); break;
+                        case EPlayState.Select: OnCardTrigger(GetSelectedCard<Card>()); break;
                     }
                     break;
                 }
@@ -66,14 +66,15 @@ public partial class PlayerBoard : Board
 
     public void PlaceCardInBoardFromHand(Card cardToPlace)
     {
-        if (!SelectedCard.CanPlayerPlaceInThisField())
+        Card selectedCard = GetSelectedCard<Card>();
+        if (!selectedCard.CanPlayerPlaceInThisField())
         {
             GD.PrintErr("[PlaceCardInBoardFromHand] This card place is not placeable!");
             return;
         }
-        CardDTO cardDTO = cardToPlace.GetAttributes();
-        GD.Print($"[PlaceCardInBoardFromHand] Placing {cardDTO.name}!");
-        SelectedCard.UpdateAttributes(cardDTO);
+        var attributes = cardToPlace.GetAttributes<CardDTO>();
+        GD.Print($"[PlaceCardInBoardFromHand] Placing {attributes.name}!");
+        selectedCard.UpdateAttributes(attributes);
         OnPlaceCardEnd(cardToPlace);
         CardToPlay = null;
     }

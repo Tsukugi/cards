@@ -22,9 +22,9 @@ directional_shadow_mode = 0
 isPlayerActive = true
 
 [node name="SpotLight3D" type="SpotLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.0432532, 0.999064, 0, -0.999064, 0.0432532, 0, 5.96759, -0.303041)
+transform = Transform3D(1, 0, 0, 0, -0.11934, 0.992853, 0, -0.992853, -0.11934, 0, 6.14471, -4.39417)
 light_color = Color(1, 1, 0.807843, 1)
-light_energy = 3.0
+light_energy = 6.0
 shadow_enabled = true
 spot_range = 20.0
 spot_angle = 70.0
