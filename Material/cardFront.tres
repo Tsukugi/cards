@@ -3,7 +3,6 @@
 [ext_resource type="Texture2D" uid="uid://mlu6tffsl3g3" path="res://AzurLane/res/SD01-001.png" id="1_jo2tb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ygyq0"]
-shading_mode = 2
 albedo_color = Color(0.585062, 0.585062, 0.585062, 1)
 albedo_texture = ExtResource("1_jo2tb")
 metallic = 0.17
@@ -11,9 +10,11 @@ emission = Color(0.60933, 0.60933, 0.60933, 1)
 emission_operator = 1
 rim = 0.41
 rim_tint = 0.76
+backlight = Color(0.89059, 0.89059, 0.89059, 1)
 refraction_scale = 0.26
 uv1_scale = Vector3(3, 2, 1)
 texture_filter = 1
+disable_receive_shadows = true
 
 [resource]
 material = SubResource("StandardMaterial3D_ygyq0")
