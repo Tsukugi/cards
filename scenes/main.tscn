@@ -4,10 +4,28 @@
 
 [node name="main" type="Node3D"]
 
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.631353, -0.0986169, -0.769199, -0.762464, 0.260007, 0.592491, 0.141568, 0.960558, -0.239348, -7.10733, 32.8051, 0.102968)
+light_color = Color(1, 0.743256, 0.990905, 1)
+light_energy = 0.5
+shadow_enabled = true
+directional_shadow_mode = 0
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.960944, 0.214206, -0.175219, -0.0931396, 0.345882, 0.933644, 0.260597, 0.9135, -0.312422, 0, 32.8949, 0)
-light_energy = 3.992
+transform = Transform3D(-0.31997, 0.687925, 0.651445, 0.451405, -0.493838, 0.743208, 0.832978, 0.53187, -0.152519, 12.0646, 30.9327, -1.73201)
+light_color = Color(9.04858e-06, 0.98527, 0.993673, 1)
+light_energy = 0.5
+shadow_enabled = true
 directional_shadow_mode = 0
 
 [node name="Player" parent="." instance=ExtResource("1_btuhc")]
 isPlayerActive = true
+
+[node name="SpotLight3D" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.0432532, 0.999064, 0, -0.999064, 0.0432532, 0, 5.96759, -0.303041)
+light_color = Color(1, 1, 0.807843, 1)
+light_energy = 3.0
+shadow_enabled = true
+spot_range = 20.0
+spot_angle = 70.0
+spot_angle_attenuation = 0.250001

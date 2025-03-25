@@ -12,7 +12,7 @@ public partial class ALPlayer : Player
 
     new ALBoard board;
     new ALHand hand;
-    Node3D costArea;
+    Node3D costArea, durabilityArea;
     ALCard deckNode, cubeDeckNode, flagshipNode;
 
     EALTurnPhase currentPhase = EALTurnPhase.Reset;
@@ -22,6 +22,7 @@ public partial class ALPlayer : Player
         hand = GetNode<ALHand>("Hand");
         board = GetNode<ALBoard>("Board");
         costArea = board.GetNode<Node3D>("CostArea");
+        durabilityArea = board.GetNode<Node3D>("FlagshipDurability");
         InitializeEvents();
 
         database.LoadData();
@@ -36,6 +37,9 @@ public partial class ALPlayer : Player
         hand.OnPlayCardStart -= OnPlayCardStartHandler; // Unload default event
         hand.OnPlayCardStart -= OnCostPlayCardStartHandler;
         hand.OnPlayCardStart += OnCostPlayCardStartHandler;
+        board.OnPlaceCardCancel -= OnPlaceCardCancelHandler; // Unload default event
+        board.OnPlaceCardCancel -= OnCostPlaceCardCancelHandler;
+        board.OnPlaceCardCancel += OnCostPlaceCardCancelHandler;
         GD.Print("[InitializeEvents] ALPlayer events initialized");
     }
 
@@ -46,7 +50,7 @@ public partial class ALPlayer : Player
         Flagship = database.cards["SD01-001"];
 
         // Deck
-        List<string> availableDeckKeys = new() {
+        List<string> availableDeckKeys = [
             "SD01-002",
             "SD01-003",
             "SD01-004",
@@ -54,7 +58,7 @@ public partial class ALPlayer : Player
             "SD01-006",
             "SD01-007",
             "SD01-008"
-        };
+        ];
         for (int i = 0; i < 50; i++)
         {
             Deck.Add(database.cards[availableDeckKeys.GetRandKey()]);
@@ -72,27 +76,24 @@ public partial class ALPlayer : Player
     {
         SetPlayState(EPlayState.Wait);
         BuildDeck();
-        hand.SelectCardField(Vector2I.Zero);
 
         // Deck setup
-        board.SelectCardField(new Vector2I(3, 1)); // Deck position
-        deckNode = board.GetSelectedCard();
+        deckNode = board.GetCardInPosition(new Vector2I(3, 1)); // Deck position
         deckNode.CardStack = Deck.Count; // Set it as deck size
         deckNode.UpdateAttributes(Deck[0]);
         // CubeDeck setup
-        board.SelectCardField(new Vector2I(-1, 2)); // Cube deck position
-        cubeDeckNode = board.GetSelectedCard();
+        cubeDeckNode = board.GetCardInPosition(new Vector2I(-1, 2)); // Cube deck position
         cubeDeckNode.CardStack = CubeDeck.Count; // Set it as deck size
         cubeDeckNode.UpdateAttributes(CubeDeck[0]);
         // Flagship setup
-        board.SelectCardField(Vector2I.One); // Flagship position
-        flagshipNode = board.GetSelectedCard();
+        flagshipNode = board.GetCardInPosition(Vector2I.One); // Flagship position
         flagshipNode.UpdateAttributes(Flagship);
 
         // Player preparation
         SelectBoard(hand);
+        hand.SelectCardField(Vector2I.Zero);
         DrawCardToHand(5);
-
+        ApplyFlagshipDurability(); // Manual says that this step is after drawing hand cards
 
         StartTurn();
     }
@@ -171,26 +172,39 @@ public partial class ALPlayer : Player
         ApplyPhase(nextPhase);
     }
 
+
     void DrawCardToHand(int num = 1)
     {
         for (int i = 0; i < num; i++)
         {
-            ALCardDTO cardToDraw = DrawCard(Deck);
+            ALCardDTO cardToDraw = DrawCard(Deck, deckNode);
             hand.AddCardToHand(cardToDraw);
-            UpdateDeckStackSize(deckNode, Deck.Count);
         }
+    }
+
+    void ApplyFlagshipDurability()
+    {
+        int durability = flagshipNode.GetAttributes().durability;
+        List<ALCard> durabilityList = durabilityArea.TryGetAllChildOfType<ALCard>();
+        for (int i = 0; i < durability; i++)
+        {
+            ALCardDTO cardToDraw = DrawCard(Deck, deckNode);
+            durabilityList[i].UpdateAttributes(cardToDraw);
+        }
+
     }
 
     void TryDrawCubeToBoard()
     {
         try
         {
-            ALCardDTO cardToDraw = DrawCard(CubeDeck);
+            ALCardDTO cardToDraw = DrawCard(CubeDeck, cubeDeckNode);
             Card cubeField = PlayerBoard.FindLastEmptyFieldInRow(
-                board.GetNode("CostArea").TryGetAllChildOfType<Card>());
-            board.SelectCardField(cubeField.PositionInBoard);
-            board.SelectedCard.UpdateAttributes(cardToDraw);
-            UpdateDeckStackSize(cubeDeckNode, CubeDeck.Count);
+                costArea.TryGetAllChildOfType<Card>()
+            );
+            board
+                .GetCardInPosition(cubeField.PositionInBoard)
+                .UpdateAttributes(cardToDraw);
         }
         catch (Exception e)
         {
@@ -206,6 +220,7 @@ public partial class ALPlayer : Player
     }
 
     List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
+    List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
 
     // Events
     void OnCostPlayCardStartHandler(Card cardToPlay)
@@ -223,7 +238,6 @@ public partial class ALPlayer : Player
         }
 
         ALCardDTO attributes = card.GetAttributes();
-        GD.Print(attributes.name);
 
         var activeCubes = GetActiveCubesInBoard();
 
@@ -243,6 +257,26 @@ public partial class ALPlayer : Player
         OnPlayCardStartHandler(card);
     }
 
+    void OnCostPlaceCardCancelHandler(Card cardToRestore)
+    {
+        if (cardToRestore is not ALCard card)
+        {
+            GD.PrintErr($"[OnCostPlayCardStartHandler] Cannot play a card not belonging to AzurLane TCG, {cardToRestore.Name} is {cardToRestore.GetType()} ");
+            return;
+        }
+
+        ALCardDTO attributes = card.GetAttributes();
+        List<ALCard> cubes = GetCubesInBoard();
+        GD.Print($"[OnCostPlayCardCancelHandler] Clearing cost");
+
+        for (int i = 0; i < attributes.cost; i++)
+        {
+            cubes[cubes.Count - 1 - i].SetIsInActiveState(true); // Last match
+        }
+
+        OnPlaceCardCancelHandler(card);
+    }
+
     void OnCardTriggerHandler(Card card)
     {
         if (card is ALPhaseButton)
@@ -252,12 +286,18 @@ public partial class ALPlayer : Player
         }
     }
 
-    void UpdateDeckStackSize(ALCard deck, int size)
+    static ALCardDTO DrawCard(List<ALCardDTO> deck, ALCard relatedField)
+    {
+        var res = Player.DrawCard(deck);
+        UpdateDeckStackSize(relatedField, deck.Count);
+        return res;
+    }
+
+    static void UpdateDeckStackSize(ALCard deck, int size)
     {
         deck.CardStack = size;
         if (deck.CardStack == 0) deck.IsEmptyField = true;
     }
-
 }
 
 public enum EALTurnPhase
