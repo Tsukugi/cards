@@ -1,6 +1,7 @@
 
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
 using Newtonsoft.Json;
@@ -39,10 +40,10 @@ public static class NodeUtils
         return typedChildren;
     }
 
-    public static async System.Threading.Tasks.Task Wait(this Node caller, float seconds, System.Action callback = null)
+    public static async Task Wait(this Node caller, float seconds, Action callback = null)
     {
         await caller.ToSignal(caller.GetTree().CreateTimer(seconds), "timeout");
-        if (callback is System.Action onTimeout) onTimeout();
+        if (callback is Action onTimeout) onTimeout();
     }
 
     public static T ConvertObject<T>(object M) where T : class

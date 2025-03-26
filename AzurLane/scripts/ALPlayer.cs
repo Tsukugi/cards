@@ -11,23 +11,38 @@ public partial class ALPlayer : Player
 
     new ALBoard board;
     new ALHand hand;
+    Control control;
+    Label phaseLabel;
     Node3D costArea, durabilityArea, unitsArea;
     ALCard deckNode, cubeDeckNode, flagshipNode, retreatNode;
+
+    AsyncHandler asyncPhase;
+
+    readonly ALPhase phase = new();
 
     EALTurnPhase currentPhase = EALTurnPhase.Reset;
     public override void _Ready()
     {
         base._Ready();
+        asyncPhase = new(this);
         hand = GetNode<ALHand>("Hand");
         board = GetNode<ALBoard>("Board");
         costArea = board.GetNode<Node3D>("CostArea");
         unitsArea = board.GetNode<Node3D>("Units");
+        control = GetNode<Control>("Control");
+        phaseLabel = GetNode<Label>("Control/PhaseLabel");
         durabilityArea = board.GetNode<Node3D>("FlagshipDurability");
         InitializeEvents();
 
         database.LoadData();
 
         Callable.From(StartGameForPlayer).CallDeferred();
+    }
+
+    public override void _Process(double delta)
+    {
+        base._Process(delta);
+        phaseLabel.Text = phase.GetPhaseByIndex((int)currentPhase);
     }
 
     protected new void InitializeEvents()
@@ -111,21 +126,19 @@ public partial class ALPlayer : Player
     }
     void PlayResetPhase()
     {
-        // Reset all Units into active state
-        GD.Print($"[PlayResetPhase]");
         currentPhase = EALTurnPhase.Reset;
+
+        // Reset all Units into active state
         SetBoardCardsAsActive();
-        PlayNextPhase(currentPhase);
+        asyncPhase.AwaitBefore(PlayNextPhase);
     }
     void PlayPreparationPhase()
     {
         // Draw 1 card
         // Place 1 face up cube if possible
-        GD.Print($"[PlayPreparationPhase]");
-        currentPhase = EALTurnPhase.Preparation;
         TryDrawCubeToBoard();
         DrawCardToHand();
-        PlayNextPhase(currentPhase);
+        PlayNextPhase();
     }
     void PlayMainPhase()
     {
@@ -147,8 +160,7 @@ public partial class ALPlayer : Player
     {
         // Clean some things
         GD.Print($"[PlayEndPhase]");
-        currentPhase = EALTurnPhase.End;
-        EndTurn();
+        asyncPhase.AwaitBefore(EndTurn);
     }
 
     void EndTurn()
@@ -169,13 +181,16 @@ public partial class ALPlayer : Player
         }
     }
 
-    async void PlayNextPhase(EALTurnPhase currentPhase)
+    void PlayNextPhase()
     {
-        await this.Wait(0.2f);
         EALTurnPhase nextPhase = currentPhase + 1;
-        if (nextPhase > EALTurnPhase.End) return;
-
-        ApplyPhase(nextPhase);
+        if (nextPhase > EALTurnPhase.End)
+        {
+            GD.PrintErr($"[PlayNextPhase] Trying to play next phase on End phase already!");
+            return;
+        }
+        currentPhase = nextPhase;
+        asyncPhase.AwaitBefore(() => ApplyPhase(nextPhase));
     }
 
 
@@ -243,8 +258,8 @@ public partial class ALPlayer : Player
     {
         if (card is ALPhaseButton)
         {
-            if (currentPhase == EALTurnPhase.Main) PlayNextPhase(currentPhase);
-            if (currentPhase == EALTurnPhase.Battle) PlayNextPhase(currentPhase);
+            if (currentPhase == EALTurnPhase.Main) asyncPhase.Debounce(PlayNextPhase);
+            if (currentPhase == EALTurnPhase.Battle) asyncPhase.Debounce(PlayNextPhase);
         }
     }
 

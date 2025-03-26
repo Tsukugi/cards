@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://dp7bqacq615oo"]
+[gd_scene load_steps=9 format=3 uid="uid://dp7bqacq615oo"]
 
 [ext_resource type="Script" uid="uid://u4loqtnkjdnn" path="res://AzurLane/scripts/ALCard.cs" id="1_hunl0"]
 [ext_resource type="BoxMesh" uid="uid://dn563cjoh3wan" path="res://Material/cardBack.tres" id="2_2htw4"]
+[ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="2_y1cnb"]
 [ext_resource type="BoxMesh" uid="uid://m6c665niqt0s" path="res://Material/cardFront.tres" id="3_l2p5i"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hunl0"]
@@ -21,6 +22,26 @@ material = SubResource("StandardMaterial3D_vvt6y")
 
 [node name="Card" type="Node3D"]
 script = ExtResource("1_hunl0")
+
+[node name="PowerLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -1, 0.4, 2.5)
+modulate = Color(0.977595, 0.981628, 1, 1)
+outline_modulate = Color(0.339605, 0.542632, 1, 1)
+text = "1000
+"
+font = ExtResource("2_y1cnb")
+font_size = 120
+outline_size = 50
+
+[node name="StackCount" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 1.099, 0.2, 3.569)
+modulate = Color(0.977595, 0.981628, 1, 1)
+outline_modulate = Color(0.339605, 0.542632, 1, 1)
+text = "50
+"
+font = ExtResource("2_y1cnb")
+font_size = 150
+outline_size = 50
 
 [node name="CardDisplay" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
@@ -43,12 +64,3 @@ mesh = SubResource("BoxMesh_hunl0")
 transform = Transform3D(4.519, 0, 0, 0, 0.119382, 0, 0, 0, 6.59531, 0, 0, 0)
 mesh = SubResource("BoxMesh_liovy")
 skeleton = NodePath("../..")
-
-[node name="PowerLabel" type="Label3D" parent="CardDisplay"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -1, 0.2, 2.5)
-modulate = Color(0.977595, 0.981628, 1, 1)
-outline_modulate = Color(0.339605, 0.542632, 1, 1)
-text = "1000
-"
-font_size = 120
-outline_size = 50

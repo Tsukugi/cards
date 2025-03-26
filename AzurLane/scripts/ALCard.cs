@@ -2,7 +2,7 @@ using Godot;
 
 public partial class ALCard : Card
 {
-    Label3D powerLabel;
+    Label3D powerLabel, stackCount;
     [Export]
     // Useful to differentiate from playable cards - ALTCG Gameplay: Cubes and Durability are resources
     bool isResource = false;
@@ -13,16 +13,34 @@ public partial class ALCard : Card
     public override void _Ready()
     {
         base._Ready();
-        powerLabel = GetNodeOrNull<Label3D>("CardDisplay/PowerLabel");
+        powerLabel = GetNodeOrNull<Label3D>("PowerLabel");
+        stackCount = GetNodeOrNull<Label3D>("StackCount");
         UpdateAttributes<ALCardDTO>(new()); // ! HACK, I Do this to force a ALCardDTO attributes
     }
 
     protected override void OnFieldStateChangeHandler()
     {
         base.OnFieldStateChangeHandler();
-        if (powerLabel is not null) powerLabel.Visible = CanShowPowerLabel();
+        if (powerLabel is not null)
+        {
+            bool isShown = CanShowPowerLabel();
+            powerLabel.Visible = isShown;
+            if (isShown)
+            {
+                var attrs = GetAttributes<ALCardDTO>();
+                powerLabel.Text = attrs.power.ToString();
+            }
+        }
+
+        if (stackCount is not null)
+        {
+            bool isShown = CanShowStackCount();
+            stackCount.Visible = isShown;
+            if (isShown) stackCount.Text = CardStack.ToString();
+        }
     }
 
+    bool CanShowStackCount() => !IsEmptyField && CardStack > 1;
     bool CanShowPowerLabel() => !IsEmptyField && !isResource && !isDeck;
 
     public void SetIsInActiveState(bool isActive)

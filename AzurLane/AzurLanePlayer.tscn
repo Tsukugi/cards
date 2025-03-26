@@ -1,8 +1,21 @@
-[gd_scene load_steps=4 format=3 uid="uid://s57i3tk6c7m0"]
+[gd_scene load_steps=8 format=3 uid="uid://s57i3tk6c7m0"]
 
 [ext_resource type="Script" uid="uid://biyxii1wtj4x7" path="res://AzurLane/scripts/ALPlayer.cs" id="1_vpce2"]
 [ext_resource type="PackedScene" uid="uid://dhr0v03l7g4a7" path="res://AzurLane/AzurLaneBoard.tscn" id="2_1wl4u"]
 [ext_resource type="Script" uid="uid://lhhhy72pnqs7" path="res://AzurLane/scripts/ALHand.cs" id="3_vpce2"]
+[ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="4_p865k"]
+
+[sub_resource type="Sky" id="Sky_p865k"]
+
+[sub_resource type="Environment" id="Environment_6ma6x"]
+background_mode = 2
+sky = SubResource("Sky_p865k")
+
+[sub_resource type="LabelSettings" id="LabelSettings_vpce2"]
+font = ExtResource("4_p865k")
+font_size = 70
+outline_size = 50
+outline_color = Color(0.302763, 0.731598, 0.896643, 1)
 
 [node name="AzurLanePlayer" type="Node3D"]
 script = ExtResource("1_vpce2")
@@ -16,4 +29,27 @@ BoardPositionInGrid = Vector2i(0, 1)
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 25, 30)
+environment = SubResource("Environment_6ma6x")
 fov = 45.0
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PhaseLabel" type="Label" parent="Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -463.0
+offset_top = 18.0
+offset_right = -29.0
+offset_bottom = 223.0
+grow_horizontal = 0
+text = "Phase"
+label_settings = SubResource("LabelSettings_vpce2")
+horizontal_alignment = 2
