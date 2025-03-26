@@ -64,7 +64,7 @@ public partial class PlayerBoard : Board
         CardToPlay = null;
     }
 
-    public void PlaceCardInBoardFromHand(Card cardToPlace)
+    public virtual void PlaceCardInBoardFromHand(Card cardToPlace)
     {
         Card selectedCard = GetSelectedCard<Card>();
         if (!selectedCard.CanPlayerPlaceInThisField())

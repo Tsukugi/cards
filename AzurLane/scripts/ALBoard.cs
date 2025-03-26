@@ -5,8 +5,7 @@ public partial class ALBoard : PlayerBoard
 {
     protected new PackedScene cardTemplate = GD.Load<PackedScene>("AzurLane/AzurLaneCard.tscn");
 
-
-    public new void PlaceCardInBoardFromHand(Card cardToPlace)
+    public override void PlaceCardInBoardFromHand(Card cardToPlace)
     {
         ALCard card = cardToPlace.CastToALCard();
         base.PlaceCardInBoardFromHand(cardToPlace);

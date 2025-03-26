@@ -18,8 +18,6 @@ public partial class Card : CardField
     public override void _Ready()
     {
         board = this.TryFindParentNodeOfType<Board>();
-        board.OnClearSelection -= OnUnselectCardHandler;
-        board.OnClearSelection += OnUnselectCardHandler;
         board.OnSelectCardPosition -= OnSelectCardPositionHandler;
         board.OnSelectCardPosition += OnSelectCardPositionHandler;
         cardDisplay = GetNode<Node3D>("CardDisplay");
@@ -29,6 +27,14 @@ public partial class Card : CardField
         side = GetNodeOrNull<MeshInstance3D>("CardDisplay/Side");
         SetIsFaceDown(isFaceDown);
         SetIsSideWays(isSideWays);
+    }
+
+
+    public override void _Process(double delta)
+    {
+        OnSelectHandler(isSelected);
+        OnFieldStateChangeHandler();
+        cardDisplay.Scale = cardDisplay.Scale.WithY(CardStack);
     }
 
     void OnSelectCardPositionHandler(Vector2I position, OnProvidedCardEvent cardCallback)
@@ -41,25 +47,13 @@ public partial class Card : CardField
             cardCallback(this);
         }
     }
-    void OnUnselectCardHandler()
-    {
-        SetIsSelected(false);
-    }
-
-    public override void _Process(double delta)
-    {
-        OnSelectHandler(isSelected);
-        OnFieldStateChangeHandler();
-        cardDisplay.Scale = cardDisplay.Scale.WithY(CardStack);
-    }
-
 
     void OnSelectHandler(bool isSelected)
     {
         if (selectedIndicator is not null) selectedIndicator.Visible = isSelected && board.IsBoardActive;
     }
 
-    void OnFieldStateChangeHandler()
+    protected virtual void OnFieldStateChangeHandler()
     {
         if (front is not null) front.Visible = !IsEmptyField;
         if (back is not null) back.Visible = !IsEmptyField;

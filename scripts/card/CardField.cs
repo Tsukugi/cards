@@ -5,6 +5,9 @@ public partial class CardField : Node3D
     [Export]
     // Gameplay: A board/hand can know which card is selected via this flag.
     protected bool isSelected = false;
+    [Export]
+    // Gameplay: A deck can be identified with this flag
+    protected bool isDeck = false;
 
     [Export]
     public Vector2I PositionInBoard = new(); // Position used to track and identify it in board

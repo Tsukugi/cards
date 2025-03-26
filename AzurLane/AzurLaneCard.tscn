@@ -43,3 +43,12 @@ mesh = SubResource("BoxMesh_hunl0")
 transform = Transform3D(4.519, 0, 0, 0, 0.119382, 0, 0, 0, 6.59531, 0, 0, 0)
 mesh = SubResource("BoxMesh_liovy")
 skeleton = NodePath("../..")
+
+[node name="PowerLabel" type="Label3D" parent="CardDisplay"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -1, 0.2, 2.5)
+modulate = Color(0.977595, 0.981628, 1, 1)
+outline_modulate = Color(0.339605, 0.542632, 1, 1)
+text = "1000
+"
+font_size = 120
+outline_size = 50
