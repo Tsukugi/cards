@@ -19,22 +19,8 @@ shadow_enabled = true
 directional_shadow_mode = 0
 
 [node name="Player" parent="." instance=ExtResource("1_btuhc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 12.5)
 isPlayerActive = true
 
-[node name="SpotLight3D" type="SpotLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -0.11934, 0.992853, 0, -0.992853, -0.11934, 0, 6.14471, -4.39417)
-light_color = Color(1, 1, 0.807843, 1)
-light_energy = 6.0
-shadow_enabled = true
-spot_range = 20.0
-spot_angle = 70.0
-spot_angle_attenuation = 0.250001
-
-[node name="SpotLight3D2" type="SpotLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.0432532, 0.999064, 0, -0.999064, 0.0432532, 0, 7.92927, 17.5729)
-light_color = Color(1, 1, 0.807843, 1)
-light_energy = 5.0
-shadow_enabled = true
-spot_range = 20.0
-spot_angle = 70.0
-spot_angle_attenuation = 0.250001
+[node name="Player2" parent="." instance=ExtResource("1_btuhc")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, -12.5)

@@ -23,7 +23,9 @@ material = SubResource("StandardMaterial3D_vvt6y")
 [node name="Card" type="Node3D"]
 script = ExtResource("1_hunl0")
 
-[node name="PowerLabel" type="Label3D" parent="."]
+[node name="UI" type="Node3D" parent="."]
+
+[node name="PowerLabel" type="Label3D" parent="UI"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -1, 0.4, 2.5)
 modulate = Color(0.977595, 0.981628, 1, 1)
 outline_modulate = Color(0.339605, 0.542632, 1, 1)
@@ -33,7 +35,7 @@ font = ExtResource("2_y1cnb")
 font_size = 120
 outline_size = 50
 
-[node name="StackCount" type="Label3D" parent="."]
+[node name="StackCount" type="Label3D" parent="UI"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 1.099, 0.2, 3.569)
 modulate = Color(0.977595, 0.981628, 1, 1)
 outline_modulate = Color(0.339605, 0.542632, 1, 1)

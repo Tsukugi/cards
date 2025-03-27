@@ -8,6 +8,8 @@ public partial class Card : CardField
     protected MeshInstance3D front = null, back = null, side = null;
     protected Board board;
 
+    Resource cardImage, cardBackImage;
+
     [Export]
     bool isFaceDown = false;
     [Export]
@@ -60,6 +62,7 @@ public partial class Card : CardField
         if (side is not null) side.Visible = !IsEmptyField;
     }
 
+    public bool GetIsFaceDown() => isFaceDown;
     public void SetIsFaceDown(bool value)
     {
         isFaceDown = value;
@@ -81,25 +84,32 @@ public partial class Card : CardField
         if (attributes.imageSrc is not null)
         {
             IsEmptyField = false;
-            UpdateImageTexture(front, newCardDTO.imageSrc);
+            cardImage = LoadCardImage(newCardDTO.imageSrc);
+            UpdateImageTexture(front, (CompressedTexture2D)cardImage);
         }
         if (attributes.backImageSrc is not null)
         {
             IsEmptyField = false;
-            UpdateImageTexture(back, newCardDTO.backImageSrc);
+            cardBackImage = LoadCardImage(newCardDTO.backImageSrc);
+            UpdateImageTexture(back, (CompressedTexture2D)cardBackImage);
         }
         GD.Print($"[Card.UpdateAttributes] {attributes.name}");
     }
 
-    protected void UpdateImageTexture(MeshInstance3D target, string path)
+    Resource LoadCardImage(string path)
+    {
+        return GD.Load($"{resourcePath}{path}");
+    }
+
+    protected void UpdateImageTexture(MeshInstance3D target, CompressedTexture2D texture)
     {
         var material = target.GetActiveMaterial(0).Duplicate(); // I wanna break the reference on the prefab
         if (material is StandardMaterial3D material3D)
         {
-            var texture = GD.Load($"{resourcePath}{path}");
-            material3D.AlbedoTexture = (CompressedTexture2D)texture;
+            material3D.AlbedoTexture = texture;
             target.SetSurfaceOverrideMaterial(0, material3D);
         }
     }
 
+    public Resource GetCardImageResource() => isFaceDown ? cardBackImage : cardImage;
 }

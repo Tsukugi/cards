@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://s57i3tk6c7m0"]
+[gd_scene load_steps=9 format=3 uid="uid://s57i3tk6c7m0"]
 
 [ext_resource type="Script" uid="uid://biyxii1wtj4x7" path="res://AzurLane/scripts/ALPlayer.cs" id="1_vpce2"]
 [ext_resource type="PackedScene" uid="uid://dhr0v03l7g4a7" path="res://AzurLane/AzurLaneBoard.tscn" id="2_1wl4u"]
 [ext_resource type="Script" uid="uid://lhhhy72pnqs7" path="res://AzurLane/scripts/ALHand.cs" id="3_vpce2"]
 [ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="4_p865k"]
+[ext_resource type="Texture2D" uid="uid://5g3o4xkut2ou" path="res://AzurLane/res/SD01-001B.png" id="5_6ma6x"]
 
 [sub_resource type="Sky" id="Sky_p865k"]
 
@@ -23,14 +24,15 @@ script = ExtResource("1_vpce2")
 [node name="Board" parent="." instance=ExtResource("2_1wl4u")]
 
 [node name="Hand" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.866025, -0.5, 0, 0.5, 0.866025, 0, 3, 17)
+transform = Transform3D(1, 0, 0, 0, 0.866025, -0.5, 0, 0.5, 0.866025, 0, 3.5, 11)
 script = ExtResource("3_vpce2")
 BoardPositionInGrid = Vector2i(0, 1)
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 25, 30)
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 26.0031, 23.8808)
 environment = SubResource("Environment_6ma6x")
 fov = 45.0
+near = 0.2
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
@@ -45,11 +47,43 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -463.0
+offset_left = -636.0
 offset_top = 18.0
 offset_right = -29.0
-offset_bottom = 223.0
+offset_bottom = 113.0
 grow_horizontal = 0
 text = "Phase"
 label_settings = SubResource("LabelSettings_vpce2")
 horizontal_alignment = 2
+
+[node name="SelectedCardInfo" type="Panel" parent="Control"]
+layout_mode = 0
+offset_right = 524.0
+offset_bottom = 710.0
+
+[node name="SelectedCardImage" type="TextureRect" parent="Control/SelectedCardInfo"]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 26.0
+offset_right = 489.0
+offset_bottom = 664.0
+texture = ExtResource("5_6ma6x")
+expand_mode = 1
+
+[node name="SpotLight3D" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.11934, 0.992853, 0, -0.992853, -0.11934, 0, 6.14471, -4.39417)
+light_color = Color(1, 1, 0.807843, 1)
+light_energy = 6.0
+shadow_enabled = true
+spot_range = 20.0
+spot_angle = 70.0
+spot_angle_attenuation = 0.250001
+
+[node name="SpotLight3D2" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.0432532, 0.999064, 0, -0.999064, 0.0432532, 0, 7.92927, 17.5729)
+light_color = Color(1, 1, 0.807843, 1)
+light_energy = 5.0
+shadow_enabled = true
+spot_range = 20.0
+spot_angle = 70.0
+spot_angle_attenuation = 0.250001

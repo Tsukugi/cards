@@ -15,6 +15,8 @@ public partial class ALPlayer : Player
     Label phaseLabel;
     Node3D costArea, durabilityArea, unitsArea;
     ALCard deckNode, cubeDeckNode, flagshipNode, retreatNode;
+    TextureRect selectedCardImage;
+    Panel selectedCardInfo;
 
     AsyncHandler asyncPhase;
 
@@ -29,9 +31,11 @@ public partial class ALPlayer : Player
         board = GetNode<ALBoard>("Board");
         costArea = board.GetNode<Node3D>("CostArea");
         unitsArea = board.GetNode<Node3D>("Units");
+        durabilityArea = board.GetNode<Node3D>("FlagshipDurability");
         control = GetNode<Control>("Control");
         phaseLabel = GetNode<Label>("Control/PhaseLabel");
-        durabilityArea = board.GetNode<Node3D>("FlagshipDurability");
+        selectedCardInfo = GetNode<Panel>("Control/SelectedCardInfo");
+        selectedCardImage = GetNode<TextureRect>("Control/SelectedCardInfo/SelectedCardImage");
         InitializeEvents();
 
         database.LoadData();
@@ -43,6 +47,20 @@ public partial class ALPlayer : Player
     {
         base._Process(delta);
         phaseLabel.Text = phase.GetPhaseByIndex((int)currentPhase);
+
+        if (selectedBoard.GetSelectedCard<ALCard>() is ALCard selectedCard)
+        {
+            bool CanShowCardDetailsUI = selectedCard.CanShowCardDetailsUI();
+            selectedCardInfo.Visible = CanShowCardDetailsUI;
+            if (CanShowCardDetailsUI)
+            {
+                selectedCardImage.Texture = (Texture2D)selectedCard.GetCardImageResource();
+            }
+        }
+        else
+        {
+            selectedCardInfo.Visible = false;
+        }
     }
 
     protected new void InitializeEvents()

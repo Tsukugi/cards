@@ -13,8 +13,8 @@ public partial class ALCard : Card
     public override void _Ready()
     {
         base._Ready();
-        powerLabel = GetNodeOrNull<Label3D>("PowerLabel");
-        stackCount = GetNodeOrNull<Label3D>("StackCount");
+        powerLabel = GetNodeOrNull<Label3D>("UI/PowerLabel");
+        stackCount = GetNodeOrNull<Label3D>("UI/StackCount");
         UpdateAttributes<ALCardDTO>(new()); // ! HACK, I Do this to force a ALCardDTO attributes
     }
 
@@ -40,8 +40,9 @@ public partial class ALCard : Card
         }
     }
 
-    bool CanShowStackCount() => !IsEmptyField && CardStack > 1;
-    bool CanShowPowerLabel() => !IsEmptyField && !isResource && !isDeck;
+    public bool CanShowStackCount() => !IsEmptyField && CardStack > 1;
+    public bool CanShowCardDetailsUI() => !IsEmptyField && !isDeck && !(GetAttributes<ALCardDTO>().type != "Flagship" && GetIsFaceDown());
+    public bool CanShowPowerLabel() => !IsEmptyField && !isResource && !isDeck;
 
     public void SetIsInActiveState(bool isActive)
     {
