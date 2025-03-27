@@ -9,20 +9,25 @@ public partial class ALPlayer : Player
     public ALCardDTO Flagship = new();
     readonly ALDatabase database = new();
 
+    // --- Nodes --- 
     new ALBoard board;
     new ALHand hand;
-    Control control;
-    Label phaseLabel;
     Node3D costArea, durabilityArea, unitsArea;
     ALCard deckNode, cubeDeckNode, flagshipNode, retreatNode;
-    TextureRect selectedCardImage;
+
+    // --- State ---
+    EALTurnPhase currentPhase = EALTurnPhase.Reset;
+
+    // --- UI --- 
+    Control control;
     Panel selectedCardInfo;
+    Label phaseLabel, selectedCardNameLabel;
+    TextureRect selectedCardImage;
 
+    // --- Phase ---
     AsyncHandler asyncPhase;
-
     readonly ALPhase phase = new();
 
-    EALTurnPhase currentPhase = EALTurnPhase.Reset;
     public override void _Ready()
     {
         base._Ready();
@@ -36,6 +41,10 @@ public partial class ALPlayer : Player
         phaseLabel = GetNode<Label>("Control/PhaseLabel");
         selectedCardInfo = GetNode<Panel>("Control/SelectedCardInfo");
         selectedCardImage = GetNode<TextureRect>("Control/SelectedCardInfo/SelectedCardImage");
+        selectedCardNameLabel = GetNode<Label>("Control/SelectedCardInfo/NamePanel/NameLabel");
+
+        selectedCardInfo.Visible = isControlledPlayer; // Hide it if not the controlled player
+
         InitializeEvents();
 
         database.LoadData();
@@ -45,6 +54,7 @@ public partial class ALPlayer : Player
 
     public override void _Process(double delta)
     {
+        if (!isControlledPlayer) return;
         base._Process(delta);
         phaseLabel.Text = phase.GetPhaseByIndex((int)currentPhase);
 
@@ -55,6 +65,7 @@ public partial class ALPlayer : Player
             if (CanShowCardDetailsUI)
             {
                 selectedCardImage.Texture = (Texture2D)selectedCard.GetCardImageResource();
+                selectedCardNameLabel.Text = selectedCard.GetAttributes<ALCardDTO>().name;
             }
         }
         else
@@ -164,7 +175,6 @@ public partial class ALPlayer : Player
         GD.Print($"[PlayMainPhase]");
         currentPhase = EALTurnPhase.Main;
         SelectBoard(hand);
-        hand.SelectCardField(Vector2I.Zero);
         SetPlayState(EPlayState.Select);
     }
     void PlayBattlePhase()

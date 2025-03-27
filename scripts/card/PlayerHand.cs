@@ -9,9 +9,20 @@ public partial class PlayerHand : Board
     public event PlayCardEventHandler OnPlayCardStart;
     public event BoardEdgeEvent OnEdgeBoardRequest;
 
+    [Export]
+    Vector3 positionOffsetWhenInactive = new();
+    Vector3 originalPosition = new();
+
+    public override void _Ready()
+    {
+        base._Ready();
+        originalPosition = Position;
+    }
 
     public override void _Process(double delta)
     {
+        if (!player.GetIsControllerPlayer()) return;
+        Position = isBoardActive ? originalPosition : originalPosition + positionOffsetWhenInactive;
         if (!isBoardActive) return;
         Vector2I axis = axisInputHandler.GetAxis();
         OnAxisChangeHandler(axis);

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://s57i3tk6c7m0"]
+[gd_scene load_steps=10 format=3 uid="uid://s57i3tk6c7m0"]
 
 [ext_resource type="Script" uid="uid://biyxii1wtj4x7" path="res://AzurLane/scripts/ALPlayer.cs" id="1_vpce2"]
 [ext_resource type="PackedScene" uid="uid://dhr0v03l7g4a7" path="res://AzurLane/AzurLaneBoard.tscn" id="2_1wl4u"]
@@ -12,11 +12,17 @@
 background_mode = 2
 sky = SubResource("Sky_p865k")
 
+[sub_resource type="LabelSettings" id="LabelSettings_6ma6x"]
+font = ExtResource("4_p865k")
+font_size = 50
+outline_size = 30
+outline_color = Color(0.458467, 0.454503, 0.443725, 1)
+
 [sub_resource type="LabelSettings" id="LabelSettings_vpce2"]
 font = ExtResource("4_p865k")
-font_size = 70
-outline_size = 50
-outline_color = Color(0.302763, 0.731598, 0.896643, 1)
+font_size = 20
+outline_size = 4
+outline_color = Color(0.649063, 0.677992, 0.718958, 1)
 
 [node name="AzurLanePlayer" type="Node3D"]
 script = ExtResource("1_vpce2")
@@ -26,6 +32,7 @@ script = ExtResource("1_vpce2")
 [node name="Hand" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.866025, -0.5, 0, 0.5, 0.866025, 0, 3.5, 11)
 script = ExtResource("3_vpce2")
+positionOffsetWhenInactive = Vector3(0, 0, 5)
 BoardPositionInGrid = Vector2i(0, 1)
 
 [node name="Camera3D" type="Camera3D" parent="."]
@@ -53,22 +60,46 @@ offset_right = -29.0
 offset_bottom = 113.0
 grow_horizontal = 0
 text = "Phase"
-label_settings = SubResource("LabelSettings_vpce2")
+label_settings = SubResource("LabelSettings_6ma6x")
 horizontal_alignment = 2
 
 [node name="SelectedCardInfo" type="Panel" parent="Control"]
 layout_mode = 0
-offset_right = 524.0
-offset_bottom = 710.0
+offset_right = 482.0
+offset_bottom = 646.0
 
 [node name="SelectedCardImage" type="TextureRect" parent="Control/SelectedCardInfo"]
 layout_mode = 0
 offset_left = 32.0
 offset_top = 26.0
-offset_right = 489.0
-offset_bottom = 664.0
+offset_right = 449.0
+offset_bottom = 615.0
 texture = ExtResource("5_6ma6x")
 expand_mode = 1
+
+[node name="NamePanel" type="Panel" parent="Control/SelectedCardInfo"]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 515.0
+offset_right = 431.0
+offset_bottom = 546.0
+
+[node name="NameLabel" type="Label" parent="Control/SelectedCardInfo/NamePanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -186.5
+offset_top = -13.5
+offset_right = 186.5
+offset_bottom = 13.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Name"
+label_settings = SubResource("LabelSettings_vpce2")
+horizontal_alignment = 1
 
 [node name="SpotLight3D" type="SpotLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.11934, 0.992853, 0, -0.992853, -0.11934, 0, 6.14471, -4.39417)
@@ -80,7 +111,7 @@ spot_angle = 70.0
 spot_angle_attenuation = 0.250001
 
 [node name="SpotLight3D2" type="SpotLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.0432532, 0.999064, 0, -0.999064, 0.0432532, 0, 7.92927, 17.5729)
+transform = Transform3D(1, 0, 0, 0, 0.517713, 0.855554, 0, -0.855554, 0.517713, 0, 7.92927, 17.5729)
 light_color = Color(1, 1, 0.807843, 1)
 light_energy = 5.0
 shadow_enabled = true

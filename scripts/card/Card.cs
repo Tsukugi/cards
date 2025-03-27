@@ -35,7 +35,7 @@ public partial class Card : CardField
     public override void _Process(double delta)
     {
         OnSelectHandler(isSelected);
-        OnFieldStateChangeHandler();
+        OnCardUpdateHandler();
         cardDisplay.Scale = cardDisplay.Scale.WithY(CardStack);
     }
 
@@ -55,7 +55,7 @@ public partial class Card : CardField
         if (selectedIndicator is not null) selectedIndicator.Visible = isSelected && board.IsBoardActive;
     }
 
-    protected virtual void OnFieldStateChangeHandler()
+    protected virtual void OnCardUpdateHandler()
     {
         if (front is not null) front.Visible = !IsEmptyField;
         if (back is not null) back.Visible = !IsEmptyField;

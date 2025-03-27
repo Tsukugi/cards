@@ -11,7 +11,7 @@ public partial class Player : Node3D
     public event SelectPlayerBoardEvent OnPlayerBoardSelect;
 
     [Export]
-    protected bool isPlayerActive = false;
+    protected bool isControlledPlayer = false;
     protected readonly AxisInputHandler axisInputHandler = new();
     protected readonly ActionInputHandler actionInputHandler = new();
     protected Board selectedBoard;
@@ -29,7 +29,7 @@ public partial class Player : Node3D
 
     public override void _Process(double delta)
     {
-        if (!isPlayerActive) return;
+        if (!isControlledPlayer) return;
         OnAxisChangeHandler(axisInputHandler.GetAxis());
     }
 
@@ -119,4 +119,5 @@ public partial class Player : Node3D
     }
 
     public EPlayState GetPlayState() => playState;
+    public bool GetIsControllerPlayer() => isControlledPlayer;
 }

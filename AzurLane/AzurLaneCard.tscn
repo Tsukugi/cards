@@ -14,8 +14,11 @@ material = SubResource("StandardMaterial3D_hunl0")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvt6y"]
 transparency = 1
-albedo_color = Color(0.356863, 0.509804, 1, 0.32549)
+albedo_color = Color(0.666667, 0.819608, 1, 0.611765)
 metallic = 0.63
+emission_enabled = true
+emission = Color(0.376471, 1, 1, 1)
+emission_operator = 1
 
 [sub_resource type="BoxMesh" id="BoxMesh_liovy"]
 material = SubResource("StandardMaterial3D_vvt6y")
@@ -26,9 +29,11 @@ script = ExtResource("1_hunl0")
 [node name="UI" type="Node3D" parent="."]
 
 [node name="PowerLabel" type="Label3D" parent="UI"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -1, 0.4, 2.5)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -1, 0.4, 2.6)
+billboard = 1
+texture_filter = 2
 modulate = Color(0.977595, 0.981628, 1, 1)
-outline_modulate = Color(0.339605, 0.542632, 1, 1)
+outline_modulate = Color(0.532629, 0.476042, 0.409763, 1)
 text = "1000
 "
 font = ExtResource("2_y1cnb")
@@ -36,7 +41,7 @@ font_size = 120
 outline_size = 50
 
 [node name="StackCount" type="Label3D" parent="UI"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 1.099, 0.2, 3.569)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 1, 0.2, 3.6)
 modulate = Color(0.977595, 0.981628, 1, 1)
 outline_modulate = Color(0.339605, 0.542632, 1, 1)
 text = "50
@@ -63,6 +68,6 @@ transform = Transform3D(4.17244, 0, 0, 0, 0.0488292, 0, 0, 0, 6.15213, 0, 0, 0)
 mesh = SubResource("BoxMesh_hunl0")
 
 [node name="SelectedIndicator" type="MeshInstance3D" parent="CardDisplay"]
-transform = Transform3D(4.519, 0, 0, 0, 0.119382, 0, 0, 0, 6.59531, 0, 0, 0)
+transform = Transform3D(4.519, 0, 0, 0, 0.0350453, 0, 0, 0, 6.59531, 0, 0, 0)
 mesh = SubResource("BoxMesh_liovy")
 skeleton = NodePath("../..")

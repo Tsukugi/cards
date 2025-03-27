@@ -12,7 +12,7 @@ public partial class PlayerBoard : Board
 
     public override void _Process(double delta)
     {
-        if (!isBoardActive) return;
+        if (!isBoardActive || !player.GetIsControllerPlayer()) return;
         OnAxisChangeHandler(axisInputHandler.GetAxis());
         OnActionHandler(actionInputHandler.GetAction());
     }

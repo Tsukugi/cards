@@ -105,5 +105,6 @@ public partial class Board : Node3D
         }
     }
 
+    public Player GetPlayer() => player;
     public T GetSelectedCard<T>() where T : Card => selectedCard as T;
 }
