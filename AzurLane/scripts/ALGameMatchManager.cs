@@ -16,8 +16,15 @@ public partial class ALGameMatchManager : Node
         {
             player.OnTurnEnd -= OnTurnEndHandler;
             player.OnTurnEnd += OnTurnEndHandler;
+            player.OnPhaseChange -= OnPhaseChangeHandler;
+            player.OnPhaseChange += OnPhaseChangeHandler;
         });
         StartTurn();
+    }
+
+    void OnPhaseChangeHandler(EALTurnPhase phase)
+    {
+        orderedPlayers.ForEach(player => player.SyncPhase(phase));
     }
 
     void OnTurnEndHandler()

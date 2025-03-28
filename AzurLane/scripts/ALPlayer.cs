@@ -5,7 +5,9 @@ using Godot;
 
 public partial class ALPlayer : Player
 {
+    public delegate void PhaseEvent(EALTurnPhase phase);
     public event Action OnTurnEnd;
+    public event PhaseEvent OnPhaseChange;
     List<ALCardDTO> Deck = [], CubeDeck = [], Retreat = [];
     ALCardDTO Flagship = new();
     readonly ALDatabase database = new();
@@ -24,6 +26,8 @@ public partial class ALPlayer : Player
 
     // --- State ---
     EALTurnPhase currentPhase = EALTurnPhase.Reset;
+    // State updated externally, represents the synched phase running between all players
+    EALTurnPhase synchedPhase = EALTurnPhase.Reset;
 
     // --- UI --- 
     Control control;
@@ -64,7 +68,7 @@ public partial class ALPlayer : Player
     {
         if (!isControlledPlayer) return;
         base._Process(delta);
-        phaseLabel.Text = phase.GetPhaseByIndex((int)currentPhase);
+        phaseLabel.Text = phase.GetPhaseByIndex((int)synchedPhase);
 
         if (selectedBoard.GetSelectedCard<ALCard>() is ALCard selectedCard)
         {
@@ -162,7 +166,7 @@ public partial class ALPlayer : Player
         // Reset all Units into active state
         GD.Print($"[${Name}.PlayResetPhase]");
         SetBoardCardsAsActive();
-        currentPhase = EALTurnPhase.Reset;
+        UpdatePhase(EALTurnPhase.Reset);
         asyncPhase.AwaitBefore(PlayNextPhase);
     }
     void PlayPreparationPhase()
@@ -172,7 +176,7 @@ public partial class ALPlayer : Player
         GD.Print($"[{Name}.PlayPreparationPhase]");
         TryDrawCubeToBoard();
         DrawCardToHand();
-        currentPhase = EALTurnPhase.Preparation;
+        UpdatePhase(EALTurnPhase.Preparation);
         PlayNextPhase();
     }
     void PlayMainPhase()
@@ -180,20 +184,20 @@ public partial class ALPlayer : Player
         // Player can play cards
         GD.Print($"[{Name}.PlayMainPhase]");
         SetPlayState(EPlayState.Select);
-        currentPhase = EALTurnPhase.Main;
+        UpdatePhase(EALTurnPhase.Main);
     }
     void PlayBattlePhase()
     {
         // Player can declare attacks
         GD.Print($"[{Name}.PlayBattlePhase]");
         SetPlayState(EPlayState.Select);
-        currentPhase = EALTurnPhase.Battle;
+        UpdatePhase(EALTurnPhase.Battle);
     }
     void PlayEndPhase()
     {
         // Clean some things
         GD.Print($"[{Name}.PlayEndPhase]");
-        currentPhase = EALTurnPhase.End;
+        UpdatePhase(EALTurnPhase.End);
         asyncPhase.AwaitBefore(EndTurn);
     }
 
@@ -380,6 +384,12 @@ public partial class ALPlayer : Player
     List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
 
+    void UpdatePhase(EALTurnPhase phase)
+    {
+        currentPhase = phase;
+        if (OnPhaseChange is not null) OnPhaseChange(phase);
+    }
+
     // Public Player Actions for AI 
     public void TriggerPhaseButton()
     {
@@ -390,6 +400,7 @@ public partial class ALPlayer : Player
         OnCardTriggerHandler(phaseButtonField);
     }
     public EALTurnPhase GetCurrentPhase() => currentPhase;
+    public EALTurnPhase SyncPhase(EALTurnPhase phase) => synchedPhase = phase;
 }
 
 public enum EALTurnPhase
