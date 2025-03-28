@@ -24,8 +24,13 @@ font_size = 20
 outline_size = 4
 outline_color = Color(0.649063, 0.677992, 0.718958, 1)
 
-[node name="AzurLanePlayer" type="Node3D"]
+[node name="AzurLanePlayer" type="Node3D" node_paths=PackedStringArray("deckField", "cubeDeckField", "flagshipField", "retreatField", "phaseButtonField")]
 script = ExtResource("1_vpce2")
+deckField = NodePath("Board/Deck")
+cubeDeckField = NodePath("Board/CubeDeck")
+flagshipField = NodePath("Board/Units/Flagship")
+retreatField = NodePath("Board/Retreat")
+phaseButtonField = NodePath("Board/PhaseButton")
 
 [node name="Board" parent="." instance=ExtResource("2_1wl4u")]
 
@@ -118,3 +123,5 @@ shadow_enabled = true
 spot_range = 20.0
 spot_angle = 70.0
 spot_angle_attenuation = 0.250001
+
+[editable path="Board"]

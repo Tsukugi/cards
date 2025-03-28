@@ -93,7 +93,7 @@ public partial class Card : CardField
             cardBackImage = LoadCardImage(newCardDTO.backImageSrc);
             UpdateImageTexture(back, (CompressedTexture2D)cardBackImage);
         }
-        GD.Print($"[Card.UpdateAttributes] {attributes.name}");
+        //GD.Print($"[Card.UpdateAttributes] {attributes.name}");
     }
 
     Resource LoadCardImage(string path)

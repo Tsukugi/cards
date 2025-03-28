@@ -19,7 +19,7 @@ public partial class Board : Node3D
     protected PackedScene cardTemplate = GD.Load<PackedScene>("scenes/card.tscn");
     protected readonly AxisInputHandler axisInputHandler = new();
     protected readonly ActionInputHandler actionInputHandler = new();
-    public Vector2I SelectCardPosition = Vector2I.Zero;
+    public Vector2I SelectedCardPosition = Vector2I.Zero;
     [Export]
     public Vector2I BoardPositionInGrid = new();
     public bool IsBoardActive { get => isBoardActive; }
@@ -88,7 +88,7 @@ public partial class Board : Node3D
     public void SelectCardField(Vector2I position)
     {
         if (OnSelectCardPosition is null) return;
-        SelectCardPosition = position;
+        SelectedCardPosition = position;
         OnSelectCardPosition(position, (card) =>
             {
                 selectedCard = card;
@@ -100,7 +100,7 @@ public partial class Board : Node3D
         isBoardActive = value;
         if (isBoardActive)
         {
-            SelectCardField(SelectCardPosition);
+            SelectCardField(SelectedCardPosition);
             GD.Print($"[SetIsBoardActive] Active Board: {Name}");
         }
     }

@@ -56,7 +56,7 @@ public partial class PlayerHand : Board
         Card newCard = cardTemplate.Instantiate<Card>();
         int numCardsInHand = GetCardsInHand().Count;
         AddChild(newCard);
-        newCard.Position = new Vector3((numCardsInHand + SelectCardPosition.X) * -numCardsInHand, 0, 0); // Card size
+        newCard.Position = new Vector3((numCardsInHand + SelectedCardPosition.X) * -numCardsInHand, 0, 0); // Card size
         newCard.RotationDegrees = new Vector3(0, 0, 1); // To add the card stacking
         newCard.PositionInBoard = new Vector2I(numCardsInHand, 0);
         newCard.UpdateAttributes(attributes);
@@ -74,7 +74,7 @@ public partial class PlayerHand : Board
     {
         if (axis == Vector2I.Zero) return;
 
-        Vector2I newPosition = SelectCardPosition + axis;
+        Vector2I newPosition = SelectedCardPosition + axis;
 
         // Going up should select the board
         if (axis == Vector2I.Up)
@@ -90,8 +90,8 @@ public partial class PlayerHand : Board
             return;
         }
 
-        SelectCardPosition = newPosition;
-        SelectCardField(SelectCardPosition);
+        SelectedCardPosition = newPosition;
+        SelectCardField(SelectedCardPosition);
         RepositionHandCards();
         GD.Print($"[PlayerHand.OnAxisChangeHandler] SelectCardField in board for position {newPosition}");
     }
@@ -108,7 +108,7 @@ public partial class PlayerHand : Board
         for (int i = 0; i < cards.Count; i++)
         {
             cards[i].PositionInBoard.X = i; // This reassigns the position in board to fill gaps
-            cards[i].Position = new Vector3((i - SelectCardPosition.X) * cards[i].CardWidth, 0, 0); // (cardIndex - SelectCardPosition.X) means the card that is the center
+            cards[i].Position = new Vector3((i - SelectedCardPosition.X) * cards[i].CardWidth, 0, 0); // (cardIndex - SelectCardPosition.X) means the card that is the center
         }
     }
 }

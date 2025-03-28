@@ -46,16 +46,16 @@ public partial class PlayerBoard : Board
     {
         if (axis == Vector2I.Zero) return;
 
-        Card? card = SearchForCardInBoard(SelectCardPosition, axis, 1, 10);
+        Card? card = SearchForCardInBoard(SelectedCardPosition, axis, 1, 10);
         if (card is null) // We didn't find a card with the specified position
         {
             if (OnEdgeBoardRequest is not null) OnEdgeBoardRequest(axis);
             return;
         }
 
-        SelectCardPosition = card.PositionInBoard;
-        SelectCardField(SelectCardPosition);
-        GD.Print($"[PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {SelectCardPosition}");
+        SelectedCardPosition = card.PositionInBoard;
+        SelectCardField(SelectedCardPosition);
+        // GD.Print($"[PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {SelectedCardPosition}");
     }
 
     void CancelPlaceCard()

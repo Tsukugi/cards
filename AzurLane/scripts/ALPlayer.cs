@@ -5,15 +5,22 @@ using Godot;
 
 public partial class ALPlayer : Player
 {
-    public List<ALCardDTO> Deck = [], CubeDeck = [], Retreat = [];
-    public ALCardDTO Flagship = new();
+    public event Action OnTurnEnd;
+    List<ALCardDTO> Deck = [], CubeDeck = [], Retreat = [];
+    ALCardDTO Flagship = new();
     readonly ALDatabase database = new();
+
+    // --- AI ---
+    ALBasicAI ai;
 
     // --- Nodes --- 
     new ALBoard board;
     new ALHand hand;
     Node3D costArea, durabilityArea, unitsArea;
-    ALCard deckNode, cubeDeckNode, flagshipNode, retreatNode;
+    [Export]
+    ALCard deckField, cubeDeckField, flagshipField, retreatField;
+    [Export]
+    ALPhaseButton phaseButtonField;
 
     // --- State ---
     EALTurnPhase currentPhase = EALTurnPhase.Reset;
@@ -31,6 +38,7 @@ public partial class ALPlayer : Player
     public override void _Ready()
     {
         base._Ready();
+        ai = new(this);
         asyncPhase = new(this);
         hand = GetNode<ALHand>("Hand");
         board = GetNode<ALBoard>("Board");
@@ -124,18 +132,13 @@ public partial class ALPlayer : Player
         BuildDeck();
 
         // Deck setup
-        deckNode = board.GetCardInPosition(new Vector2I(3, 1)); // Deck position
-        deckNode.CardStack = Deck.Count; // Set it as deck size
-        deckNode.UpdateAttributes(Deck[^1]); // Use last card as template
+        deckField.CardStack = Deck.Count; // Set it as deck size
+        deckField.UpdateAttributes(Deck[^1]); // Use last card as template
         // CubeDeck setup
-        cubeDeckNode = board.GetCardInPosition(new Vector2I(-1, 2)); // Cube deck position
-        cubeDeckNode.CardStack = CubeDeck.Count; // Set it as deck size
-        cubeDeckNode.UpdateAttributes(CubeDeck[^1]); // Use last card as template
+        cubeDeckField.CardStack = CubeDeck.Count; // Set it as deck size
+        cubeDeckField.UpdateAttributes(CubeDeck[^1]); // Use last card as template
         // Flagship setup
-        flagshipNode = board.GetCardInPosition(Vector2I.One); // Flagship position
-        flagshipNode.UpdateAttributes(Flagship);
-        // Retreat setup
-        retreatNode = board.GetCardInPosition(new Vector2I(10, 2)); // Retreat node position
+        flagshipField.UpdateAttributes(Flagship);
 
         // Player preparation
         SelectBoard(hand);
@@ -143,58 +146,60 @@ public partial class ALPlayer : Player
         DrawCardToHand(5);
         ApplyFlagshipDurability(); // Manual says that this step is after drawing hand cards
 
-        StartTurn();
     }
 
     // Turn and Phases
-
-    void StartTurn()
+    public void StartTurn()
     {
         GD.Print($"[StartTurn] Start turn for player {Name}");
+
+        if (!isControlledPlayer) _ = ai.SkipTurn(); // TODO: Make a proper handler for proper AI
+
         PlayResetPhase();
     }
     void PlayResetPhase()
     {
-        currentPhase = EALTurnPhase.Reset;
-
         // Reset all Units into active state
+        GD.Print($"[${Name}.PlayResetPhase]");
         SetBoardCardsAsActive();
+        currentPhase = EALTurnPhase.Reset;
         asyncPhase.AwaitBefore(PlayNextPhase);
     }
     void PlayPreparationPhase()
     {
         // Draw 1 card
         // Place 1 face up cube if possible
+        GD.Print($"[{Name}.PlayPreparationPhase]");
         TryDrawCubeToBoard();
         DrawCardToHand();
+        currentPhase = EALTurnPhase.Preparation;
         PlayNextPhase();
     }
     void PlayMainPhase()
     {
         // Player can play cards
-        GD.Print($"[PlayMainPhase]");
-        currentPhase = EALTurnPhase.Main;
-        SelectBoard(hand);
+        GD.Print($"[{Name}.PlayMainPhase]");
         SetPlayState(EPlayState.Select);
+        currentPhase = EALTurnPhase.Main;
     }
     void PlayBattlePhase()
     {
         // Player can declare attacks
-        GD.Print($"[PlayBattlePhase]");
-        currentPhase = EALTurnPhase.Battle;
+        GD.Print($"[{Name}.PlayBattlePhase]");
         SetPlayState(EPlayState.Select);
+        currentPhase = EALTurnPhase.Battle;
     }
     void PlayEndPhase()
     {
         // Clean some things
-        GD.Print($"[PlayEndPhase]");
+        GD.Print($"[{Name}.PlayEndPhase]");
+        currentPhase = EALTurnPhase.End;
         asyncPhase.AwaitBefore(EndTurn);
     }
 
     void EndTurn()
     {
-        // TODO Switch to the other player
-        StartTurn();
+        if (OnTurnEnd is not null) OnTurnEnd();
     }
 
     void ApplyPhase(EALTurnPhase phase)
@@ -217,7 +222,6 @@ public partial class ALPlayer : Player
             GD.PrintErr($"[PlayNextPhase] Trying to play next phase on End phase already!");
             return;
         }
-        currentPhase = nextPhase;
         asyncPhase.AwaitBefore(() => ApplyPhase(nextPhase));
     }
 
@@ -324,7 +328,7 @@ public partial class ALPlayer : Player
     {
         for (int i = 0; i < num; i++)
         {
-            ALCardDTO cardToDraw = DrawCard(Deck, deckNode);
+            ALCardDTO cardToDraw = DrawCard(Deck, deckField);
             hand.AddCardToHand(cardToDraw);
         }
     }
@@ -332,16 +336,16 @@ public partial class ALPlayer : Player
     void AddToRetreatAreaOnTop(ALCardDTO cardToAdd)
     {
         // We add to the bottom as the deck works flipped down
-        AddCardToDeck(cardToAdd, Retreat, retreatNode, false);
+        AddCardToDeck(cardToAdd, Retreat, retreatField, false);
     }
 
     void ApplyFlagshipDurability()
     {
-        int durability = flagshipNode.GetAttributes<ALCardDTO>().durability;
+        int durability = flagshipField.GetAttributes<ALCardDTO>().durability;
         List<ALCard> durabilityList = durabilityArea.TryGetAllChildOfType<ALCard>();
         for (int i = 0; i < durability; i++)
         {
-            ALCardDTO cardToDraw = DrawCard(Deck, deckNode);
+            ALCardDTO cardToDraw = DrawCard(Deck, deckField);
             durabilityList[i].UpdateAttributes(cardToDraw);
         }
 
@@ -351,7 +355,7 @@ public partial class ALPlayer : Player
     {
         try
         {
-            ALCardDTO cardToDraw = DrawCard(CubeDeck, cubeDeckNode);
+            ALCardDTO cardToDraw = DrawCard(CubeDeck, cubeDeckField);
             Card cubeField = PlayerBoard.FindLastEmptyFieldInRow(
                 costArea.TryGetAllChildOfType<Card>()
             );
@@ -375,6 +379,17 @@ public partial class ALPlayer : Player
 
     List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
+
+    // Public Player Actions for AI 
+    public void TriggerPhaseButton()
+    {
+        SelectBoard(board);
+        // Select phase button
+        board.SelectCardField(phaseButtonField.PositionInBoard);
+        // Execute trigger handler directly
+        OnCardTriggerHandler(phaseButtonField);
+    }
+    public EALTurnPhase GetCurrentPhase() => currentPhase;
 }
 
 public enum EALTurnPhase

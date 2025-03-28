@@ -3,10 +3,10 @@
 [ext_resource type="Script" uid="uid://1cohtbsykhs7" path="res://AzurLane/scripts/ALGameMatchManager.cs" id="1_0wfyh"]
 [ext_resource type="PackedScene" uid="uid://s57i3tk6c7m0" path="res://AzurLane/AzurLanePlayer.tscn" id="1_btuhc"]
 
-[node name="main" type="Node3D" node_paths=PackedStringArray("player", "enemyPlayer")]
+[node name="main" type="Node3D" node_paths=PackedStringArray("userPlayer", "enemyPlayer")]
 script = ExtResource("1_0wfyh")
-player = NodePath("Player")
-enemyPlayer = NodePath("Player2")
+userPlayer = NodePath("UserPlayer")
+enemyPlayer = NodePath("EnemyPlayer")
 
 [node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.631353, -0.0986169, -0.769199, -0.762464, 0.260007, 0.592491, 0.141568, 0.960558, -0.239348, -7.10733, 32.8051, 0.102968)
@@ -22,9 +22,9 @@ light_energy = 0.5
 shadow_enabled = true
 directional_shadow_mode = 0
 
-[node name="Player" parent="." instance=ExtResource("1_btuhc")]
+[node name="UserPlayer" parent="." instance=ExtResource("1_btuhc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 12.5)
 isControlledPlayer = true
 
-[node name="Player2" parent="." instance=ExtResource("1_btuhc")]
+[node name="EnemyPlayer" parent="." instance=ExtResource("1_btuhc")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, -12.5)
