@@ -26,5 +26,28 @@ directional_shadow_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 12.5)
 isControlledPlayer = true
 
+[node name="FrontRow" parent="UserPlayer/Board/Units" index="0" node_paths=PackedStringArray("EdgeUp")]
+EdgeUp = NodePath("../../../../EnemyPlayer/Board/Units/FrontRow3")
+
+[node name="FrontRow2" parent="UserPlayer/Board/Units" index="1" node_paths=PackedStringArray("EdgeUp")]
+EdgeUp = NodePath("../../../../EnemyPlayer/Board/Units/FrontRow2")
+
+[node name="FrontRow3" parent="UserPlayer/Board/Units" index="2" node_paths=PackedStringArray("EdgeUp")]
+EdgeUp = NodePath("../../../../EnemyPlayer/Board/Units/FrontRow")
+
 [node name="EnemyPlayer" parent="." instance=ExtResource("1_btuhc")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, -12.5)
+
+[node name="FrontRow" parent="EnemyPlayer/Board/Units" index="0" node_paths=PackedStringArray("EdgeUp")]
+EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow3")
+
+[node name="FrontRow2" parent="EnemyPlayer/Board/Units" index="1" node_paths=PackedStringArray("EdgeUp")]
+EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow2")
+
+[node name="FrontRow3" parent="EnemyPlayer/Board/Units" index="2" node_paths=PackedStringArray("EdgeUp")]
+EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow")
+
+[editable path="UserPlayer"]
+[editable path="UserPlayer/Board"]
+[editable path="EnemyPlayer"]
+[editable path="EnemyPlayer/Board"]

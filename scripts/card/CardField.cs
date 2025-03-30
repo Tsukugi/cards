@@ -11,6 +11,8 @@ public partial class CardField : Node3D
 
     [Export]
     public Vector2I PositionInBoard = new(); // Position used to track and identify it in board
+
+
     public float CardWidth = 4; // Card width
     [Export]
     public int CardStack = 1; // Amount of cards that should be stacked in this field
@@ -30,7 +32,7 @@ public partial class CardField : Node3D
 
     public void SetIsSelected(bool value)
     {
-        if (value) GD.Print($"[SetIsSelected] {PositionInBoard}");
+        // if (value) GD.Print($"[SetIsSelected] {PositionInBoard}");
         isSelected = value;
     }
 

@@ -7,7 +7,7 @@ public partial class PlayerHand : Board
 {
     public delegate void PlayCardEventHandler(Card card);
     public event PlayCardEventHandler OnPlayCardStart;
-    public event BoardEdgeEvent OnEdgeBoardRequest;
+    public override event BoardEdgeEvent OnBoardEdge;
 
     [Export]
     Vector3 positionOffsetWhenInactive = new();
@@ -21,9 +21,9 @@ public partial class PlayerHand : Board
 
     public override void _Process(double delta)
     {
-        if (!player.GetIsControllerPlayer()) return;
-        Position = isBoardActive ? originalPosition : originalPosition + positionOffsetWhenInactive;
-        if (!isBoardActive) return;
+        bool allowInput = GetCanReceivePlayerInput();
+        if (player.GetIsControllerPlayer()) { Position = allowInput ? originalPosition : originalPosition + positionOffsetWhenInactive; }
+        if (!allowInput) return;
         Vector2I axis = axisInputHandler.GetAxis();
         OnAxisChangeHandler(axis);
         ManageAction();
@@ -56,7 +56,7 @@ public partial class PlayerHand : Board
         Card newCard = cardTemplate.Instantiate<Card>();
         int numCardsInHand = GetCardsInHand().Count;
         AddChild(newCard);
-        newCard.Position = new Vector3((numCardsInHand + SelectedCardPosition.X) * -numCardsInHand, 0, 0); // Card size
+        newCard.Position = new Vector3((numCardsInHand + selectedCardPosition.X) * -numCardsInHand, 0, 0); // Card size
         newCard.RotationDegrees = new Vector3(0, 0, 1); // To add the card stacking
         newCard.PositionInBoard = new Vector2I(numCardsInHand, 0);
         newCard.UpdateAttributes(attributes);
@@ -74,24 +74,17 @@ public partial class PlayerHand : Board
     {
         if (axis == Vector2I.Zero) return;
 
-        Vector2I newPosition = SelectedCardPosition + axis;
-
-        // Going up should select the board
-        if (axis == Vector2I.Up)
-        {
-            if (OnEdgeBoardRequest is not null) OnEdgeBoardRequest(axis);
-            return;
-        }
+        Vector2I newPosition = selectedCardPosition + axis;
 
         Card? card = FindCardInTree(newPosition);
         if (card is null) // We didn't find a card with the specified position
         {
-            if (OnEdgeBoardRequest is not null) OnEdgeBoardRequest(axis);
+            if (OnBoardEdge is not null && GetCanReceivePlayerInput()) OnBoardEdge(this, axis);
             return;
         }
 
-        SelectedCardPosition = newPosition;
-        SelectCardField(SelectedCardPosition);
+        selectedCardPosition = newPosition;
+        SelectCardField(selectedCardPosition);
         RepositionHandCards();
         GD.Print($"[PlayerHand.OnAxisChangeHandler] SelectCardField in board for position {newPosition}");
     }
@@ -108,7 +101,7 @@ public partial class PlayerHand : Board
         for (int i = 0; i < cards.Count; i++)
         {
             cards[i].PositionInBoard.X = i; // This reassigns the position in board to fill gaps
-            cards[i].Position = new Vector3((i - SelectedCardPosition.X) * cards[i].CardWidth, 0, 0); // (cardIndex - SelectCardPosition.X) means the card that is the center
+            cards[i].Position = new Vector3((i - selectedCardPosition.X) * cards[i].CardWidth, 0, 0); // (cardIndex - SelectCardPosition.X) means the card that is the center
         }
     }
 }

@@ -25,6 +25,7 @@ public partial class ALCard : Card
         base.OnCardUpdateHandler();
         if (UI is not null)
         {
+            // This rotates the Card UI to be seen from an inverted board (enemyBoard)
             if (board.GetPlayer().GetIsControllerPlayer()) UI.RotationDegrees = UI.RotationDegrees.WithY(0);
             else UI.RotationDegrees = UI.RotationDegrees.WithY(180);
         }

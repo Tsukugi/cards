@@ -7,12 +7,13 @@ public partial class PlayerBoard : Board
     public event PlaceCardEvent OnPlaceCardEnd;
     public event PlaceCardEvent OnPlaceCardCancel;
     public event CardTriggerEvent OnCardTrigger;
-    public event BoardEdgeEvent OnEdgeBoardRequest;
+    public override event BoardEdgeEvent OnBoardEdge;
+    public override event BoardCardEvent OnSelectFixedCardEdge;
     public Card CardToPlay = null;
 
     public override void _Process(double delta)
     {
-        if (!isBoardActive || !player.GetIsControllerPlayer()) return;
+        if (!GetCanReceivePlayerInput()) return;
         OnAxisChangeHandler(axisInputHandler.GetAxis());
         OnActionHandler(actionInputHandler.GetAction());
     }
@@ -46,16 +47,26 @@ public partial class PlayerBoard : Board
     {
         if (axis == Vector2I.Zero) return;
 
-        Card? card = SearchForCardInBoard(SelectedCardPosition, axis, 1, 10);
+        if (OnSelectFixedCardEdge is not null)
+        {
+            Card selectedCard = GetSelectedCard<Card>();
+            // Override search with predefined edges
+            if (axis == Vector2I.Up && selectedCard.EdgeUp is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeUp); return; }
+            if (axis == Vector2I.Down && selectedCard.EdgeDown is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeDown); return; }
+            if (axis == Vector2I.Left && selectedCard.EdgeLeft is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeLeft); return; }
+            if (axis == Vector2I.Right && selectedCard.EdgeRight is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeRight); return; }
+        }
+
+        Card? card = SearchForCardInBoard(selectedCardPosition, axis, 1, 10);
         if (card is null) // We didn't find a card with the specified position
         {
-            if (OnEdgeBoardRequest is not null) OnEdgeBoardRequest(axis);
+            if (OnBoardEdge is not null && GetCanReceivePlayerInput()) OnBoardEdge(this, axis);
             return;
         }
 
-        SelectedCardPosition = card.PositionInBoard;
-        SelectCardField(SelectedCardPosition);
-        // GD.Print($"[PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {SelectedCardPosition}");
+        selectedCardPosition = card.PositionInBoard;
+        SelectCardField(selectedCardPosition);
+        GD.Print($"[{GetPlayer().Name}.PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {selectedCardPosition}");
     }
 
     void CancelPlaceCard()

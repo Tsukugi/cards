@@ -11,6 +11,9 @@ public partial class Card : CardField
     Resource cardImage, cardBackImage;
 
     [Export]
+    public Card EdgeUp, EdgeDown, EdgeLeft, EdgeRight;
+
+    [Export]
     bool isFaceDown = false;
     [Export]
     bool isSideWays = false;
@@ -34,7 +37,7 @@ public partial class Card : CardField
 
     public override void _Process(double delta)
     {
-        OnSelectHandler(isSelected);
+        OnSelectHandler(isSelected && board.GetCanReceivePlayerInput());
         OnCardUpdateHandler();
         cardDisplay.Scale = cardDisplay.Scale.WithY(CardStack);
     }
@@ -45,14 +48,13 @@ public partial class Card : CardField
         SetIsSelected(isSelectingThisCard);
         if (isSelectingThisCard)
         {
-            // GD.Print($"[OnSelectCardPositionHandler] Card {Name} is active");
             cardCallback(this);
         }
     }
 
     void OnSelectHandler(bool isSelected)
     {
-        if (selectedIndicator is not null) selectedIndicator.Visible = isSelected && board.IsBoardActive;
+        if (selectedIndicator is not null) selectedIndicator.Visible = isSelected;
     }
 
     protected virtual void OnCardUpdateHandler()
@@ -112,4 +114,5 @@ public partial class Card : CardField
     }
 
     public Resource GetCardImageResource() => isFaceDown ? cardBackImage : cardImage;
+    public Board GetBoard() => board;
 }

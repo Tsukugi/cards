@@ -3,17 +3,14 @@ using Godot;
 
 public partial class AxisInputHandler
 {
-    Vector2I moveDirection = Vector2I.Zero;
+    bool inverted = false;
     public AxisType InputAxisType = AxisType.EightAxis;
     public AxisKeys Keys = new();
 
-
-    public bool GetAxisChange()
+    public void SetInverted(bool value)
     {
-        Vector2I axis = GetAxis();
-        return moveDirection != axis;
+        inverted = value;
     }
-
     public Vector2I GetAxis()
     {
         Vector2I axis = InputAxisType switch
@@ -24,7 +21,7 @@ public partial class AxisInputHandler
             AxisType.EightAxis => GetFullAxis(),
             _ => Vector2I.Zero,
         };
-        return axis;
+        return inverted ? axis * -1 : axis;
     }
 
     bool IsPressed(string key)

@@ -12,6 +12,13 @@ public partial class ALGameMatchManager : Node
     {
         base._Ready();
         orderedPlayers = [enemyPlayer, userPlayer]; // TODO add some shuffling, with a minigame
+
+        // Assign each enemy boards for selection
+        enemyPlayer.Hand.SetIsEnemyBoard(true);
+        enemyPlayer.Board.SetIsEnemyBoard(true);
+        userPlayer.AssignEnemyBoards(enemyPlayer.Hand, enemyPlayer.Board);
+        enemyPlayer.AssignEnemyBoards(userPlayer.Hand, userPlayer.Board);
+
         orderedPlayers.ForEach(player =>
         {
             player.OnTurnEnd -= OnTurnEndHandler;

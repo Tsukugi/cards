@@ -6,43 +6,36 @@ public partial class Board : Node3D
     public delegate void PlaceCardEvent(Card card);
     public delegate void CardTriggerEvent(Card card);
     public delegate void BoardProvidedCallback(Board board);
-    public delegate void BoardEdgeEvent(Vector2I axis);
+    public delegate void BoardEdgeEvent(Board board, Vector2I axis);
+    public delegate void BoardCardEvent(Board board, Card card);
     public delegate void BoardEvent();
     public delegate void CardPositionEvent(Vector2I position, Card.OnProvidedCardEvent callback);
     public event CardPositionEvent OnSelectCardPosition;
     public event BoardEvent OnClearSelection;
+    public virtual event BoardEdgeEvent OnBoardEdge;
+    public virtual event BoardCardEvent OnSelectFixedCardEdge;
 
-    Card selectedCard = null;
     protected Player player;
-    protected bool isBoardActive = false; // If false, the board should not use any Input
+
+    // --- State ---
+    bool canReceivePlayerInput = false;
+    bool isEnemyBoard = false;
+    Card selectedCard = null;
+
+    // --- Public ---
 
     protected PackedScene cardTemplate = GD.Load<PackedScene>("scenes/card.tscn");
     protected readonly AxisInputHandler axisInputHandler = new();
     protected readonly ActionInputHandler actionInputHandler = new();
-    public Vector2I SelectedCardPosition = Vector2I.Zero;
+    protected Vector2I selectedCardPosition = Vector2I.Zero;
     [Export]
     public Vector2I BoardPositionInGrid = new();
-    public bool IsBoardActive { get => isBoardActive; }
 
     public override void _Ready()
     {
         player = this.TryFindParentNodeOfType<Player>();
-        player.OnPlayerBoardPositionSelect -= OnPlayerBoardPositionSelectHandler;
-        player.OnPlayerBoardPositionSelect += OnPlayerBoardPositionSelectHandler;
-        player.OnPlayerBoardSelect -= OnPlayerBoardSelectHandler;
-        player.OnPlayerBoardSelect += OnPlayerBoardSelectHandler;
     }
 
-    void OnPlayerBoardPositionSelectHandler(Vector2I position, BoardProvidedCallback boardProvidedCallback)
-    {
-        bool isActive = position == BoardPositionInGrid;
-        SetIsBoardActive(isActive);
-    }
-    void OnPlayerBoardSelectHandler(Board board)
-    {
-        bool isActive = board == this;
-        SetIsBoardActive(isActive);
-    }
 
     public void DeselectAllCards()
     {
@@ -66,7 +59,7 @@ public partial class Board : Node3D
                 var newOffset = FindOffsetBasedOnAxis(axis, currentRange, sideOffset);
                 var newPosition = startingPosition + newOffset;
                 Card? card = FindCard(cards, newPosition);
-                GD.Print($"[SearchForCardInBoard] {startingPosition} + {newOffset} = {newPosition}");
+                // GD.Print($"[SearchForCardInBoard] {startingPosition} + {newOffset} = {newPosition}");
                 if (card is Card foundCard) return foundCard;
             }
             currentRange++;
@@ -74,6 +67,8 @@ public partial class Board : Node3D
         return null;
     }
 
+
+    // Takes an axis and return an offset with Range added to the direction and offset to the opposite axis
     static Vector2I FindOffsetBasedOnAxis(Vector2I axis, int range, int sideOffset)
     {
         Vector2I newAddedPosition = Vector2I.Zero;
@@ -81,30 +76,39 @@ public partial class Board : Node3D
         if (axis == Vector2I.Left) newAddedPosition = new Vector2I(-range, sideOffset);
         if (axis == Vector2I.Down) newAddedPosition = new Vector2I(sideOffset, range);
         if (axis == Vector2I.Up) newAddedPosition = new Vector2I(sideOffset, -range);
-        GD.Print($"[FindPosition] {range} - {sideOffset} -> {newAddedPosition}");
+        // GD.Print($"[FindPosition] {range} - {sideOffset} -> {newAddedPosition}");
         return newAddedPosition;
     }
 
+    // --- Public API---
+    public Vector2I GetSelectedCardPosition() => selectedCardPosition;
     public void SelectCardField(Vector2I position)
     {
         if (OnSelectCardPosition is null) return;
-        SelectedCardPosition = position;
+        selectedCardPosition = position;
         OnSelectCardPosition(position, (card) =>
             {
                 selectedCard = card;
             });
     }
 
-    public void SetIsBoardActive(bool value)
+    public void SetCanReceivePlayerInput(bool value)
     {
-        isBoardActive = value;
-        if (isBoardActive)
+        canReceivePlayerInput = value;
+        GD.Print($"[SetCanReceivePlayerInput] {player.Name}.{Name} {canReceivePlayerInput}");
+        if (canReceivePlayerInput)
         {
-            SelectCardField(SelectedCardPosition);
-            GD.Print($"[SetIsBoardActive] Active Board: {Name}");
+            SelectCardField(selectedCardPosition);
         }
     }
+    public bool GetCanReceivePlayerInput() => canReceivePlayerInput;
 
     public Player GetPlayer() => player;
     public T GetSelectedCard<T>() where T : Card => selectedCard as T;
+    public bool DoesBelongToPlayer(Player player) => GetPlayer() == player;
+    public void SetIsEnemyBoard(bool value)
+    {
+        isEnemyBoard = value;
+        axisInputHandler.SetInverted(value); // An enemy board should have its axis inverted as it is inverted in the editor
+    }
 }

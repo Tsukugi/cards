@@ -34,6 +34,19 @@ public static class ListUtils
         else if (index < 0) return size - 1; // Wrap negative index to last position.
         else return 0; // Wrap overflow index to first position.
     }
+    /// <summary>
+    /// Applies circular indexing to wrap an index within valid bounds.
+    /// If the index is out of bounds, it wraps around to the opposite boundary.
+    /// </summary>
+    /// <param name="size">Size of the range.</param>
+    /// <param name="index">The index to apply circular bounds to.</param>
+    /// <returns>A valid index within the given size. Example: index is 10, and size is 7, it will return 0.</returns>
+    public static T ApplyCircularBounds<T>(this List<T> list, int index)
+    {
+        if (IsInsideBounds(list.Count, index)) return list[index];
+        else if (index < 0) return list[^1]; // Wrap negative index to last position.
+        else return list[0]; // Wrap overflow index to first position.
+    }
 
     /// <summary>
     /// Checks whether the given index is within the valid bounds of a range.

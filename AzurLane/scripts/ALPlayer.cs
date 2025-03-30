@@ -67,7 +67,6 @@ public partial class ALPlayer : Player
     public override void _Process(double delta)
     {
         if (!isControlledPlayer) return;
-        base._Process(delta);
         phaseLabel.Text = phase.GetPhaseByIndex((int)synchedPhase);
 
         if (selectedBoard.GetSelectedCard<ALCard>() is ALCard selectedCard)
@@ -132,7 +131,6 @@ public partial class ALPlayer : Player
 
     void StartGameForPlayer()
     {
-        SetPlayState(EPlayState.Wait);
         BuildDeck();
 
         // Deck setup
@@ -158,19 +156,21 @@ public partial class ALPlayer : Player
         GD.Print($"[StartTurn] Start turn for player {Name}");
 
         if (!isControlledPlayer) _ = ai.SkipTurn(); // TODO: Make a proper handler for proper AI
-
+        IsPlayingTurn = true;
         PlayResetPhase();
     }
     void PlayResetPhase()
     {
+        SetPlayState(EPlayState.Wait);
         // Reset all Units into active state
-        GD.Print($"[${Name}.PlayResetPhase]");
+        GD.Print($"[{Name}.PlayResetPhase]");
         SetBoardCardsAsActive();
         UpdatePhase(EALTurnPhase.Reset);
         asyncPhase.AwaitBefore(PlayNextPhase);
     }
     void PlayPreparationPhase()
     {
+        SetPlayState(EPlayState.Wait);
         // Draw 1 card
         // Place 1 face up cube if possible
         GD.Print($"[{Name}.PlayPreparationPhase]");
@@ -195,6 +195,7 @@ public partial class ALPlayer : Player
     }
     void PlayEndPhase()
     {
+        SetPlayState(EPlayState.Wait);
         // Clean some things
         GD.Print($"[{Name}.PlayEndPhase]");
         UpdatePhase(EALTurnPhase.End);
@@ -203,6 +204,7 @@ public partial class ALPlayer : Player
 
     void EndTurn()
     {
+        IsPlayingTurn = false;
         if (OnTurnEnd is not null) OnTurnEnd();
     }
 
