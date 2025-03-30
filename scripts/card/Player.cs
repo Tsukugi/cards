@@ -115,7 +115,7 @@ public partial class Player : Node3D
         SelectBoard(newBoard);
         selectedBoardIndex = newIndex;
 
-        boardInputAsync.AwaitBefore(() => newBoard.SetCanReceivePlayerInput(true), 0.05f);
+        boardInputAsync.AwaitBefore(() => newBoard.SetCanReceivePlayerInput(true), 0.05f); // Delay execution so the newBoard doesn't retrigger this event
         GD.Print($"[OnBoardEdgeHandler] {newBoard.GetPlayer().Name} {newBoard.Name} - {selectedBoardIndex} ");
     }
 
@@ -130,7 +130,7 @@ public partial class Player : Node3D
 
         SelectBoard(newBoard);
         newBoard.SelectCardField(card.PositionInBoard); // Use the card's board to select itself, a referenced card can be from another board than the triggering one
-        boardInputAsync.AwaitBefore(() => newBoard.SetCanReceivePlayerInput(true), 0.05f);
+        boardInputAsync.AwaitBefore(() => newBoard.SetCanReceivePlayerInput(true), 0.05f); // Delay execution so the newBoard doesn't retrigger this event
 
         GD.Print($"[OnSelectFixedCardEdgeHandler] {newBoard.GetPlayer().Name} {newBoard.GetType()} - {selectedBoardIndex} ");
     }
