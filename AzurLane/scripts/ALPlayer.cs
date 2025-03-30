@@ -5,9 +5,13 @@ using Godot;
 
 public partial class ALPlayer : Player
 {
+
+    // --- Events ---
     public delegate void PhaseEvent(EALTurnPhase phase);
     public event Action OnTurnEnd;
     public event PhaseEvent OnPhaseChange;
+
+    // --- Refs ---
     List<ALCardDTO> Deck = [], CubeDeck = [], Retreat = [];
     ALCardDTO Flagship = new();
     readonly ALDatabase database = new();
@@ -28,6 +32,7 @@ public partial class ALPlayer : Player
     EALTurnPhase currentPhase = EALTurnPhase.Reset;
     // State updated externally, represents the synched phase running between all players
     EALTurnPhase synchedPhase = EALTurnPhase.Reset;
+    ALCard battleAttackerCard, battleAttackedCard;
 
     // --- UI --- 
     Control control;
@@ -294,12 +299,61 @@ public partial class ALPlayer : Player
 
     protected void OnCardTriggerHandler(Card card)
     {
-        if (card is ALPhaseButton)
+        // Ignore repeated triggers 
+        asyncPhase.Debounce(() =>
         {
-            if (currentPhase == EALTurnPhase.Main) asyncPhase.Debounce(PlayNextPhase);
-            if (currentPhase == EALTurnPhase.Battle) asyncPhase.Debounce(PlayNextPhase);
+            if (card is ALPhaseButton)
+            {
+                if (currentPhase == EALTurnPhase.Main) PlayNextPhase();
+                if (currentPhase == EALTurnPhase.Battle) PlayNextPhase();
+            }
+            if (card is ALCard alCard)
+            {
+                if (currentPhase == EALTurnPhase.Battle && GetPlayState() == EPlayState.Select) StartBattle(alCard);
+                if (currentPhase == EALTurnPhase.Battle && GetPlayState() == EPlayState.SelectTarget) AttackCard(battleAttackerCard, alCard);
+            }
+        }, 1f);
+    }
+
+    // Actions 
+
+    void StartBattle(ALCard attacker)
+    {
+        battleAttackerCard = attacker;
+        SetPlayState(EPlayState.SelectTarget);
+
+    }
+
+    // Limitations on attack
+    // BackRow ship -> FrontRow Ships
+    // FrontRow Ship -> All ships 
+    // Flagship -> All Ships
+    void AttackCard(ALCard attacker, ALCard target)
+    {
+        bool canBeAttacked = target.CanBeAttacked(attacker.GetAttackFieldType(), attacker.GetIsAFlagship());
+        if (!canBeAttacked)
+        {
+            GD.PrintErr($"[AttackCard] {attacker.Name} cannot attack {target.Name}");
+            return;
+        }
+        battleAttackedCard = target;
+
+        // TODO: Add support
+    }
+
+    void SettleBattle()
+    {
+        bool isAttackSuccessful = battleAttackerCard.GetAttributes<ALCardDTO>().power >= battleAttackedCard.GetAttributes<ALCardDTO>().power;
+
+        if (isAttackSuccessful)
+        {
+            if (battleAttackedCard.GetIsAFlagship())
+            {
+                battleAttackedCard.GetBoard().GetPlayer();
+            }
         }
     }
+
 
     // Nodes
 

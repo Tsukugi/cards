@@ -14,8 +14,12 @@ public partial class ALGameMatchManager : Node
         orderedPlayers = [enemyPlayer, userPlayer]; // TODO add some shuffling, with a minigame
 
         // Assign each enemy boards for selection
+
+        // IsEnemyBoard is needed for thinks like flipping the Input axis
         enemyPlayer.Hand.SetIsEnemyBoard(true);
         enemyPlayer.Board.SetIsEnemyBoard(true);
+
+        // Assign Enemy boards is needed to handle onBoardEdges
         userPlayer.AssignEnemyBoards(enemyPlayer.Hand, enemyPlayer.Board);
         enemyPlayer.AssignEnemyBoards(userPlayer.Hand, userPlayer.Board);
 
@@ -26,6 +30,7 @@ public partial class ALGameMatchManager : Node
             player.OnPhaseChange -= OnPhaseChangeHandler;
             player.OnPhaseChange += OnPhaseChangeHandler;
         });
+
         StartTurn();
     }
 

@@ -66,29 +66,35 @@ mesh = SubResource("PlaneMesh_a2jcd")
 
 [node name="FrontRow" parent="Units" instance=ExtResource("2_6xv5f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, -8)
+attackFieldType = 2
 IsEmptyField = true
 
 [node name="FrontRow2" parent="Units" instance=ExtResource("2_6xv5f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8)
+attackFieldType = 2
 PositionInBoard = Vector2i(1, 0)
 IsEmptyField = true
 
 [node name="FrontRow3" parent="Units" instance=ExtResource("2_6xv5f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, -8)
+attackFieldType = 2
 PositionInBoard = Vector2i(2, 0)
 IsEmptyField = true
 
 [node name="BackRow" parent="Units" instance=ExtResource("2_6xv5f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, 0)
+attackFieldType = 1
 PositionInBoard = Vector2i(0, 1)
 IsEmptyField = true
 
 [node name="Flagship" parent="Units" instance=ExtResource("2_6xv5f")]
+attackFieldType = 1
 PositionInBoard = Vector2i(1, 1)
 IsPlayerPlaceable = false
 
 [node name="BackRow2" parent="Units" instance=ExtResource("2_6xv5f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 0)
+attackFieldType = 1
 PositionInBoard = Vector2i(2, 1)
 IsEmptyField = true
 

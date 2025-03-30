@@ -11,6 +11,13 @@ public partial class ALCard : Card
     // AzurLane TCG - Active: active units can attack, inactive units are horizontally placed
     bool isInActiveState = true;
 
+    [Export]
+    // AzurLane TCG: Which type of field this card is considered when attacked
+    EAttackFieldType attackFieldType = EAttackFieldType.CantAttackHere;
+    [Export]
+    // AzurLane TCG: If this field/card is a flagship
+    bool isFlagship = false;
+
     public override void _Ready()
     {
         base._Ready();
@@ -49,8 +56,10 @@ public partial class ALCard : Card
         }
     }
 
+    // --- API ---
+
     public bool CanShowStackCount() => !IsEmptyField && CardStack > 1;
-    public bool CanShowCardDetailsUI() => !IsEmptyField && !isDeck && !(GetAttributes<ALCardDTO>().type != "Flagship" && GetIsFaceDown());
+    public bool CanShowCardDetailsUI() => !IsEmptyField && !isDeck && !(isFlagship && GetIsFaceDown());
     public bool CanShowPowerLabel() => !IsEmptyField && !isResource && !isDeck;
 
     public void SetIsInActiveState(bool isActive)
@@ -61,5 +70,28 @@ public partial class ALCard : Card
     }
 
     public bool GetIsInActiveState() => !IsEmptyField && isInActiveState;
+    public bool CanBeAttacked(EAttackFieldType attackerType, bool isFlagship)
+    {
+        switch (attackerType)
+        {
+            case EAttackFieldType.CantAttackHere: GD.PushError("[CanBeAttacked] A non attacker card is trying to start an attack"); return false;
+            case EAttackFieldType.BackRow: return attackFieldType == EAttackFieldType.FrontRow || isFlagship; // A backAttacker only can attack front row, if Flagship, they can attack everyone
+            case EAttackFieldType.FrontRow: return true; // A frontAttacker can attack everyone
+            default: return false;
+        }
+    }
+    public EAttackFieldType GetAttackFieldType() => attackFieldType;
+    public bool GetIsAFlagship() => isFlagship;
 
+    public void TakeDurabilityDamage()
+    {
+
+    }
+}
+
+public enum EAttackFieldType
+{
+    CantAttackHere,
+    BackRow,
+    FrontRow
 }
