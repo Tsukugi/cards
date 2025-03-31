@@ -3,6 +3,9 @@ using Godot;
 
 public partial class ALBoard : PlayerBoard
 {
+    [Export]
+    ALCard flagshipCard;
+
     protected new PackedScene cardTemplate = GD.Load<PackedScene>("AzurLane/AzurLaneCard.tscn");
     public override void PlaceCardInBoardFromHand<T>(T cardToPlace)
     {
@@ -28,4 +31,6 @@ public partial class ALBoard : PlayerBoard
         if (index == -1) GD.PrintErr("[FindLastActiveCardInRow] Cannot find last active index");
         return row[index];
     }
+
+    public ALCard GetFlagship() => flagshipCard;
 }

@@ -8,6 +8,7 @@ public partial class ALPlayer : Player
 
     // --- Events ---
     public delegate void PhaseEvent(EALTurnPhase phase);
+    public delegate bool FindCardAction(ALCard card);
     public event Action OnTurnEnd;
     public event PhaseEvent OnPhaseChange;
 
@@ -20,8 +21,8 @@ public partial class ALPlayer : Player
     ALBasicAI ai;
 
     // --- Nodes --- 
-    new ALBoard board;
-    new ALHand hand;
+    new ALBoard board, enemyBoard;
+    new ALHand hand, enemyHand;
     Node3D costArea, durabilityArea, unitsArea;
     [Export]
     ALCard deckField, cubeDeckField, flagshipField, retreatField;
@@ -178,7 +179,7 @@ public partial class ALPlayer : Player
     {
         GD.Print($"[StartTurn] Start turn for player {Name}");
 
-        if (!isControlledPlayer) _ = ai.SkipTurn(); // TODO: Make a proper handler for proper AI
+        if (!isControlledPlayer) _ = ai.SummonAndAttackFlagship(); // TODO: Make a proper handler for proper AI
         IsPlayingTurn = true;
         PlayResetPhase();
     }
@@ -504,10 +505,6 @@ public partial class ALPlayer : Player
         unitsArea.TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
     }
 
-    List<ALCard> GetActiveUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
-    List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
-    List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
-    List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
 
     void UpdatePhase(EALTurnPhase phase)
     {
@@ -516,6 +513,14 @@ public partial class ALPlayer : Player
     }
 
     // Public Player Actions for AI 
+    public new ALHand Hand { get => hand; }
+    public new ALBoard Board { get => board; }
+    public new ALHand EnemyHand { get => enemyHand; }
+    public new ALBoard EnemyBoard { get => enemyBoard; }
+    public List<ALCard> GetActiveUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
+    public List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
+    public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
+    public List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
     public void TriggerPhaseButton()
     {
         SelectBoard(board);
@@ -524,6 +529,14 @@ public partial class ALPlayer : Player
         // Execute trigger handler directly
         OnCardTriggerHandler(phaseButtonField);
     }
+    public void TriggerSelectedCardInBoard(Board board) => OnCardTriggerHandler(board.GetSelectedCard<ALCard>(this));
+    public ALCard FindAvailableEmptyFieldInRow(bool frontRow = false)
+    {
+        List<ALCard> fields = unitsArea.TryGetAllChildOfType<ALCard>();
+        if (frontRow) return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.FrontRow && field.IsEmptyField);
+        else return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.BackRow && field.IsEmptyField);
+    }
+
     public EALTurnPhase GetCurrentPhase() => currentPhase;
     public EALTurnPhase SyncPhase(EALTurnPhase phase) => synchedPhase = phase;
 }

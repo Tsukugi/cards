@@ -31,6 +31,8 @@ public partial class Player : Node3D
 
     public PlayerHand Hand { get => hand; }
     public PlayerBoard Board { get => board; }
+    public PlayerHand EnemyHand { get => enemyHand; }
+    public PlayerBoard EnemyBoard { get => enemyBoard; }
 
     public override void _Ready()
     {
