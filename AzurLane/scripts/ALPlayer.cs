@@ -46,7 +46,6 @@ public partial class ALPlayer : Player
 
     public override void _Ready()
     {
-        base._Ready();
         ai = new(this);
         asyncPhase = new(this);
         hand = GetNode<ALHand>("Hand");
@@ -62,11 +61,10 @@ public partial class ALPlayer : Player
 
         selectedCardInfo.Visible = isControlledPlayer; // Hide it if not the controlled player
 
-        InitializeEvents();
-
         database.LoadData();
-
         Callable.From(StartGameForPlayer).CallDeferred();
+
+        base._Ready(); // Call it at the end as the overrided code can use the refs correctly
     }
 
     public override void _Process(double delta)
@@ -90,8 +88,9 @@ public partial class ALPlayer : Player
         }
     }
 
-    protected new void InitializeEvents()
+    protected override void InitializeEvents()
     {
+        base.InitializeEvents();
         board.OnCardTrigger -= OnCardTriggerHandler;
         board.OnCardTrigger += OnCardTriggerHandler;
         hand.OnPlayCardStart -= OnPlayCardStartHandler; // Unload default event
@@ -103,7 +102,26 @@ public partial class ALPlayer : Player
         board.OnPlaceCardStart -= OnPlaceCardStartHandler;
         board.OnPlaceCardStart -= OnALPlaceCardStartHandler;
         board.OnPlaceCardStart += OnALPlaceCardStartHandler;
+        List<ALCard> units = unitsArea.TryGetAllChildOfType<ALCard>();
+        units.ForEach(unit =>
+        {
+            unit.OnDurabilityDamage -= OnDurabilityDamageHandler;
+            unit.OnDurabilityDamage += OnDurabilityDamageHandler;
+        });
+
         GD.Print("[InitializeEvents] ALPlayer events initialized");
+    }
+
+    protected override void UnassignBoardEvents(Board board)
+    {
+        base.UnassignBoardEvents(board);
+        if (enemyBoard is not null) enemyBoard.OnCardTrigger -= OnCardTriggerHandler;
+    }
+    protected override void AssignBoardEvents(Board board)
+    {
+        UnassignBoardEvents(board);
+        base.AssignBoardEvents(board);
+        if (enemyBoard is not null) enemyBoard.OnCardTrigger += OnCardTriggerHandler;
     }
 
     void BuildDeck()
@@ -197,6 +215,8 @@ public partial class ALPlayer : Player
         GD.Print($"[{Name}.PlayBattlePhase]");
         SetPlayState(EPlayState.Select);
         UpdatePhase(EALTurnPhase.Battle);
+
+        EndBattlePhaseIfNoActiveCards();
     }
     void PlayEndPhase()
     {
@@ -236,6 +256,13 @@ public partial class ALPlayer : Player
         asyncPhase.AwaitBefore(() => ApplyPhase(nextPhase));
     }
 
+    void EndBattlePhaseIfNoActiveCards()
+    {
+        List<ALCard> units = GetActiveUnitsInBoard();
+        if (units.Count > 0) return;
+        asyncPhase.AwaitBefore(PlayNextPhase, 0.5f);
+        GD.PrintErr($"[EndBattlePhaseIfNoActiveCards] No active cards, going to next phase");
+    }
 
     // Event handlers
     protected void OnCostPlayCardStartHandler(Card cardToPlay)
@@ -299,6 +326,7 @@ public partial class ALPlayer : Player
 
     protected void OnCardTriggerHandler(Card card)
     {
+        GD.Print($"[OnCardTriggerHandler] {card.Name}");
         // Ignore repeated triggers 
         asyncPhase.Debounce(() =>
         {
@@ -314,6 +342,17 @@ public partial class ALPlayer : Player
             }
         }, 1f);
     }
+    void OnDurabilityDamageHandler(Card card)
+    {
+        List<ALCard> durabilityCards = GetDurabilityCards();
+        ALCard durabilityCard = durabilityCards.FindLast(durabilityCard => durabilityCard.GetIsFaceDown());
+        if (durabilityCard is null) GD.Print($"[OnDurabilityDamageHandler] Game over for {Name}");
+
+        // "Draw" the card to hand 
+        durabilityCard.DestroyCard(); // Destroy card from board
+        hand.AddCardToHand(durabilityCard.GetAttributes<ALCardDTO>());
+        GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown())}/{durabilityCards.Count}");
+    }
 
     // Actions 
 
@@ -321,7 +360,6 @@ public partial class ALPlayer : Player
     {
         battleAttackerCard = attacker;
         SetPlayState(EPlayState.SelectTarget);
-
     }
 
     // Limitations on attack
@@ -330,6 +368,11 @@ public partial class ALPlayer : Player
     // Flagship -> All Ships
     void AttackCard(ALCard attacker, ALCard target)
     {
+        if (attacker.GetBoard().GetPlayer() == target.GetBoard().GetPlayer())
+        {
+            GD.PrintErr($"[AttackCard] {attacker.Name} cannot attack {target.Name} as they are allies!");
+            return;
+        }
         bool canBeAttacked = target.CanBeAttacked(attacker.GetAttackFieldType(), attacker.GetIsAFlagship());
         if (!canBeAttacked)
         {
@@ -338,7 +381,10 @@ public partial class ALPlayer : Player
         }
         battleAttackedCard = target;
 
-        // TODO: Add support
+        GD.PrintErr($"[AttackCard] {battleAttackerCard.Name} attacks {battleAttackedCard}!");
+        // TODO: Add support ships gameplay
+
+        SettleBattle();
     }
 
     void SettleBattle()
@@ -349,9 +395,22 @@ public partial class ALPlayer : Player
         {
             if (battleAttackedCard.GetIsAFlagship())
             {
-                battleAttackedCard.GetBoard().GetPlayer();
+                GD.PrintErr($"[SettleBattle] {battleAttackedCard.GetBoard().GetPlayer().Name} Takes durability damage!");
+                battleAttackedCard.TakeDurabilityDamage();
+            }
+            else
+            {
+                GD.PrintErr($"[SettleBattle] {battleAttackedCard} destroyed!");
+                battleAttackedCard.DestroyCard();
             }
         }
+        else
+        {
+            GD.PrintErr($"[SettleBattle] Attack did not go through");
+        }
+
+
+        EndBattlePhaseIfNoActiveCards();
     }
 
 
@@ -437,7 +496,9 @@ public partial class ALPlayer : Player
         unitsArea.TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
     }
 
+    List<ALCard> GetActiveUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
+    List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
     List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
 
     void UpdatePhase(EALTurnPhase phase)

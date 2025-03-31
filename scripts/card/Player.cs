@@ -36,15 +36,16 @@ public partial class Player : Node3D
         hand = GetNode<PlayerHand>("Hand");
         board = GetNode<PlayerBoard>("Board");
         orderedBoards = [hand, board];
+        InitializeEvents();
+
         if (isControlledPlayer)
         {
-            InitializeEvents();
             SelectBoard(hand);
             orderedBoards[0].SetCanReceivePlayerInput(true); // For the playing user we need an active board at start
         }
     }
 
-    protected void InitializeEvents()
+    protected virtual void InitializeEvents()
     {
         hand.OnPlayCardStart -= OnPlayCardStartHandler;
         hand.OnPlayCardStart += OnPlayCardStartHandler;
@@ -57,16 +58,15 @@ public partial class Player : Node3D
         GD.Print("[InitializeEvents] Default Player events initialized");
     }
 
-    void UnassignBoardEvents(Board board)
+    protected virtual void UnassignBoardEvents(Board board)
     {
         board.OnBoardEdge -= OnBoardEdgeHandler;
         board.OnSelectFixedCardEdge -= OnSelectFixedCardEdgeHandler;
     }
-    void AssignBoardEvents(Board board)
+    protected virtual void AssignBoardEvents(Board board)
     {
-        board.OnBoardEdge -= OnBoardEdgeHandler;
+        UnassignBoardEvents(board);
         board.OnBoardEdge += OnBoardEdgeHandler;
-        board.OnSelectFixedCardEdge -= OnSelectFixedCardEdgeHandler;
         board.OnSelectFixedCardEdge += OnSelectFixedCardEdgeHandler;
     }
 
@@ -74,7 +74,7 @@ public partial class Player : Node3D
     {
         cardPlaced.IsEmptyField = false;
         SetPlayState(EPlayState.Select);
-        SelectBoard(hand);
+        SelectBoardAndAllowInput(hand);
     }
 
     protected void OnPlaceCardStartHandler(Card cardPlaced)
@@ -86,16 +86,16 @@ public partial class Player : Node3D
     {
         hand.RemoveCardFromHand(cardPlaced);
         SetPlayState(EPlayState.Select);
-        SelectBoard(hand);
+        SelectBoardAndAllowInput(hand);
     }
 
     protected void OnPlayCardStartHandler(Card cardToPlay)
     {
         GD.Print($"[OnPlayCardStartHandler] Card to play {cardToPlay} {cardToPlay.GetAttributes<CardDTO>().name}");
-        board.CardToPlay = cardToPlay;
+        board.CardToPlace = cardToPlay;
         cardToPlay.IsEmptyField = true;
         SetPlayState(EPlayState.PlaceCard);
-        SelectBoard(board);
+        SelectBoardAndAllowInput(board);
     }
 
     protected void OnBoardEdgeHandler(Board exitingBoard, Vector2I axis)
@@ -112,10 +112,9 @@ public partial class Player : Node3D
         exitingBoard.SetCanReceivePlayerInput(false);
 
         Board newBoard = orderedBoards[newIndex];
-        SelectBoard(newBoard);
+        SelectBoardAndAllowInput(newBoard);
         selectedBoardIndex = newIndex;
 
-        boardInputAsync.AwaitBefore(() => newBoard.SetCanReceivePlayerInput(true), 0.05f); // Delay execution so the newBoard doesn't retrigger this event
         GD.Print($"[OnBoardEdgeHandler] {newBoard.GetPlayer().Name} {newBoard.Name} - {selectedBoardIndex} ");
     }
 
@@ -128,9 +127,8 @@ public partial class Player : Node3D
         Board newBoard = card.GetBoard();
         selectedBoardIndex = orderedBoards.FindIndex((board) => board == newBoard);
 
-        SelectBoard(newBoard);
+        SelectBoardAndAllowInput(newBoard);
         newBoard.SelectCardField(card.PositionInBoard); // Use the card's board to select itself, a referenced card can be from another board than the triggering one
-        boardInputAsync.AwaitBefore(() => newBoard.SetCanReceivePlayerInput(true), 0.05f); // Delay execution so the newBoard doesn't retrigger this event
 
         GD.Print($"[OnSelectFixedCardEdgeHandler] {newBoard.GetPlayer().Name} {newBoard.GetType()} - {selectedBoardIndex} ");
     }
@@ -142,15 +140,21 @@ public partial class Player : Node3D
         if (selectedBoard is not null) AssignBoardEvents(selectedBoard);
     }
 
+    protected void SelectBoardAndAllowInput(Board board)
+    {
+        selectedBoard?.SetCanReceivePlayerInput(false);
+        SelectBoard(board);
+        boardInputAsync.AwaitBefore(() => board?.SetCanReceivePlayerInput(true), 0.05f); // Delay execution so the newBoard doesn't retrigger this event
+    }
+
     protected void SetPlayState(EPlayState state)
     {
         EPlayState oldState = playState;
-        var task = this.Wait(0.1f, () => // This delay allows to avoid trigering different EPlayState events on the same frame
+        boardInputAsync.AwaitBefore(() => // This delay allows to avoid trigering different EPlayState events on the same frame
           {
-              //  groups.ForEach(group => group.playState = state);
               playState = state;
               GD.Print("[SetPlayState] " + oldState + " -> " + playState);
-          });
+          }, 0.1f);
     }
 
     protected static T DrawCard<T>(List<T> deck)
@@ -163,7 +167,6 @@ public partial class Player : Node3D
         deck.RemoveAt(0);
         return cardToDraw;
     }
-
 
     // Public API
     public void AssignEnemyBoards(PlayerHand _hand, PlayerBoard _board)

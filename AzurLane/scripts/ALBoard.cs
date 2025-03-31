@@ -4,7 +4,6 @@ using Godot;
 public partial class ALBoard : PlayerBoard
 {
     protected new PackedScene cardTemplate = GD.Load<PackedScene>("AzurLane/AzurLaneCard.tscn");
-
     public override void PlaceCardInBoardFromHand(Card cardToPlace)
     {
         ALCard card = cardToPlace.CastToALCard();

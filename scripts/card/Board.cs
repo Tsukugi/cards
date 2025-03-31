@@ -96,10 +96,6 @@ public partial class Board : Node3D
     {
         canReceivePlayerInput = value;
         GD.Print($"[SetCanReceivePlayerInput] {player.Name}.{Name} {canReceivePlayerInput}");
-        if (canReceivePlayerInput)
-        {
-            SelectCardField(selectedCardPosition);
-        }
     }
     public bool GetCanReceivePlayerInput() => canReceivePlayerInput;
 

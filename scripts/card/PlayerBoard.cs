@@ -9,13 +9,14 @@ public partial class PlayerBoard : Board
     public event CardTriggerEvent OnCardTrigger;
     public override event BoardEdgeEvent OnBoardEdge;
     public override event BoardCardEvent OnSelectFixedCardEdge;
-    public Card CardToPlay = null;
-
+    public Card CardToPlace = null;
     public override void _Process(double delta)
     {
         if (!GetCanReceivePlayerInput()) return;
         OnAxisChangeHandler(axisInputHandler.GetAxis());
-        OnActionHandler(actionInputHandler.GetAction());
+        InputAction action = actionInputHandler.GetAction();
+        if (action != InputAction.None) GD.Print($"[Action Triggered by player {GetPlayer().Name}] {action}");
+        OnActionHandler(action);
     }
 
     void OnActionHandler(InputAction action)
@@ -26,8 +27,9 @@ public partial class PlayerBoard : Board
                 {
                     switch (player.GetPlayState())
                     {
-                        case EPlayState.PlaceCard: StartPlaceCard(CardToPlay); break;
-                        case EPlayState.Select: OnCardTrigger(GetSelectedCard<Card>()); break;
+                        case EPlayState.PlaceCard: StartPlaceCard(CardToPlace); break;
+                        case EPlayState.Select: TriggerCard(); break;
+                        case EPlayState.SelectTarget: TriggerCard(); break;
                     }
                     break;
                 }
@@ -43,13 +45,18 @@ public partial class PlayerBoard : Board
         }
     }
 
+    void TriggerCard()
+    {
+        GD.Print($"[TriggerCard] Triggering card {GetSelectedCard<Card>()}");
+        if (OnCardTrigger is not null && GetSelectedCard<Card>() is Card card) OnCardTrigger(card);
+    }
+
     void OnAxisChangeHandler(Vector2I axis)
     {
         if (axis == Vector2I.Zero) return;
 
-        if (OnSelectFixedCardEdge is not null)
+        if (OnSelectFixedCardEdge is not null && GetSelectedCard<Card>() is Card selectedCard)
         {
-            Card selectedCard = GetSelectedCard<Card>();
             // Override search with predefined edges
             if (axis == Vector2I.Up && selectedCard.EdgeUp is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeUp); return; }
             if (axis == Vector2I.Down && selectedCard.EdgeDown is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeDown); return; }
@@ -71,29 +78,17 @@ public partial class PlayerBoard : Board
 
     void CancelPlaceCard()
     {
-        OnPlaceCardCancel(CardToPlay);
-        CardToPlay = null;
+        OnPlaceCardCancel(CardToPlace);
+        CardToPlace = null;
     }
 
-    public virtual void PlaceCardInBoardFromHand(Card cardToPlace)
-    {
-        Card selectedCard = GetSelectedCard<Card>();
-        if (!selectedCard.CanPlayerPlaceInThisField())
-        {
-            GD.PrintErr("[PlaceCardInBoardFromHand] This card place is not placeable!");
-            return;
-        }
-        var attributes = cardToPlace.GetAttributes<CardDTO>();
-        GD.Print($"[PlaceCardInBoardFromHand] Placing {attributes.name}!");
-        selectedCard.UpdateAttributes(attributes);
-        OnPlaceCardEnd(cardToPlace);
-        CardToPlay = null;
-    }
 
     protected void StartPlaceCard(Card cardtoPlace)
     {
         if (OnPlaceCardStart is not null) OnPlaceCardStart(cardtoPlace);
     }
+
+    // --- Public API ---
 
     public void SetAllCardsAsActive()
     {
@@ -106,4 +101,18 @@ public partial class PlayerBoard : Board
     }
 
     public static Card FindLastEmptyFieldInRow(List<Card> row) => row.Find(card => card.IsEmptyField == true);
+    public virtual void PlaceCardInBoardFromHand(Card cardToPlace)
+    {
+        Card selectedCard = GetSelectedCard<Card>();
+        if (!selectedCard.CanPlayerPlaceInThisField())
+        {
+            GD.PrintErr("[PlaceCardInBoardFromHand] This card place is not placeable!");
+            return;
+        }
+        var attributes = cardToPlace.GetAttributes<CardDTO>();
+        GD.Print($"[PlaceCardInBoardFromHand] Placing {attributes.name}!");
+        selectedCard.UpdateAttributes(attributes);
+        OnPlaceCardEnd(cardToPlace);
+        CardToPlace = null;
+    }
 }

@@ -98,6 +98,12 @@ public partial class Card : CardField
         //GD.Print($"[Card.UpdateAttributes] {attributes.name}");
     }
 
+    public void DestroyCard()
+    {
+        attributes = new();
+        IsEmptyField = true;
+    }
+
     Resource LoadCardImage(string path)
     {
         return GD.Load($"{resourcePath}{path}");

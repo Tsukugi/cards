@@ -2,6 +2,7 @@ using Godot;
 
 public partial class ALCard : Card
 {
+    public event OnProvidedCardEvent OnDurabilityDamage;
     Node3D UI;
     Label3D powerLabel, stackCount;
     [Export]
@@ -85,7 +86,7 @@ public partial class ALCard : Card
 
     public void TakeDurabilityDamage()
     {
-
+        if (OnDurabilityDamage is not null) OnDurabilityDamage(this);
     }
 }
 
