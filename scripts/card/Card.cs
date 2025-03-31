@@ -107,7 +107,6 @@ public partial class Card : CardField
 
     public void DestroyCard()
     {
-        attributes = new();
         IsEmptyField = true;
     }
 

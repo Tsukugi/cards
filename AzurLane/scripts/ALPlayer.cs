@@ -314,7 +314,11 @@ public partial class ALPlayer : Player
     {
         ALCard cardToPlace = fieldToPlace.CastToALCard();
         ALCard fieldBeingPlaced = board.GetSelectedCard<ALCard>(this);
-
+        if (fieldBeingPlaced.GetIsAFlagship())
+        {
+            GD.PrintErr($"[PlaceCardInBoardFromHand] You cannot place cards in a flagship field");
+            return;
+        }
         if (!fieldBeingPlaced.IsEmptyField)
         {
             ALCardDTO existingCard = fieldBeingPlaced.GetAttributes<ALCardDTO>();
@@ -383,10 +387,11 @@ public partial class ALPlayer : Player
         battleAttackedCard = target;
 
         battleAttackerCard.SetIsInActiveState(false);
-        GD.PrintErr($"[AttackCard] {battleAttackerCard.Name} attacks {battleAttackedCard}!");
+        GD.Print($"[AttackCard] {battleAttackerCard.Name} attacks {battleAttackedCard}!");
+
         // TODO: Add support ships gameplay
 
-        SettleBattle();
+        asyncPhase.AwaitBefore(SettleBattle, 0.5f);
     }
 
     void SettleBattle()
@@ -397,12 +402,12 @@ public partial class ALPlayer : Player
         {
             if (battleAttackedCard.GetIsAFlagship())
             {
-                GD.PrintErr($"[SettleBattle] {battleAttackedCard.Name} Takes durability damage!");
+                GD.Print($"[SettleBattle] {battleAttackedCard.Name} Takes durability damage!");
                 battleAttackedCard.TakeDurabilityDamage();
             }
             else
             {
-                GD.PrintErr($"[SettleBattle] {battleAttackedCard} destroyed!");
+                GD.Print($"[SettleBattle] {battleAttackedCard} destroyed!");
                 battleAttackedCard.DestroyCard();
             }
         }
@@ -411,7 +416,7 @@ public partial class ALPlayer : Player
             GD.PrintErr($"[SettleBattle] Attack did not go through");
         }
 
-
+        SetPlayState(EPlayState.Select);
         EndBattlePhaseIfNoActiveCards();
     }
 

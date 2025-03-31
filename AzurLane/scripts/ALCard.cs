@@ -60,7 +60,7 @@ public partial class ALCard : Card
     // --- API ---
 
     public bool CanShowStackCount() => !IsEmptyField && CardStack > 1;
-    public bool CanShowCardDetailsUI() => !IsEmptyField && !isDeck && !(isFlagship && GetIsFaceDown());
+    public bool CanShowCardDetailsUI() => !IsEmptyField && !isDeck && !(isFlagship && GetIsFaceDown()) && !GetIsFaceDown();
     public bool CanShowPowerLabel() => !IsEmptyField && !isResource && !isDeck;
 
     public void SetIsInActiveState(bool isActive)
@@ -76,7 +76,7 @@ public partial class ALCard : Card
         switch (attackerType)
         {
             case EAttackFieldType.CantAttackHere: GD.PushError("[CanBeAttacked] A non attacker card is trying to start an attack"); return false;
-            case EAttackFieldType.BackRow: return attackFieldType == EAttackFieldType.FrontRow ; // A backAttacker only can attack front row
+            case EAttackFieldType.BackRow: return attackFieldType == EAttackFieldType.FrontRow; // A backAttacker only can attack front row
             case EAttackFieldType.FrontRow: return true; // A frontAttacker can attack everyone
             default: return false;
         }

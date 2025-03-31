@@ -7,13 +7,13 @@ public partial class ALBoard : PlayerBoard
     public override void PlaceCardInBoardFromHand<T>(T cardToPlace)
     {
         Player playingPlayer = GetPlayerPlayingTurn();
-        base.PlaceCardInBoardFromHand(cardToPlace);
         ALCard selectedField = GetSelectedCard<ALCard>(playingPlayer);
         if (selectedField is null)
         {
             GD.PrintErr($"[PlaceCardInBoardFromHand] Field cannot be found");
             return;
         }
+        base.PlaceCardInBoardFromHand(cardToPlace);
         selectedField.UpdateAttributes(cardToPlace.GetAttributes<ALCardDTO>());
     }
 
