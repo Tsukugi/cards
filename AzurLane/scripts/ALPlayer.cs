@@ -266,7 +266,7 @@ public partial class ALPlayer : Player
     }
 
     // Event handlers
-    protected void OnCostPlayCardStartHandler(Card cardToPlay)
+    public void OnCostPlayCardStartHandler(Card cardToPlay)
     {
         if (currentPhase != EALTurnPhase.Main)
         {

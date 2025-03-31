@@ -41,7 +41,7 @@ public class ALBasicAI(ALPlayer _player)
     public void PlayCardToBoard(List<ALCard> availableCardsInHand, bool front = true)
     {
         SelectAvailableEmptyField(front);
-        player.Board.PlaceCardInBoardFromHand(FindMostExpensiveCard(availableCardsInHand));
+        player.OnCostPlayCardStartHandler(FindMostExpensiveCard(availableCardsInHand));
     }
 
     // Battle Phase
