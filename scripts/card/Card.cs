@@ -4,12 +4,14 @@ public partial class Card : CardField
 {
     readonly string resourcePath = "res://AzurLane/res/";
     public delegate void OnProvidedCardEvent(Card card);
-    protected Node3D cardDisplay, selectedIndicator = null;
-    protected MeshInstance3D front = null, back = null, side = null;
+    protected Node3D cardDisplay;
+    protected MeshInstance3D front = null, back = null, side = null, selectedIndicator = null;
     protected Board board;
 
     Resource cardImage, cardBackImage;
 
+    [Export]
+    Color selectedIndicatorColor = new();
     [Export]
     public Card EdgeUp, EdgeDown, EdgeLeft, EdgeRight;
 
@@ -26,7 +28,7 @@ public partial class Card : CardField
         board.OnSelectCardPosition -= OnSelectCardPositionHandler;
         board.OnSelectCardPosition += OnSelectCardPositionHandler;
         cardDisplay = GetNode<Node3D>("CardDisplay");
-        selectedIndicator = GetNodeOrNull<Node3D>("CardDisplay/SelectedIndicator");
+        selectedIndicator = GetNodeOrNull<MeshInstance3D>("CardDisplay/SelectedIndicator");
         front = GetNodeOrNull<MeshInstance3D>("CardDisplay/Front");
         back = GetNodeOrNull<MeshInstance3D>("CardDisplay/Back");
         side = GetNodeOrNull<MeshInstance3D>("CardDisplay/Side");
@@ -42,19 +44,24 @@ public partial class Card : CardField
         cardDisplay.Scale = cardDisplay.Scale.WithY(CardStack);
     }
 
-    void OnSelectCardPositionHandler(Vector2I position, OnProvidedCardEvent cardCallback)
+    void OnSelectCardPositionHandler(Player player, Vector2I position, OnProvidedCardEvent cardCallback)
     {
         bool isSelectingThisCard = position == PositionInBoard;
         SetIsSelected(isSelectingThisCard);
         if (isSelectingThisCard)
         {
+            selectedIndicatorColor = player.GetPlayerColor();
             cardCallback(this);
         }
     }
 
     void OnSelectHandler(bool isSelected)
     {
-        if (selectedIndicator is not null) selectedIndicator.Visible = isSelected;
+        if (selectedIndicator is not null)
+        {
+            selectedIndicator.Visible = isSelected;
+            if (isSelected) UpdateColor(selectedIndicator, selectedIndicatorColor);
+        }
     }
 
     protected virtual void OnCardUpdateHandler()
@@ -109,12 +116,21 @@ public partial class Card : CardField
         return GD.Load($"{resourcePath}{path}");
     }
 
-    protected void UpdateImageTexture(MeshInstance3D target, CompressedTexture2D texture)
+    protected static void UpdateImageTexture(MeshInstance3D target, CompressedTexture2D texture)
     {
         var material = target.GetActiveMaterial(0).Duplicate(); // I wanna break the reference on the prefab
         if (material is StandardMaterial3D material3D)
         {
             material3D.AlbedoTexture = texture;
+            target.SetSurfaceOverrideMaterial(0, material3D);
+        }
+    }
+    protected static void UpdateColor(MeshInstance3D target, Color color)
+    {
+        var material = target.GetActiveMaterial(0).Duplicate(); // I wanna break the reference on the prefab
+        if (material is StandardMaterial3D material3D)
+        {
+            material3D.AlbedoColor = color;
             target.SetSurfaceOverrideMaterial(0, material3D);
         }
     }

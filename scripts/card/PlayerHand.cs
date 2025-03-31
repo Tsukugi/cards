@@ -22,7 +22,7 @@ public partial class PlayerHand : Board
     public override void _Process(double delta)
     {
         bool allowInput = GetCanReceivePlayerInput();
-        if (player.GetIsControllerPlayer()) { Position = allowInput ? originalPosition : originalPosition + positionOffsetWhenInactive; }
+        if (true) { Position = allowInput ? originalPosition : originalPosition + positionOffsetWhenInactive; } // TODO add position for active enemy hand
         if (!allowInput) return;
         Vector2I axis = axisInputHandler.GetAxis();
         OnAxisChangeHandler(axis);
@@ -31,14 +31,15 @@ public partial class PlayerHand : Board
 
     protected void ManageAction()
     {
+        Player playingPlayer = GetPlayerPlayingTurn();
         InputAction action = actionInputHandler.GetAction();
         switch (action)
         {
             case InputAction.Ok:
                 {
-                    switch (player.GetPlayState())
+                    switch (playingPlayer.GetPlayState())
                     {
-                        case EPlayState.Select: StartPlayCard(GetSelectedCard<Card>()); break;
+                        case EPlayState.Select: StartPlayCard(GetSelectedCard<Card>(playingPlayer)); break;
                     }
                     break;
                 }
@@ -74,6 +75,7 @@ public partial class PlayerHand : Board
     {
         if (axis == Vector2I.Zero) return;
 
+        Player playingPlayer = GetPlayerPlayingTurn();
         Vector2I newPosition = selectedCardPosition + axis;
 
         Card? card = FindCardInTree(newPosition);
@@ -84,7 +86,7 @@ public partial class PlayerHand : Board
         }
 
         selectedCardPosition = newPosition;
-        SelectCardField(selectedCardPosition);
+        SelectCardField(playingPlayer, selectedCardPosition);
         RepositionHandCards();
         GD.Print($"[PlayerHand.OnAxisChangeHandler] SelectCardField in board for position {newPosition}");
     }

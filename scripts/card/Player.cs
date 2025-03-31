@@ -18,6 +18,8 @@ public partial class Player : Node3D
     protected PlayerHand enemyHand;
     protected PlayerBoard enemyBoard;
     AsyncHandler boardInputAsync;
+    [Export]
+    Color playerColor = new();
 
     // Board position state
     List<Board> orderedBoards;
@@ -105,7 +107,7 @@ public partial class Player : Node3D
         // We invert the input if belongs to player as Up is <0,-1> and the boards are (0, 1, 2, 3) Hand, Board, enemyBoard, enemyHand
         // So by having Up as 0,1 and Down as 0,-1 we can correctly switch between this order
         Vector2I invertedAxis = axis * -1;
-        int invertedToken = exitingBoard.DoesBelongToPlayer(this) ? 1 : -1;
+        int invertedToken = !exitingBoard.GetIsEnemyBoard() ? 1 : -1;
         int newIndex = selectedBoardIndex + (invertedAxis.Y * invertedToken);
         if (!orderedBoards.Count.IsInsideBounds(newIndex)) { return; }
 
@@ -115,7 +117,7 @@ public partial class Player : Node3D
         SelectBoardAndAllowInput(newBoard);
         selectedBoardIndex = newIndex;
 
-        GD.Print($"[OnBoardEdgeHandler] {newBoard.GetPlayer().Name} {newBoard.Name} - {selectedBoardIndex} ");
+        GD.Print($"[OnBoardEdgeHandler] {newBoard.Name} - {selectedBoardIndex} ");
     }
 
     protected void OnSelectFixedCardEdgeHandler(Board triggeringBoard, Card card)
@@ -128,9 +130,9 @@ public partial class Player : Node3D
         selectedBoardIndex = orderedBoards.FindIndex((board) => board == newBoard);
 
         SelectBoardAndAllowInput(newBoard);
-        newBoard.SelectCardField(card.PositionInBoard); // Use the card's board to select itself, a referenced card can be from another board than the triggering one
+        newBoard.SelectCardField(this, card.PositionInBoard); // Use the card's board to select itself, a referenced card can be from another board than the triggering one
 
-        GD.Print($"[OnSelectFixedCardEdgeHandler] {newBoard.GetPlayer().Name} {newBoard.GetType()} - {selectedBoardIndex} ");
+        GD.Print($"[OnSelectFixedCardEdgeHandler] {newBoard.GetType()} - {selectedBoardIndex} ");
     }
 
     protected void SelectBoard(Board board)
@@ -180,4 +182,5 @@ public partial class Player : Node3D
 
     public EPlayState GetPlayState() => playState;
     public bool GetIsControllerPlayer() => isControlledPlayer;
+    public Color GetPlayerColor() => playerColor;
 }

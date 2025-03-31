@@ -34,7 +34,7 @@ public partial class ALCard : Card
         if (UI is not null)
         {
             // This rotates the Card UI to be seen from an inverted board (enemyBoard)
-            if (board.GetPlayer().GetIsControllerPlayer()) UI.RotationDegrees = UI.RotationDegrees.WithY(0);
+            if (!board.GetIsEnemyBoard()) UI.RotationDegrees = UI.RotationDegrees.WithY(0);
             else UI.RotationDegrees = UI.RotationDegrees.WithY(180);
         }
 
@@ -71,12 +71,12 @@ public partial class ALCard : Card
     }
 
     public bool GetIsInActiveState() => !IsEmptyField && isInActiveState;
-    public bool CanBeAttacked(EAttackFieldType attackerType, bool isFlagship)
+    public bool CanBeAttacked(EAttackFieldType attackerType)
     {
         switch (attackerType)
         {
             case EAttackFieldType.CantAttackHere: GD.PushError("[CanBeAttacked] A non attacker card is trying to start an attack"); return false;
-            case EAttackFieldType.BackRow: return attackFieldType == EAttackFieldType.FrontRow || isFlagship; // A backAttacker only can attack front row, if Flagship, they can attack everyone
+            case EAttackFieldType.BackRow: return attackFieldType == EAttackFieldType.FrontRow ; // A backAttacker only can attack front row
             case EAttackFieldType.FrontRow: return true; // A frontAttacker can attack everyone
             default: return false;
         }

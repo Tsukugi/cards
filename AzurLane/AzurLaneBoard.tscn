@@ -50,13 +50,14 @@ IsPlayerPlaceable = false
 
 [node name="CardDisplay" type="Node3D" parent="PhaseButton"]
 
-[node name="SelectedIndicator" type="Node3D" parent="PhaseButton/CardDisplay"]
+[node name="SelectedIndicator" type="MeshInstance3D" parent="PhaseButton/CardDisplay"]
+transform = Transform3D(3, 0, 0, 5.96046e-08, 3, 2.98023e-08, 5.96046e-08, 8.9407e-08, 3, 0, 0, 0)
+mesh = SubResource("BoxMesh_n0ao8")
+skeleton = NodePath("../SelectedIndicator3")
+
+[node name="SelectedIndicator3" type="Node3D" parent="PhaseButton/CardDisplay"]
 transform = Transform3D(1, 2.98023e-08, 2.98023e-08, 2.98023e-08, 1, 0, 5.96046e-08, 2.23517e-08, 1, 0, 0, 0)
 visible = false
-
-[node name="Indicator" type="MeshInstance3D" parent="PhaseButton/CardDisplay/SelectedIndicator"]
-transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
-mesh = SubResource("BoxMesh_n0ao8")
 
 [node name="Mat" type="MeshInstance3D" parent="."]
 transform = Transform3D(2.5, 0, 0, 0, 2.5, 0, 0, 0, 2.5, 0, 0, 0)
@@ -89,6 +90,7 @@ IsEmptyField = true
 
 [node name="Flagship" parent="Units" instance=ExtResource("2_6xv5f")]
 attackFieldType = 1
+isFlagship = true
 PositionInBoard = Vector2i(1, 1)
 IsPlayerPlaceable = false
 
@@ -106,6 +108,7 @@ isResource = true
 isFaceDown = true
 isSideWays = true
 PositionInBoard = Vector2i(-1, 1)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -115,6 +118,7 @@ isResource = true
 isFaceDown = true
 isSideWays = true
 PositionInBoard = Vector2i(-1, 0)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -124,6 +128,7 @@ isResource = true
 isFaceDown = true
 isSideWays = true
 PositionInBoard = Vector2i(-1, -1)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -133,6 +138,7 @@ isResource = true
 isFaceDown = true
 isSideWays = true
 PositionInBoard = Vector2i(-1, -2)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -142,6 +148,7 @@ isResource = true
 isFaceDown = true
 isSideWays = true
 PositionInBoard = Vector2i(-1, -3)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -151,6 +158,7 @@ isResource = true
 isFaceDown = true
 isSideWays = true
 PositionInBoard = Vector2i(-1, -4)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -160,6 +168,7 @@ isResource = true
 isFaceDown = true
 isSideWays = true
 PositionInBoard = Vector2i(-1, -5)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -169,6 +178,7 @@ isResource = true
 isFaceDown = true
 isSideWays = true
 PositionInBoard = Vector2i(-1, -6)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -178,6 +188,7 @@ isResource = true
 isFaceDown = true
 isSideWays = true
 PositionInBoard = Vector2i(-1, -7)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -187,6 +198,7 @@ isResource = true
 isFaceDown = true
 isSideWays = true
 PositionInBoard = Vector2i(-1, -8)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -198,8 +210,9 @@ PositionInBoard = Vector2i(-1, 2)
 IsPlaceable = false
 IsPlayerPlaceable = false
 
-[node name="Deck" parent="." instance=ExtResource("2_6xv5f")]
+[node name="Deck" parent="." node_paths=PackedStringArray("EdgeDown") instance=ExtResource("2_6xv5f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2017, 0, -0.0664625)
+EdgeDown = NodePath("../Retreat")
 isFaceDown = true
 isDeck = true
 PositionInBoard = Vector2i(3, 1)
@@ -212,6 +225,7 @@ IsPlayerPlaceable = false
 transform = Transform3D(0.999848, -0.0174524, 0, 0.0174524, 0.999848, -2.57913e-15, 4.50119e-17, 2.57873e-15, 1, -7, 0.2, 8.5)
 isResource = true
 PositionInBoard = Vector2i(0, 2)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -219,6 +233,7 @@ IsEmptyField = true
 transform = Transform3D(0.999848, -0.0174524, 0, 0.0174524, 0.999848, -2.57913e-15, 4.50119e-17, 2.57873e-15, 1, -6, 0.2, 8.5)
 isResource = true
 PositionInBoard = Vector2i(1, 2)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -226,6 +241,7 @@ IsEmptyField = true
 transform = Transform3D(0.999848, -0.0174524, 0, 0.0174524, 0.999848, -2.57913e-15, 4.50119e-17, 2.57873e-15, 1, -5, 0.2, 8.5)
 isResource = true
 PositionInBoard = Vector2i(2, 2)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -233,6 +249,7 @@ IsEmptyField = true
 transform = Transform3D(0.999848, -0.0174524, 0, 0.0174524, 0.999848, -2.57913e-15, 4.50119e-17, 2.57873e-15, 1, -4, 0.2, 8.5)
 isResource = true
 PositionInBoard = Vector2i(3, 2)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -240,6 +257,7 @@ IsEmptyField = true
 transform = Transform3D(0.999848, -0.0174524, 0, 0.0174524, 0.999848, -2.57913e-15, 4.50119e-17, 2.57873e-15, 1, -3, 0.2, 8.5)
 isResource = true
 PositionInBoard = Vector2i(4, 2)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -247,6 +265,7 @@ IsEmptyField = true
 transform = Transform3D(0.999848, -0.0174524, 0, 0.0174524, 0.999848, -2.57913e-15, 4.50119e-17, 2.57873e-15, 1, -2, 0.2, 8.5)
 isResource = true
 PositionInBoard = Vector2i(5, 2)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -254,6 +273,7 @@ IsEmptyField = true
 transform = Transform3D(0.999848, -0.0174524, 0, 0.0174524, 0.999848, -2.57913e-15, 4.50119e-17, 2.57873e-15, 1, -1, 0.2, 8.5)
 isResource = true
 PositionInBoard = Vector2i(6, 2)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -261,6 +281,7 @@ IsEmptyField = true
 transform = Transform3D(0.999848, -0.0174524, 0, 0.0174524, 0.999848, -2.57913e-15, 4.50119e-17, 2.57873e-15, 1, 0, 0.2, 8.5)
 isResource = true
 PositionInBoard = Vector2i(7, 2)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
@@ -268,18 +289,22 @@ IsEmptyField = true
 transform = Transform3D(0.999848, -0.0174524, 0, 0.0174524, 0.999848, -2.57913e-15, 4.50119e-17, 2.57873e-15, 1, 1, 0.2, 8.5)
 isResource = true
 PositionInBoard = Vector2i(8, 2)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
-[node name="Cost10" parent="CostArea" instance=ExtResource("2_6xv5f")]
+[node name="Cost10" parent="CostArea" node_paths=PackedStringArray("EdgeRight") instance=ExtResource("2_6xv5f")]
 transform = Transform3D(0.999848, -0.0174524, 0, 0.0174524, 0.999848, -2.57913e-15, 4.50119e-17, 2.57873e-15, 1, 2, 0.2, 8.5)
 isResource = true
+EdgeRight = NodePath("../../Retreat")
 PositionInBoard = Vector2i(9, 2)
+IsInputSelectable = false
 IsPlayerPlaceable = false
 IsEmptyField = true
 
-[node name="Retreat" parent="." instance=ExtResource("2_6xv5f")]
+[node name="Retreat" parent="." node_paths=PackedStringArray("EdgeUp") instance=ExtResource("2_6xv5f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.1469, 0, 8.27829)
+EdgeUp = NodePath("../Deck")
 PositionInBoard = Vector2i(10, 2)
 IsPlayerPlaceable = false
 IsEmptyField = true

@@ -1,17 +1,11 @@
 using System.Threading.Tasks;
 
-public class ALBasicAI
+public class ALBasicAI(ALPlayer _player)
 {
-    AsyncHandler asyncHandler;
-    ALPlayer player;
+    readonly AsyncHandler asyncHandler = new(_player);
+    readonly ALPlayer player = _player;
 
     int actionDelay = 250; // Miliseconds for every AI action
-
-    public ALBasicAI(ALPlayer _player)
-    {
-        player = _player;
-        asyncHandler = new(_player);
-    }
 
     public async Task SkipTurn()
     {

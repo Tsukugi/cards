@@ -25,6 +25,7 @@ material = SubResource("StandardMaterial3D_vvt6y")
 
 [node name="Card" type="Node3D"]
 script = ExtResource("1_hunl0")
+selectedIndicatorColor = Color(4.57242e-06, 0.345255, 0.535879, 0.607843)
 
 [node name="UI" type="Node3D" parent="."]
 

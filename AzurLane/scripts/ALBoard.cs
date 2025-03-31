@@ -4,17 +4,23 @@ using Godot;
 public partial class ALBoard : PlayerBoard
 {
     protected new PackedScene cardTemplate = GD.Load<PackedScene>("AzurLane/AzurLaneCard.tscn");
-    public override void PlaceCardInBoardFromHand(Card cardToPlace)
+    public override void PlaceCardInBoardFromHand<T>(T cardToPlace)
     {
-        ALCard card = cardToPlace.CastToALCard();
+        Player playingPlayer = GetPlayerPlayingTurn();
         base.PlaceCardInBoardFromHand(cardToPlace);
-        GetSelectedCard<ALCard>().UpdateAttributes(card.GetAttributes<ALCardDTO>());
+        ALCard selectedField = GetSelectedCard<ALCard>(playingPlayer);
+        if (selectedField is null)
+        {
+            GD.PrintErr($"[PlaceCardInBoardFromHand] Field cannot be found");
+            return;
+        }
+        selectedField.UpdateAttributes(cardToPlace.GetAttributes<ALCardDTO>());
     }
 
-    public ALCard GetCardInPosition(Vector2I position)
+    public ALCard? GetCardInPosition(ALPlayer player, Vector2I position)
     {
-        SelectCardField(position);
-        return GetSelectedCard<ALCard>();
+        SelectCardField(player, position);
+        return GetSelectedCard<ALCard>(player);
     }
     public static ALCard FindLastActiveCardInRow(List<ALCard> row)
     {

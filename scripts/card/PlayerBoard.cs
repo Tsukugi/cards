@@ -15,17 +15,18 @@ public partial class PlayerBoard : Board
         if (!GetCanReceivePlayerInput()) return;
         OnAxisChangeHandler(axisInputHandler.GetAxis());
         InputAction action = actionInputHandler.GetAction();
-        if (action != InputAction.None) GD.Print($"[Action Triggered by player {GetPlayer().Name}] {action}");
+        if (action != InputAction.None) GD.Print($"[Action Triggered by player {GetPlayerPlayingTurn().Name}] {action}");
         OnActionHandler(action);
     }
 
     void OnActionHandler(InputAction action)
     {
+        Player playingPlayer = GetPlayerPlayingTurn();
         switch (action)
         {
             case InputAction.Ok:
                 {
-                    switch (player.GetPlayState())
+                    switch (playingPlayer.GetPlayState())
                     {
                         case EPlayState.PlaceCard: StartPlaceCard(CardToPlace); break;
                         case EPlayState.Select: TriggerCard(); break;
@@ -36,7 +37,7 @@ public partial class PlayerBoard : Board
 
             case InputAction.Cancel:
                 {
-                    switch (player.GetPlayState())
+                    switch (playingPlayer.GetPlayState())
                     {
                         case EPlayState.PlaceCard: CancelPlaceCard(); break;
                     }
@@ -47,15 +48,18 @@ public partial class PlayerBoard : Board
 
     void TriggerCard()
     {
-        GD.Print($"[TriggerCard] Triggering card {GetSelectedCard<Card>()}");
-        if (OnCardTrigger is not null && GetSelectedCard<Card>() is Card card) OnCardTrigger(card);
+        Card card = GetSelectedCard<Card>(GetPlayerPlayingTurn());
+        GD.Print($"[TriggerCard] Triggering card {card}");
+        if (OnCardTrigger is not null && card is not null) OnCardTrigger(card);
     }
 
     void OnAxisChangeHandler(Vector2I axis)
     {
         if (axis == Vector2I.Zero) return;
 
-        if (OnSelectFixedCardEdge is not null && GetSelectedCard<Card>() is Card selectedCard)
+        Player playingPlayer = GetPlayerPlayingTurn();
+
+        if (OnSelectFixedCardEdge is not null && GetSelectedCard<Card>(playingPlayer) is Card selectedCard)
         {
             // Override search with predefined edges
             if (axis == Vector2I.Up && selectedCard.EdgeUp is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeUp); return; }
@@ -72,8 +76,8 @@ public partial class PlayerBoard : Board
         }
 
         selectedCardPosition = card.PositionInBoard;
-        SelectCardField(selectedCardPosition);
-        GD.Print($"[{GetPlayer().Name}.PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {selectedCardPosition}");
+        SelectCardField(playingPlayer, selectedCardPosition);
+        GD.Print($"[{playingPlayer.Name}.PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {selectedCardPosition}");
     }
 
     void CancelPlaceCard()
@@ -101,14 +105,12 @@ public partial class PlayerBoard : Board
     }
 
     public static Card FindLastEmptyFieldInRow(List<Card> row) => row.Find(card => card.IsEmptyField == true);
-    public virtual void PlaceCardInBoardFromHand(Card cardToPlace)
+    public virtual void PlaceCardInBoardFromHand<T>(T cardToPlace) where T : Card
     {
-        Card selectedCard = GetSelectedCard<Card>();
-        if (!selectedCard.CanPlayerPlaceInThisField())
-        {
-            GD.PrintErr("[PlaceCardInBoardFromHand] This card place is not placeable!");
-            return;
-        }
+        Player playingPlayer = GetPlayerPlayingTurn();
+        T? selectedCard = GetSelectedCard<T>(playingPlayer);
+        if (selectedCard is null) { GD.PrintErr("[PlaceCardInBoardFromHand] This card place cannot be found!"); return; }
+        if (!selectedCard.CanPlayerPlaceInThisField()) { GD.PrintErr("[PlaceCardInBoardFromHand] This card place is not placeable!"); return; }
         var attributes = cardToPlace.GetAttributes<CardDTO>();
         GD.Print($"[PlaceCardInBoardFromHand] Placing {attributes.name}!");
         selectedCard.UpdateAttributes(attributes);

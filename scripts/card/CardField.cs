@@ -22,6 +22,11 @@ public partial class CardField : Node3D
     // If true, the card's DTO cannot be modified. Gameplay: Another card cant replace this one
     public bool IsPlaceable = true;
     [Export]
+    // If true, the card's can be selected by input, 
+    // If false, input selection should ignore this field
+    // Programatic Selection should still be able to select this field regardless of this value
+    public bool IsInputSelectable = true;
+    [Export]
     // If true, a player cannot place in this field. 
     // Gameplay: Decks, Graveyard or fields that are automatically filled and shouldn't be replaced by player
     public bool IsPlayerPlaceable = true;

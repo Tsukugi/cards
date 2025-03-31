@@ -72,7 +72,7 @@ public partial class ALPlayer : Player
         if (!isControlledPlayer) return;
         phaseLabel.Text = phase.GetPhaseByIndex((int)synchedPhase);
 
-        if (selectedBoard.GetSelectedCard<ALCard>() is ALCard selectedCard)
+        if (selectedBoard.GetSelectedCard<ALCard>(this) is ALCard selectedCard)
         {
             bool CanShowCardDetailsUI = selectedCard.CanShowCardDetailsUI();
             selectedCardInfo.Visible = CanShowCardDetailsUI;
@@ -167,7 +167,7 @@ public partial class ALPlayer : Player
 
         // Player preparation
         SelectBoard(hand);
-        hand.SelectCardField(Vector2I.Zero);
+        hand.SelectCardField(this, Vector2I.Zero);
         DrawCardToHand(5);
         ApplyFlagshipDurability(); // Manual says that this step is after drawing hand cards
 
@@ -313,7 +313,7 @@ public partial class ALPlayer : Player
     protected void OnALPlaceCardStartHandler(Card fieldToPlace)
     {
         ALCard cardToPlace = fieldToPlace.CastToALCard();
-        ALCard fieldBeingPlaced = board.GetSelectedCard<ALCard>();
+        ALCard fieldBeingPlaced = board.GetSelectedCard<ALCard>(this);
 
         if (!fieldBeingPlaced.IsEmptyField)
         {
@@ -368,12 +368,13 @@ public partial class ALPlayer : Player
     // Flagship -> All Ships
     void AttackCard(ALCard attacker, ALCard target)
     {
-        if (attacker.GetBoard().GetPlayer() == target.GetBoard().GetPlayer())
+        if (attacker.GetBoard().GetIsEnemyBoard() == target.GetBoard().GetIsEnemyBoard())
         {
             GD.PrintErr($"[AttackCard] {attacker.Name} cannot attack {target.Name} as they are allies!");
             return;
         }
-        bool canBeAttacked = target.CanBeAttacked(attacker.GetAttackFieldType(), attacker.GetIsAFlagship());
+        //  if Flagship, they can attack everyone
+        bool canBeAttacked = attacker.GetIsAFlagship() || target.CanBeAttacked(attacker.GetAttackFieldType());
         if (!canBeAttacked)
         {
             GD.PrintErr($"[AttackCard] {attacker.Name} cannot attack {target.Name}");
@@ -381,6 +382,7 @@ public partial class ALPlayer : Player
         }
         battleAttackedCard = target;
 
+        battleAttackerCard.SetIsInActiveState(false);
         GD.PrintErr($"[AttackCard] {battleAttackerCard.Name} attacks {battleAttackedCard}!");
         // TODO: Add support ships gameplay
 
@@ -395,7 +397,7 @@ public partial class ALPlayer : Player
         {
             if (battleAttackedCard.GetIsAFlagship())
             {
-                GD.PrintErr($"[SettleBattle] {battleAttackedCard.GetBoard().GetPlayer().Name} Takes durability damage!");
+                GD.PrintErr($"[SettleBattle] {battleAttackedCard.Name} Takes durability damage!");
                 battleAttackedCard.TakeDurabilityDamage();
             }
             else
@@ -466,8 +468,8 @@ public partial class ALPlayer : Player
         {
             ALCardDTO cardToDraw = DrawCard(Deck, deckField);
             durabilityList[i].UpdateAttributes(cardToDraw);
+            durabilityList[i].IsInputSelectable = true;
         }
-
     }
 
     void TryDrawCubeToBoard()
@@ -478,8 +480,9 @@ public partial class ALPlayer : Player
             Card cubeField = PlayerBoard.FindLastEmptyFieldInRow(
                 costArea.TryGetAllChildOfType<Card>()
             );
+            cubeField.IsInputSelectable = true;
             board
-                .GetCardInPosition(cubeField.PositionInBoard)
+                .GetCardInPosition(this, cubeField.PositionInBoard)
                 .UpdateAttributes(cardToDraw);
         }
         catch (Exception e)
@@ -512,7 +515,7 @@ public partial class ALPlayer : Player
     {
         SelectBoard(board);
         // Select phase button
-        board.SelectCardField(phaseButtonField.PositionInBoard);
+        board.SelectCardField(this, phaseButtonField.PositionInBoard);
         // Execute trigger handler directly
         OnCardTriggerHandler(phaseButtonField);
     }

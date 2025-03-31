@@ -13,8 +13,6 @@ public partial class ALGameMatchManager : Node
         base._Ready();
         orderedPlayers = [enemyPlayer, userPlayer]; // TODO add some shuffling, with a minigame
 
-        // Assign each enemy boards for selection
-
         // IsEnemyBoard is needed for thinks like flipping the Input axis
         enemyPlayer.Hand.SetIsEnemyBoard(true);
         enemyPlayer.Board.SetIsEnemyBoard(true);
@@ -54,5 +52,7 @@ public partial class ALGameMatchManager : Node
         GD.Print($"[StartTurn] {playingPlayer.Name} Starting turn!");
         playingPlayer.StartTurn();
     }
+
+    public Player GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
 
 }
