@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Godot;
 
@@ -42,5 +43,25 @@ public class AsyncHandler(Node node)
         debouncedAction();
         isLoading = true;
         _ = callerNode.Wait(waitTime, () => isLoading = false);
+    }
+    public async Task<IEnumerable<T>> RunSequentiallyAsync<T>(Func<Task<T>>[] operations)
+    {
+        var results = new List<T>();
+        foreach (var op in operations)
+        {
+            results.Add(await op());
+        }
+        return results;
+    }
+
+
+}
+
+public static class AsyncExtensions
+{
+    public static async IAsyncEnumerable<T> AwaitAll<T>(this IEnumerable<Func<Task<T>>> tasks)
+    {
+        foreach (var task in tasks)
+            yield return await task();
     }
 }
