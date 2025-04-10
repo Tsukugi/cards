@@ -1,0 +1,6 @@
+[gd_resource type="Theme" load_steps=2 format=3 uid="uid://da83adtsk1ikk"]
+
+[ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="1_jjuan"]
+
+[resource]
+default_font = ExtResource("1_jjuan")

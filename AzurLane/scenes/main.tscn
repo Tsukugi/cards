@@ -1,0 +1,57 @@
+[gd_scene load_steps=3 format=3 uid="uid://dwehtg5qp6rru"]
+
+[ext_resource type="Script" uid="uid://3sefuh1epk1p" path="res://AzurLane/scripts/MainScene/ALMain.cs" id="1_pa05j"]
+[ext_resource type="Theme" uid="uid://da83adtsk1ikk" path="res://Material/UITheme.tres" id="2_skdpf"]
+
+[node name="Main" type="Control" node_paths=PackedStringArray("startBtn", "optionsBtn", "exitBtn")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pa05j")
+startBtn = NodePath("Panel/Vert/Start")
+optionsBtn = NodePath("Panel/Vert/Options")
+exitBtn = NodePath("Panel/Vert/Exit")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -89.0
+offset_top = -85.0
+offset_right = 84.0
+offset_bottom = 127.345
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Vert" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+offset_left = 18.75
+offset_top = 9.19
+offset_right = 155.245
+offset_bottom = 203.19
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Start" type="Button" parent="Panel/Vert"]
+layout_mode = 2
+size_flags_vertical = 3
+theme = ExtResource("2_skdpf")
+text = "Start Match"
+
+[node name="Options" type="Button" parent="Panel/Vert"]
+layout_mode = 2
+size_flags_vertical = 3
+theme = ExtResource("2_skdpf")
+text = "Options"
+
+[node name="Exit" type="Button" parent="Panel/Vert"]
+layout_mode = 2
+size_flags_vertical = 3
+theme = ExtResource("2_skdpf")
+text = "Exit"

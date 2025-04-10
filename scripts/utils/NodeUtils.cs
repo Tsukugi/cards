@@ -53,4 +53,19 @@ public static class NodeUtils
         var obj = JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(M));
         return obj;
     }
+
+    public static void ChangeScene(this Node caller, string scenePath)
+    {
+        SceneTree tree = caller.GetTree();
+
+        PackedScene newScene = (PackedScene)ResourceLoader.Load(scenePath);
+        if (newScene != null)
+        {
+            tree.ChangeSceneToPacked(newScene);
+        }
+        else
+        {
+            GD.PrintErr($"[ChangeScene]: Scene couldn't be loaded {scenePath}");
+        }
+    }
 }

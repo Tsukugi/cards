@@ -26,6 +26,8 @@ public partial class ALPlayer : Player
     ALCard deckField, cubeDeckField, flagshipField, retreatField;
     [Export]
     ALPhaseButton phaseButtonField;
+    [Export]
+    MenuButton matchMenuBtn;
 
     // --- State ---
     EALTurnPhase currentPhase = EALTurnPhase.Reset;
@@ -58,6 +60,8 @@ public partial class ALPlayer : Player
         selectedCardInfo = GetNode<Panel>("Control/SelectedCardInfo");
         selectedCardImage = GetNode<TextureRect>("Control/SelectedCardInfo/SelectedCardImage");
         selectedCardNameLabel = GetNode<Label>("Control/SelectedCardInfo/NamePanel/NameLabel");
+        matchMenuBtn = GetNode<MenuButton>("Control/MatchMenuBtn");
+        matchMenuBtn.GetPopup().IndexPressed += OnMatchMenuItemSelected;
 
         selectedCardInfo.Visible = isControlledPlayer; // Hide it if not the controlled player
 
@@ -268,6 +272,22 @@ public partial class ALPlayer : Player
     }
 
     // Event handlers
+
+    public void OnMatchMenuItemSelected(long itemIndex)
+    {
+        GD.Print($"[OnMatchMenuItemSelected] index: {itemIndex}");
+        switch (itemIndex)
+        {
+            case 0:
+                this.ChangeScene($"{ALMain.ALSceneRootPath}/main.tscn");
+                break;
+            // Add more cases as needed
+            default:
+                GD.PrintErr("Unknown item selected");
+                break;
+        }
+    }
+
     public void OnCostPlayCardStartHandler(Card cardToPlay)
     {
         if (currentPhase != EALTurnPhase.Main)
