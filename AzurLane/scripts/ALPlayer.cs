@@ -48,7 +48,7 @@ public partial class ALPlayer : Player
         base._Ready(); // Call it at the end as the overrided code can use the refs correctly
         ai = new(this);
         asyncPhase = new(this);
-        ALHand hand = GetPlayerHand<ALHand>();
+
         ALBoard board = GetPlayerBoard<ALBoard>();
         costArea = board.GetNode<Node3D>("CostArea");
         unitsArea = board.GetNode<Node3D>("Units");
@@ -63,11 +63,11 @@ public partial class ALPlayer : Player
 
         database.LoadData();
         Callable.From(StartGameForPlayer).CallDeferred();
-
     }
 
     public override void _Process(double delta)
     {
+        base._Process(delta);
         if (!isControlledPlayer) return;
         phaseLabel.Text = phase.GetPhaseByIndex((int)synchedPhase);
 
@@ -174,7 +174,6 @@ public partial class ALPlayer : Player
         hand.SelectCardField(this, Vector2I.Zero);
         DrawCardToHand(5);
         ApplyFlagshipDurability(); // Manual says that this step is after drawing hand cards
-
     }
 
     // Turn and Phases
@@ -265,7 +264,7 @@ public partial class ALPlayer : Player
         List<ALCard> units = GetActiveUnitsInBoard();
         if (units.Count > 0) return;
         asyncPhase.AwaitBefore(PlayNextPhase, 0.5f);
-        GD.PrintErr($"[EndBattlePhaseIfNoActiveCards] No active cards, going to next phase");
+        GD.Print($"[EndBattlePhaseIfNoActiveCards] No active cards, going to next phase");
     }
 
     // Event handlers

@@ -10,31 +10,21 @@ public partial class Board : Node3D
     public delegate void BoardCardEvent(Board board, Card card);
     public delegate void BoardEvent();
     public delegate void CardPositionEvent(Player player, Vector2I position, Card.OnProvidedCardEvent callback);
-    public event CardPositionEvent OnSelectCardPosition;
     public event BoardEvent OnClearSelection;
     public virtual event BoardEdgeEvent OnBoardEdge;
     public virtual event BoardCardEvent OnSelectFixedCardEdge;
 
     // --- State ---
-    bool canReceivePlayerInput = false;
     bool isEnemyBoard = false;
     readonly Dictionary<string, Card> selectedCard = []; // <PlayerName selecting the card, Card>
 
     // --- Public ---
 
     protected PackedScene cardTemplate = GD.Load<PackedScene>("scenes/card.tscn");
-    protected readonly AxisInputHandler axisInputHandler = new();
     protected readonly ActionInputHandler actionInputHandler = new();
     protected Vector2I selectedCardPosition = Vector2I.Zero;
     [Export]
     public Vector2I BoardPositionInGrid = new();
-
-
-    public void DeselectAllCards()
-    {
-        if (OnClearSelection is null) return;
-        OnClearSelection();
-    }
 
     List<Card> GetCardsInTree() => this.TryGetAllChildOfType<Card>(true);
     static Card? FindCard(List<Card> cards, Vector2I position) => cards.Find(card => card.PositionInBoard == position);
@@ -80,26 +70,38 @@ public partial class Board : Node3D
     public Vector2I GetSelectedCardPosition() => selectedCardPosition;
     public void SelectCardField(Player player, Vector2I position)
     {
-        if (OnSelectCardPosition is null) return;
+        string playerName = player.Name.ToString();
         selectedCardPosition = position;
-        OnSelectCardPosition(player, position, (card) =>
-            {
-                selectedCard[player.Name.ToString()] = card;
-                // GD.Print($"[SelectCardField] Selected {player.Name}.{selectedCard[player.Name.ToString()].Name}");
-            });
+
+        if (selectedCard.ContainsKey(playerName)) selectedCard[playerName].SetIsSelected(false);
+
+        Card foundCard = GetCardsInTree().Find(card => card.PositionInBoard == position);
+        if (foundCard is not null)
+        {
+            selectedCard[playerName] = foundCard;
+            // GD.Print($"[OnSelectCardPositionHandler] Selected {player.Name}.{Name} - {isSelectingThisCard}");
+            foundCard.SetIsSelected(true);
+            foundCard.UpdatePlayerSelectedColor(player);
+        }
     }
-    public void SetCanReceivePlayerInput(bool value)
+
+    public virtual void OnInputAxisChange(Player player, Vector2I axis) => GD.Print($"[OnInputAxisChange] {player.Name}.{axis}");
+    public virtual void OnActionHandler(Player player, InputAction action) => GD.Print($"[OnActionHandler] {player.Name}");
+    public bool GetCanReceivePlayerInput(Player player) => player.AllowsInputFromPlayer(this);
+    public T? GetSelectedCard<T>(Player player) where T : Card
     {
-        canReceivePlayerInput = value;
-        GD.Print($"[SetCanReceivePlayerInput] {Name} {canReceivePlayerInput}");
+        string playerName = player.Name.ToString();
+        return selectedCard.ContainsKey(playerName) ? selectedCard[playerName] as T : null;
     }
-    public bool GetCanReceivePlayerInput() => canReceivePlayerInput;
-    public T? GetSelectedCard<T>(Player player) where T : Card =>
-        selectedCard.ContainsKey(player.Name.ToString()) ? selectedCard[player.Name.ToString()] as T : null;
-    public void SetIsEnemyBoard(bool value)
+    public void ClearSelectionForPlayer(Player player)
     {
-        isEnemyBoard = value;
-        axisInputHandler.SetInverted(value); // An enemy board should have its axis inverted as it is inverted in the editor
+        string playerName = player.Name.ToString();
+        if (selectedCard.ContainsKey(playerName))
+        {
+            GD.Print($"[ClearSelectionForPlayer] {playerName} {selectedCard[playerName]} ");
+            selectedCard.Remove(playerName);
+        }
     }
+    public void SetIsEnemyBoard(bool value) => isEnemyBoard = value;
     public bool GetIsEnemyBoard() => isEnemyBoard;
 }

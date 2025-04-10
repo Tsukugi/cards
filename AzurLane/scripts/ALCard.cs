@@ -65,7 +65,6 @@ public partial class ALCard : Card
 
     public void SetIsInActiveState(bool isActive)
     {
-        if (IsEmptyField) return;
         isInActiveState = isActive;
         SetIsSideWays(!isActive);
     }

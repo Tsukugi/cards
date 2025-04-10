@@ -12,6 +12,7 @@ public partial class PlayerHand : Board
     [Export]
     Vector3 positionOffsetWhenInactive = new();
     Vector3 originalPosition = new();
+    bool showHandVisible = true;
 
     public override void _Ready()
     {
@@ -21,25 +22,19 @@ public partial class PlayerHand : Board
 
     public override void _Process(double delta)
     {
-        bool allowInput = GetCanReceivePlayerInput();
-        if (true) { Position = allowInput ? originalPosition : originalPosition + positionOffsetWhenInactive; } // TODO add position for active enemy hand
-        if (!allowInput) return;
-        Vector2I axis = axisInputHandler.GetAxis();
-        OnAxisChangeHandler(axis);
-        ManageAction();
+        // TODO add position for active enemy hand
+        Position = showHandVisible ? originalPosition : originalPosition + positionOffsetWhenInactive;
     }
 
-    protected void ManageAction()
+    public override void OnActionHandler(Player player, InputAction action)
     {
-        Player playingPlayer = GetPlayerPlayingTurn();
-        InputAction action = actionInputHandler.GetAction();
         switch (action)
         {
             case InputAction.Ok:
                 {
-                    switch (playingPlayer.GetPlayState())
+                    switch (player.GetPlayState())
                     {
-                        case EPlayState.Select: StartPlayCard(GetSelectedCard<Card>(playingPlayer)); break;
+                        case EPlayState.Select: StartPlayCard(GetSelectedCard<Card>(player)); break;
                     }
                     break;
                 }
@@ -71,22 +66,20 @@ public partial class PlayerHand : Board
         RepositionHandCards();
     }
 
-    void OnAxisChangeHandler(Vector2I axis)
+    public override void OnInputAxisChange(Player player, Vector2I axis)
     {
         if (axis == Vector2I.Zero) return;
-
-        Player playingPlayer = GetPlayerPlayingTurn();
         Vector2I newPosition = selectedCardPosition + axis;
 
         Card? card = FindCardInTree(newPosition);
         if (card is null) // We didn't find a card with the specified position
         {
-            if (OnBoardEdge is not null && GetCanReceivePlayerInput()) OnBoardEdge(this, axis);
+            if (OnBoardEdge is not null) OnBoardEdge(this, axis);
             return;
         }
 
         selectedCardPosition = newPosition;
-        SelectCardField(playingPlayer, selectedCardPosition);
+        SelectCardField(player, selectedCardPosition);
         RepositionHandCards();
         GD.Print($"[PlayerHand.OnAxisChangeHandler] SelectCardField in board for position {newPosition}");
     }
@@ -106,4 +99,6 @@ public partial class PlayerHand : Board
             cards[i].Position = new Vector3((i - selectedCardPosition.X) * cards[i].CardWidth, 0, 0); // (cardIndex - SelectCardPosition.X) means the card that is the center
         }
     }
+
+    public void SetShowHand(bool value) => showHandVisible = value;
 }

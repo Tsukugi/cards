@@ -53,9 +53,9 @@ public class ALBasicAI(ALPlayer _player)
     public async Task BattlePhaseAttackFlagship()
     {
         List<ALCard> activeUnits = player.GetActiveUnitsInBoard();
+        if (activeUnits.Count == 0) return;
         ALBoard enemyBoard = player.GetEnemyPlayerBoard<ALBoard>();
         ALCard enemyFlagship = enemyBoard.GetFlagship();
-        if (activeUnits.Count == 0) return;
 
         List<Func<Task>> operations = [];
 

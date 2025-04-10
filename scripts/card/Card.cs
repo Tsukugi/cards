@@ -25,8 +25,6 @@ public partial class Card : CardField
     public override void _Ready()
     {
         board = this.TryFindParentNodeOfType<Board>();
-        board.OnSelectCardPosition -= OnSelectCardPositionHandler;
-        board.OnSelectCardPosition += OnSelectCardPositionHandler;
         cardDisplay = GetNode<Node3D>("CardDisplay");
         selectedIndicator = GetNodeOrNull<MeshInstance3D>("CardDisplay/SelectedIndicator");
         front = GetNodeOrNull<MeshInstance3D>("CardDisplay/Front");
@@ -39,21 +37,9 @@ public partial class Card : CardField
 
     public override void _Process(double delta)
     {
-        OnSelectHandler(isSelected && board.GetCanReceivePlayerInput());
+        OnSelectHandler(isSelected);
         OnCardUpdateHandler();
         cardDisplay.Scale = cardDisplay.Scale.WithY(CardStack);
-    }
-
-    void OnSelectCardPositionHandler(Player player, Vector2I position, OnProvidedCardEvent cardCallback)
-    {
-        bool isSelectingThisCard = position == PositionInBoard;
-        SetIsSelected(isSelectingThisCard);
-        // GD.Print($"[OnSelectCardPositionHandler] Selected {player.Name}.{Name} - {isSelectingThisCard}");
-        if (isSelectingThisCard)
-        {
-            selectedIndicatorColor = player.GetPlayerColor();
-            cardCallback(this);
-        }
     }
 
     void OnSelectHandler(bool isSelected)
@@ -133,6 +119,12 @@ public partial class Card : CardField
             material3D.AlbedoColor = color;
             target.SetSurfaceOverrideMaterial(0, material3D);
         }
+    }
+
+    public void UpdatePlayerSelectedColor(Player player)
+    {
+        selectedIndicatorColor = player.GetPlayerColor();
+        UpdateColor(selectedIndicator, selectedIndicatorColor);
     }
 
     public Resource GetCardImageResource() => isFaceDown ? cardBackImage : cardImage;

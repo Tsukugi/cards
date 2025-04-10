@@ -10,23 +10,13 @@ public partial class PlayerBoard : Board
     public override event BoardEdgeEvent OnBoardEdge;
     public override event BoardCardEvent OnSelectFixedCardEdge;
     public Card CardToPlace = null;
-    public override void _Process(double delta)
+    public override void OnActionHandler(Player player, InputAction action)
     {
-        if (!GetCanReceivePlayerInput()) return;
-        OnAxisChangeHandler(axisInputHandler.GetAxis());
-        InputAction action = actionInputHandler.GetAction();
-        if (action != InputAction.None) GD.Print($"[Action Triggered by player {GetPlayerPlayingTurn().Name}] {action}");
-        OnActionHandler(action);
-    }
-
-    void OnActionHandler(InputAction action)
-    {
-        Player playingPlayer = GetPlayerPlayingTurn();
         switch (action)
         {
             case InputAction.Ok:
                 {
-                    switch (playingPlayer.GetPlayState())
+                    switch (player.GetPlayState())
                     {
                         case EPlayState.PlaceCard: StartPlaceCard(CardToPlace); break;
                         case EPlayState.Select: TriggerCard(); break;
@@ -37,7 +27,7 @@ public partial class PlayerBoard : Board
 
             case InputAction.Cancel:
                 {
-                    switch (playingPlayer.GetPlayState())
+                    switch (player.GetPlayState())
                     {
                         case EPlayState.PlaceCard: CancelPlaceCard(); break;
                     }
@@ -53,13 +43,10 @@ public partial class PlayerBoard : Board
         if (OnCardTrigger is not null && card is not null) OnCardTrigger(card);
     }
 
-    void OnAxisChangeHandler(Vector2I axis)
+    public override void OnInputAxisChange(Player player, Vector2I axis)
     {
         if (axis == Vector2I.Zero) return;
-
-        Player playingPlayer = GetPlayerPlayingTurn();
-
-        if (OnSelectFixedCardEdge is not null && GetSelectedCard<Card>(playingPlayer) is Card selectedCard)
+        if (OnSelectFixedCardEdge is not null && GetSelectedCard<Card>(player) is Card selectedCard)
         {
             // Override search with predefined edges
             if (axis == Vector2I.Up && selectedCard.EdgeUp is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeUp); return; }
@@ -71,18 +58,18 @@ public partial class PlayerBoard : Board
         Card? card = SearchForCardInBoard(selectedCardPosition, axis, 1, 10);
         if (card is null) // We didn't find a card with the specified position
         {
-            if (OnBoardEdge is not null && GetCanReceivePlayerInput()) OnBoardEdge(this, axis);
+            if (OnBoardEdge is not null) OnBoardEdge(this, axis);
             return;
         }
 
         selectedCardPosition = card.PositionInBoard;
-        SelectCardField(playingPlayer, selectedCardPosition);
-        GD.Print($"[{playingPlayer.Name}.PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {selectedCardPosition}");
+        SelectCardField(player, selectedCardPosition);
+        GD.Print($"[{player.Name}.PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {selectedCardPosition}");
     }
 
     void CancelPlaceCard()
     {
-        OnPlaceCardCancel(CardToPlace);
+        if (OnPlaceCardCancel is not null) OnPlaceCardCancel(CardToPlace);
         CardToPlace = null;
     }
 

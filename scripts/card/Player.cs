@@ -32,15 +32,15 @@ public partial class Player : Node3D
         hand = GetNode<PlayerHand>("Hand");
         board = GetNode<PlayerBoard>("Board");
         orderedBoards = [hand, board];
-
-
-        if (isControlledPlayer)
-        {
-            SelectBoard(hand);
-            orderedBoards[0].SetCanReceivePlayerInput(true); // For the playing user we need an active board at start
-        }
-
+        SelectBoard(GetSelectedBoard());
         Callable.From(InitializeEvents).CallDeferred();
+    }
+
+    public override void _Process(double delta)
+    {
+        base._Process(delta);
+        HandleInput();
+        HandleAction();
     }
 
     protected virtual void InitializeEvents()
@@ -67,12 +67,27 @@ public partial class Player : Node3D
         board.OnBoardEdge += OnBoardEdgeHandler;
         board.OnSelectFixedCardEdge += OnSelectFixedCardEdgeHandler;
     }
+    protected Board GetSelectedBoard() => orderedBoards[selectedBoardIndex];
+    protected void HandleInput()
+    {
+        Vector2I axis = axisInputHandler.GetAxis();
+        Board selectedBoard = GetSelectedBoard();
+        if (isControlledPlayer) selectedBoard.OnInputAxisChange(this, axis);
+        hand.SetShowHand(selectedBoard == hand);
+    }
+    protected void HandleAction()
+    {
+        if (!isControlledPlayer) return;
+        InputAction action = actionInputHandler.GetAction();
+        if (action != InputAction.None) GD.Print($"[Action Triggered by player {Name}] {GetSelectedBoard().Name}.{action}");
+        boardInputAsync.Debounce(() => GetSelectedBoard().OnActionHandler(this, action), 0.1f);
+    }
 
     protected void OnPlaceCardCancelHandler(Card cardPlaced)
     {
         cardPlaced.IsEmptyField = false;
         SetPlayState(EPlayState.Select);
-        SelectBoardAndAllowInput(hand);
+        SelectBoard(hand);
     }
 
     protected void OnPlaceCardStartHandler(Card cardPlaced)
@@ -84,7 +99,7 @@ public partial class Player : Node3D
     {
         hand.RemoveCardFromHand(cardPlaced);
         SetPlayState(EPlayState.Select);
-        SelectBoardAndAllowInput(hand);
+        SelectBoard(hand);
     }
 
     protected void OnPlayCardStartHandler(Card cardToPlay)
@@ -93,7 +108,7 @@ public partial class Player : Node3D
         board.CardToPlace = cardToPlay;
         cardToPlay.IsEmptyField = true;
         SetPlayState(EPlayState.PlaceCard);
-        SelectBoardAndAllowInput(board);
+        SelectBoard(board);
     }
 
     protected void OnBoardEdgeHandler(Board exitingBoard, Vector2I axis)
@@ -107,42 +122,30 @@ public partial class Player : Node3D
         int newIndex = selectedBoardIndex + (invertedAxis.Y * invertedToken);
         if (!orderedBoards.Count.IsInsideBounds(newIndex)) { return; }
 
-        exitingBoard.SetCanReceivePlayerInput(false);
 
         Board newBoard = orderedBoards[newIndex];
-        SelectBoardAndAllowInput(newBoard);
-        selectedBoardIndex = newIndex;
-
+        SelectBoard(newBoard);
         GD.Print($"[OnBoardEdgeHandler] {newBoard.Name} - {selectedBoardIndex} ");
     }
 
     protected void OnSelectFixedCardEdgeHandler(Board triggeringBoard, Card card)
     {
-        if (!triggeringBoard.GetCanReceivePlayerInput()) return;
-
-        triggeringBoard.SetCanReceivePlayerInput(false);
-
         Board newBoard = card.GetBoard();
-        selectedBoardIndex = orderedBoards.FindIndex((board) => board == newBoard);
-
-        SelectBoardAndAllowInput(newBoard);
+        SelectBoard(newBoard);
         newBoard.SelectCardField(this, card.PositionInBoard); // Use the card's board to select itself, a referenced card can be from another board than the triggering one
-
-        GD.Print($"[OnSelectFixedCardEdgeHandler] {newBoard.GetType()} - {selectedBoardIndex} ");
     }
 
     protected void SelectBoard(Board board)
     {
-        if (selectedBoard is not null) UnassignBoardEvents(selectedBoard);
+        if (selectedBoard is not null)
+        {
+            UnassignBoardEvents(selectedBoard);
+            if (selectedBoard.GetSelectedCard<ALCard>(this) is ALCard card) selectedBoard.ClearSelectionForPlayer(this); // Clear selection for old board
+        }
         selectedBoard = board;
+        selectedBoardIndex = orderedBoards.FindIndex((board) => board == selectedBoard);
+        axisInputHandler.SetInverted(selectedBoard.GetIsEnemyBoard()); // An enemy board should have its axis inverted as it is inverted in the editor
         if (selectedBoard is not null) AssignBoardEvents(selectedBoard);
-    }
-
-    protected void SelectBoardAndAllowInput(Board board)
-    {
-        selectedBoard?.SetCanReceivePlayerInput(false);
-        SelectBoard(board);
-        boardInputAsync.AwaitBefore(() => board?.SetCanReceivePlayerInput(true), 0.05f); // Delay execution so the newBoard doesn't retrigger this event
     }
 
     protected void SetPlayState(EPlayState state)
@@ -179,6 +182,7 @@ public partial class Player : Node3D
     public EPlayState GetPlayState() => playState;
     public bool GetIsControllerPlayer() => isControlledPlayer;
     public Color GetPlayerColor() => playerColor;
+    public bool AllowsInputFromPlayer(Board board) => GetSelectedBoard() == board;
     public virtual T GetPlayerHand<T>() where T : PlayerHand => hand as T;
     public virtual T GetPlayerBoard<T>() where T : PlayerBoard => board as T;
     public virtual T GetEnemyPlayerHand<T>() where T : PlayerHand => enemyHand as T;
