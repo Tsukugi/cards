@@ -185,7 +185,7 @@ public partial class ALPlayer : Player
     {
         GD.Print($"[StartTurn] Start turn for player {Name}");
 
-        if (!isControlledPlayer) _ = ai.SummonAndAttackFlagship(); // TODO: Make a proper handler for proper AI
+        if (!isControlledPlayer) _ = ai.StartTurn();
         IsPlayingTurn = true;
         PlayResetPhase();
     }
