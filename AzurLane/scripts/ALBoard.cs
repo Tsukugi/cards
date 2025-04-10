@@ -31,6 +31,9 @@ public partial class ALBoard : PlayerBoard
         if (index == -1) GD.PrintErr("[FindLastActiveCardInRow] Cannot find last active index");
         return row[index];
     }
-
-    public ALCard GetFlagship() => flagshipCard;
+    public ALCard GetFlagship()
+    {
+        if (flagshipCard is null) GD.PushWarning("[GetFlagship] This ALBoard doesn't have any flagship assigned");
+        return flagshipCard;
+    }
 }

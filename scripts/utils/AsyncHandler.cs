@@ -25,9 +25,10 @@ public class AsyncHandler(Node node)
 
         while (!check())
         {
-            if (elapsedTime > timeoutInSeconds * 1000) { isLoading = false; return; } // Return on timeout
+            if (elapsedTime > timeoutInSeconds * 10000) { isLoading = false; return; } // Return on timeout
             await Task.Delay(intervalCheckMs);
             elapsedTime += intervalCheckMs;
+            // GD.Print($"[AwaitForCheck] Elapsed time: {elapsedTime}");
         }
         isLoading = false;
         awaitedAction();
@@ -44,24 +45,11 @@ public class AsyncHandler(Node node)
         isLoading = true;
         _ = callerNode.Wait(waitTime, () => isLoading = false);
     }
-    public async Task<IEnumerable<T>> RunSequentiallyAsync<T>(Func<Task<T>>[] operations)
+    public static async Task RunAsyncFunctionsSequentially(List<Func<Task>> asyncFunctions)
     {
-        var results = new List<T>();
-        foreach (var op in operations)
+        foreach (var asyncFunction in asyncFunctions)
         {
-            results.Add(await op());
+            await asyncFunction(); // Await each function in sequence
         }
-        return results;
-    }
-
-
-}
-
-public static class AsyncExtensions
-{
-    public static async IAsyncEnumerable<T> AwaitAll<T>(this IEnumerable<Func<Task<T>>> tasks)
-    {
-        foreach (var task in tasks)
-            yield return await task();
     }
 }

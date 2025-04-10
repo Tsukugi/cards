@@ -8,7 +8,7 @@ public class ALBasicAI(ALPlayer _player)
     readonly AsyncHandler asyncHandler = new(_player);
     readonly ALPlayer player = _player;
 
-    int actionDelay = 250; // Miliseconds for every AI action
+    readonly int actionDelay = 500; // Miliseconds for every AI action
 
     public async Task SkipTurn()
     {
@@ -45,38 +45,43 @@ public class ALBasicAI(ALPlayer _player)
         player.OnCostPlayCardStartHandler(card);
         await WaitUntilPlayState(EPlayState.PlaceCard);
         SelectAvailableBoardEmptyField(front);
-        player.Board.PlaceCardInBoardFromHand(card);
+        ALBoard board = player.GetPlayerBoard<ALBoard>();
+        board.PlaceCardInBoardFromHand(card);
     }
 
     // Battle Phase
     public async Task BattlePhaseAttackFlagship()
     {
         List<ALCard> activeUnits = player.GetActiveUnitsInBoard();
+        ALBoard enemyBoard = player.GetEnemyPlayerBoard<ALBoard>();
+        ALCard enemyFlagship = enemyBoard.GetFlagship();
         if (activeUnits.Count == 0) return;
 
-        List<Task> ops = new();
+        List<Func<Task>> operations = [];
 
         for (int i = 0; i < activeUnits.Count; i++)
         {
-            ops.Add(Task.FromResult(() => AttackFlagshipProcess(activeUnits[i])));
+            var currentUnit = activeUnits[i];
+            GD.Print($"[BattlePhaseAttackFlagship] Register attack for {currentUnit.Name}");
+            operations.Add(() => AttackProcess(currentUnit, enemyFlagship));
         }
-
-
-        //asyncHandler.RunSequentiallyAsync<List<Task>>(new Func<Task<List<Task>>>(() => ops));
+        GD.Print($"[BattlePhaseAttackFlagship] {operations.Count}");
+        await AsyncHandler.RunAsyncFunctionsSequentially(operations);
     }
-    async void AttackFlagshipProcess(ALCard attacker)
+    async Task AttackProcess(ALCard attacker, ALCard target)
     {
         //Attacker
+        GD.Print($"[BattlePhaseAttackFlagship] Start");
         await WaitUntilPlayState(EPlayState.Select);
         SelectAndTriggerCardUnit(attacker);
         await Task.Delay(actionDelay);
         GD.Print($"[BattlePhaseAttackFlagship] Attacker {attacker.Name}");
         // Target
         await WaitUntilPlayState(EPlayState.SelectTarget);
-        GD.Print($"[BattlePhaseAttackFlagship] {player.Name}");
-        SelectAndTriggerCardUnit(player.EnemyBoard.GetFlagship());
+        GD.Print($"[BattlePhaseAttackFlagship] Attacking {target}");
+        SelectAndTriggerCardUnit(target);
         await Task.Delay(actionDelay);
-        GD.Print($"[BattlePhaseAttackFlagship] Attacked {player.EnemyBoard.GetFlagship()}");
+        GD.Print($"[BattlePhaseAttackFlagship] Attacked {target}");
     }
 
     // Generic
@@ -97,7 +102,8 @@ public class ALBasicAI(ALPlayer _player)
             return;
         }
 
-        player.Board.SelectCardField(player, field.PositionInBoard);
+        ALBoard board = player.GetPlayerBoard<ALBoard>();
+        board.SelectCardField(player, field.PositionInBoard);
     }
 
     public static ALCard FindMostExpensiveCard(List<ALCard> cards)
@@ -108,25 +114,22 @@ public class ALBasicAI(ALPlayer _player)
     public List<ALCard> GetPlayableCostCardsInHand()
     {
         var availableCubes = player.GetActiveCubesInBoard().Count;
-        return player.Hand.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetAttributes<ALCardDTO>().cost <= availableCubes);
+        ALHand hand = player.GetPlayerHand<ALHand>();
+        return hand.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetAttributes<ALCardDTO>().cost <= availableCubes);
     }
 
     public async Task WaitUntilPhase(EALTurnPhase phase)
     {
-        await asyncHandler.AwaitForCheck(() => { }, () =>
-        {
-            GD.Print($"[WaitUntilPhase] {player.GetCurrentPhase()} {phase}");
-            return player.GetCurrentPhase() == phase;
-        });
+        await asyncHandler.AwaitForCheck(() =>
+            GD.Print($"[WaitUntilPhase] {player.GetCurrentPhase()} {phase}"),
+            () => player.GetCurrentPhase() == phase);
         await Task.Delay(actionDelay);
     }
     public async Task WaitUntilPlayState(EPlayState playState)
     {
-        await asyncHandler.AwaitForCheck(() => { }, () =>
-        {
-            GD.Print($"[WaitUntilPlayState] {player.GetPlayState()} {playState}");
-            return player.GetPlayState() == playState;
-        });
+        await asyncHandler.AwaitForCheck(() =>
+            GD.Print($"[WaitUntilPlayState] Success {player.GetPlayState()} {playState}"),
+            () => player.GetPlayState() == playState);
         await Task.Delay(actionDelay);
     }
 

@@ -13,10 +13,8 @@ public partial class Player : Node3D
     protected readonly AxisInputHandler axisInputHandler = new();
     protected readonly ActionInputHandler actionInputHandler = new();
     protected Board selectedBoard;
-    protected PlayerHand hand;
-    protected PlayerBoard board;
-    protected PlayerHand enemyHand;
-    protected PlayerBoard enemyBoard;
+    PlayerHand hand, enemyHand;
+    PlayerBoard board, enemyBoard;
     AsyncHandler boardInputAsync;
     [Export]
     Color playerColor = new();
@@ -28,25 +26,21 @@ public partial class Player : Node3D
     // PlayState
     EPlayState playState = EPlayState.Select;
     public bool IsPlayingTurn = false;
-
-    public PlayerHand Hand { get => hand; }
-    public PlayerBoard Board { get => board; }
-    public PlayerHand EnemyHand { get => enemyHand; }
-    public PlayerBoard EnemyBoard { get => enemyBoard; }
-
     public override void _Ready()
     {
         boardInputAsync = new(this);
         hand = GetNode<PlayerHand>("Hand");
         board = GetNode<PlayerBoard>("Board");
         orderedBoards = [hand, board];
-        InitializeEvents();
+
 
         if (isControlledPlayer)
         {
             SelectBoard(hand);
             orderedBoards[0].SetCanReceivePlayerInput(true); // For the playing user we need an active board at start
         }
+
+        Callable.From(InitializeEvents).CallDeferred();
     }
 
     protected virtual void InitializeEvents()
@@ -185,4 +179,8 @@ public partial class Player : Node3D
     public EPlayState GetPlayState() => playState;
     public bool GetIsControllerPlayer() => isControlledPlayer;
     public Color GetPlayerColor() => playerColor;
+    public virtual T GetPlayerHand<T>() where T : PlayerHand => hand as T;
+    public virtual T GetPlayerBoard<T>() where T : PlayerBoard => board as T;
+    public virtual T GetEnemyPlayerHand<T>() where T : PlayerHand => enemyHand as T;
+    public virtual T GetEnemyPlayerBoard<T>() where T : PlayerBoard => enemyBoard as T;
 }

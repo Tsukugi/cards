@@ -85,6 +85,7 @@ public partial class Board : Node3D
         OnSelectCardPosition(player, position, (card) =>
             {
                 selectedCard[player.Name.ToString()] = card;
+                // GD.Print($"[SelectCardField] Selected {player.Name}.{selectedCard[player.Name.ToString()].Name}");
             });
     }
     public void SetCanReceivePlayerInput(bool value)

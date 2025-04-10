@@ -21,8 +21,6 @@ public partial class ALPlayer : Player
     ALBasicAI ai;
 
     // --- Nodes --- 
-    new ALBoard board, enemyBoard;
-    new ALHand hand, enemyHand;
     Node3D costArea, durabilityArea, unitsArea;
     [Export]
     ALCard deckField, cubeDeckField, flagshipField, retreatField;
@@ -47,10 +45,11 @@ public partial class ALPlayer : Player
 
     public override void _Ready()
     {
+        base._Ready(); // Call it at the end as the overrided code can use the refs correctly
         ai = new(this);
         asyncPhase = new(this);
-        hand = GetNode<ALHand>("Hand");
-        board = GetNode<ALBoard>("Board");
+        ALHand hand = GetPlayerHand<ALHand>();
+        ALBoard board = GetPlayerBoard<ALBoard>();
         costArea = board.GetNode<Node3D>("CostArea");
         unitsArea = board.GetNode<Node3D>("Units");
         durabilityArea = board.GetNode<Node3D>("FlagshipDurability");
@@ -65,7 +64,6 @@ public partial class ALPlayer : Player
         database.LoadData();
         Callable.From(StartGameForPlayer).CallDeferred();
 
-        base._Ready(); // Call it at the end as the overrided code can use the refs correctly
     }
 
     public override void _Process(double delta)
@@ -92,6 +90,8 @@ public partial class ALPlayer : Player
     protected override void InitializeEvents()
     {
         base.InitializeEvents();
+        ALHand hand = GetPlayerHand<ALHand>();
+        ALBoard board = GetPlayerBoard<ALBoard>();
         board.OnCardTrigger -= OnCardTriggerHandler;
         board.OnCardTrigger += OnCardTriggerHandler;
         hand.OnPlayCardStart -= OnPlayCardStartHandler; // Unload default event
@@ -116,12 +116,14 @@ public partial class ALPlayer : Player
     protected override void UnassignBoardEvents(Board board)
     {
         base.UnassignBoardEvents(board);
+        ALBoard enemyBoard = GetEnemyPlayerBoard<ALBoard>();
         if (enemyBoard is not null) enemyBoard.OnCardTrigger -= OnCardTriggerHandler;
     }
     protected override void AssignBoardEvents(Board board)
     {
         UnassignBoardEvents(board);
         base.AssignBoardEvents(board);
+        ALBoard enemyBoard = GetEnemyPlayerBoard<ALBoard>();
         if (enemyBoard is not null) enemyBoard.OnCardTrigger += OnCardTriggerHandler;
     }
 
@@ -167,6 +169,7 @@ public partial class ALPlayer : Player
         flagshipField.UpdateAttributes(Flagship);
 
         // Player preparation
+        ALHand hand = GetPlayerHand<ALHand>();
         SelectBoard(hand);
         hand.SelectCardField(this, Vector2I.Zero);
         DrawCardToHand(5);
@@ -314,6 +317,7 @@ public partial class ALPlayer : Player
     protected void OnALPlaceCardStartHandler(Card fieldToPlace)
     {
         ALCard cardToPlace = fieldToPlace.CastToALCard();
+        ALBoard board = GetPlayerBoard<ALBoard>();
         ALCard fieldBeingPlaced = board.GetSelectedCard<ALCard>(this);
         if (fieldBeingPlaced.GetIsAFlagship())
         {
@@ -355,6 +359,7 @@ public partial class ALPlayer : Player
 
         // "Draw" the card to hand 
         durabilityCard.DestroyCard(); // Destroy card from board
+        ALHand hand = GetPlayerHand<ALHand>();
         hand.AddCardToHand(durabilityCard.GetAttributes<ALCardDTO>());
         GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown())}/{durabilityCards.Count}");
     }
@@ -456,6 +461,7 @@ public partial class ALPlayer : Player
         for (int i = 0; i < num; i++)
         {
             ALCardDTO cardToDraw = DrawCard(Deck, deckField);
+            ALHand hand = GetPlayerHand<ALHand>();
             hand.AddCardToHand(cardToDraw);
         }
     }
@@ -487,7 +493,7 @@ public partial class ALPlayer : Player
                 costArea.TryGetAllChildOfType<Card>()
             );
             cubeField.IsInputSelectable = true;
-            board
+            GetPlayerBoard<ALBoard>()
                 .GetCardInPosition(this, cubeField.PositionInBoard)
                 .UpdateAttributes(cardToDraw);
         }
@@ -513,16 +519,13 @@ public partial class ALPlayer : Player
     }
 
     // Public Player Actions for AI 
-    public new ALHand Hand { get => hand; }
-    public new ALBoard Board { get => board; }
-    public new ALHand EnemyHand { get => enemyHand; }
-    public new ALBoard EnemyBoard { get => enemyBoard; }
     public List<ALCard> GetActiveUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
     public List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
     public void TriggerPhaseButton()
     {
+        ALBoard board = GetPlayerBoard<ALBoard>();
         SelectBoard(board);
         // Select phase button
         board.SelectCardField(this, phaseButtonField.PositionInBoard);

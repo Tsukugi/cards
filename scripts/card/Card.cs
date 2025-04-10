@@ -48,6 +48,7 @@ public partial class Card : CardField
     {
         bool isSelectingThisCard = position == PositionInBoard;
         SetIsSelected(isSelectingThisCard);
+        // GD.Print($"[OnSelectCardPositionHandler] Selected {player.Name}.{Name} - {isSelectingThisCard}");
         if (isSelectingThisCard)
         {
             selectedIndicatorColor = player.GetPlayerColor();

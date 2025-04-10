@@ -13,13 +13,18 @@ public partial class ALGameMatchManager : Node
         base._Ready();
         orderedPlayers = [enemyPlayer, userPlayer]; // TODO add some shuffling, with a minigame
 
+        ALHand userHand = userPlayer.GetPlayerHand<ALHand>();
+        ALHand enemyHand = enemyPlayer.GetPlayerHand<ALHand>();
+        ALBoard userBoard = userPlayer.GetPlayerBoard<ALBoard>();
+        ALBoard enemyBoard = enemyPlayer.GetPlayerBoard<ALBoard>();
+
         // IsEnemyBoard is needed for thinks like flipping the Input axis
-        enemyPlayer.Hand.SetIsEnemyBoard(true);
-        enemyPlayer.Board.SetIsEnemyBoard(true);
+        enemyHand.SetIsEnemyBoard(true);
+        enemyBoard.SetIsEnemyBoard(true);
 
         // Assign Enemy boards is needed to handle onBoardEdges
-        userPlayer.AssignEnemyBoards(enemyPlayer.Hand, enemyPlayer.Board);
-        enemyPlayer.AssignEnemyBoards(userPlayer.Hand, userPlayer.Board);
+        userPlayer.AssignEnemyBoards(enemyHand, enemyBoard);
+        enemyPlayer.AssignEnemyBoards(userHand, userBoard);
 
         orderedPlayers.ForEach(player =>
         {
