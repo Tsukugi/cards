@@ -1,3 +1,4 @@
+using System.Text;
 using Godot;
 
 public partial class ALCard : Card
@@ -63,6 +64,31 @@ public partial class ALCard : Card
     public bool CanShowCardDetailsUI() => !IsEmptyField && !isDeck && !(isFlagship && GetIsFaceDown()) && !GetIsFaceDown();
     public bool CanShowPowerLabel() => !IsEmptyField && !isResource && !isDeck;
 
+    public string GetFormattedSkills()
+    //TODO : Add colors for duration and condition
+    {
+        ALCardSkillDTO[] attributes = GetAttributes<ALCardDTO>().skills;
+        StringBuilder stringBuilder = new();
+        foreach (var item in attributes)
+        {
+            var formattedSkils = "";
+            if (item.duration != "always") formattedSkils += $"[{item.duration}] - ";
+            if (item.condition is ALCardSkillConditionDTO[] conditions && conditions.Length > 0)
+            {
+                formattedSkils += "[";
+                for (int i = 0; i < conditions.Length; i++)
+                {
+                    formattedSkils += $"{conditions[i].conditionId}";
+                    if (conditions[i].conditionAmount is string amount) formattedSkils += $" ({amount})";
+                    if (conditions[i].conditionCard is string card) formattedSkils += $" ({card})";
+                    if (i != conditions.Length - 1) formattedSkils += " - ";
+                }
+                formattedSkils += "] - ";
+            }
+            stringBuilder.AppendLine($"{formattedSkils}{item.effectLabel}");
+        }
+        return stringBuilder.ToString();
+    }
     public void SetIsInActiveState(bool isActive)
     {
         isInActiveState = isActive;

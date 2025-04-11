@@ -38,7 +38,7 @@ public partial class ALPlayer : Player
     // --- UI --- 
     Control control;
     Panel selectedCardInfo;
-    Label phaseLabel, selectedCardNameLabel;
+    Label phaseLabel, selectedCardNameLabel, selectedCardSkillsLabel, selectedCardSupportScopeLabel, selectedCardFactionCountryLabel, selectedCardShipTypeLabel, selectedCardFactionLabel;
     TextureRect selectedCardImage;
 
     // --- Phase ---
@@ -60,6 +60,11 @@ public partial class ALPlayer : Player
         selectedCardInfo = GetNode<Panel>("Control/SelectedCardInfo");
         selectedCardImage = GetNode<TextureRect>("Control/SelectedCardInfo/SelectedCardImage");
         selectedCardNameLabel = GetNode<Label>("Control/SelectedCardInfo/NamePanel/NameLabel");
+        selectedCardSkillsLabel = GetNode<Label>("Control/SelectedCardInfo/SkillsPanel/SkillsLabel");
+        selectedCardSupportScopeLabel = GetNode<Label>("Control/SelectedCardInfo/SupportScopePanel/SupportScopeLabel");
+        selectedCardFactionCountryLabel = GetNode<Label>("Control/SelectedCardInfo/FactionCountryPanel/FactionCountryLabel");
+        selectedCardFactionLabel = GetNode<Label>("Control/SelectedCardInfo/FactionPanel/FactionLabel");
+        selectedCardShipTypeLabel = GetNode<Label>("Control/SelectedCardInfo/ShipTypePanel/ShipTypeLabel");
         matchMenuBtn = GetNode<MenuButton>("Control/MatchMenuBtn");
         matchMenuBtn.GetPopup().IndexPressed += OnMatchMenuItemSelected;
 
@@ -81,8 +86,14 @@ public partial class ALPlayer : Player
             selectedCardInfo.Visible = CanShowCardDetailsUI;
             if (CanShowCardDetailsUI)
             {
+                ALCardDTO attributes = selectedCard.GetAttributes<ALCardDTO>();
                 selectedCardImage.Texture = (Texture2D)selectedCard.GetCardImageResource();
-                selectedCardNameLabel.Text = selectedCard.GetAttributes<ALCardDTO>().name;
+                selectedCardNameLabel.Text = attributes.name;
+                selectedCardSkillsLabel.Text = selectedCard.GetFormattedSkills();
+                selectedCardSupportScopeLabel.Text = attributes.supportScope;
+                selectedCardShipTypeLabel.Text = attributes.type;
+                selectedCardFactionCountryLabel.Text = attributes.factionCountry;
+                selectedCardFactionLabel.Text = attributes.faction;
             }
         }
         else
@@ -145,7 +156,9 @@ public partial class ALPlayer : Player
             "SD01-005",
             "SD01-006",
             "SD01-007",
-            "SD01-008"
+            "SD01-008",
+            "SD01-009",
+            "SD01-010"
         ];
         for (int i = 0; i < 50; i++)
         {
@@ -196,7 +209,7 @@ public partial class ALPlayer : Player
         GD.Print($"[{Name}.PlayResetPhase]");
         SetBoardCardsAsActive();
         UpdatePhase(EALTurnPhase.Reset);
-        asyncPhase.AwaitBefore(PlayNextPhase);
+        _ = asyncPhase.AwaitBefore(PlayNextPhase);
     }
     void PlayPreparationPhase()
     {
@@ -231,7 +244,7 @@ public partial class ALPlayer : Player
         // Clean some things
         GD.Print($"[{Name}.PlayEndPhase]");
         UpdatePhase(EALTurnPhase.End);
-        asyncPhase.AwaitBefore(EndTurn);
+        _ = asyncPhase.AwaitBefore(EndTurn);
     }
 
     void EndTurn()
@@ -260,14 +273,14 @@ public partial class ALPlayer : Player
             GD.PrintErr($"[PlayNextPhase] Trying to play next phase on End phase already!");
             return;
         }
-        asyncPhase.AwaitBefore(() => ApplyPhase(nextPhase));
+        _ = asyncPhase.AwaitBefore(() => ApplyPhase(nextPhase));
     }
 
     void EndBattlePhaseIfNoActiveCards()
     {
         List<ALCard> units = GetActiveUnitsInBoard();
         if (units.Count > 0) return;
-        asyncPhase.AwaitBefore(PlayNextPhase, 0.5f);
+        _ = asyncPhase.AwaitBefore(PlayNextPhase, 0.5f);
         GD.Print($"[EndBattlePhaseIfNoActiveCards] No active cards, going to next phase");
     }
 
@@ -356,7 +369,7 @@ public partial class ALPlayer : Player
     {
         GD.Print($"[OnCardTriggerHandler] {card.Name}");
         // Ignore repeated triggers 
-        asyncPhase.Debounce(() =>
+        _ = asyncPhase.Debounce(() =>
         {
             if (card is ALPhaseButton)
             {
@@ -416,7 +429,7 @@ public partial class ALPlayer : Player
 
         // TODO: Add support ships gameplay
 
-        asyncPhase.AwaitBefore(SettleBattle, 0.5f);
+        _ = asyncPhase.AwaitBefore(SettleBattle, 0.5f);
     }
 
     void SettleBattle()

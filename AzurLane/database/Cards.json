@@ -1,96 +1,208 @@
 [
-    {
-        "id": "SD01-Cube",
-        "name": "Cube",
-        "type": "Cube",
-        "imageSrc": "Cube01.png",
-        "backImageSrc": "CubeBack.png"
-    },
-    {
-        "id": "SD01-001",
-        "name": "Washington",
-        "power": 400,
-        "skills": [],
-        "type": "Flagship",
-        "durability": 5,
-        "imageSrc": "SD01-001.png",
-        "backImageSrc": "SD01-001B.png"
-    },
-    {
-        "id": "SD01-002",
-        "name": "Cassin",
-        "power": 300,
-        "skills": [],
-        "type": "Ship",
-        "cost": 1,
-        "supportValue": 100,
-        "supportScope": "Hand",
-        "imageSrc": "SD01-002.png"
-    },
-    {
-        "id": "SD01-003",
-        "name": "Downes",
-        "power": 400,
-        "skills": [],
-        "type": "Ship",
-        "cost": 2,
-        "supportValue": 100,
-        "supportScope": "Hand",
-        "imageSrc": "SD01-003.png"
-    },
-    {
-        "id": "SD01-004",
-        "name": "Sims",
-        "power": 400,
-        "skills": [],
-        "type": "Ship",
-        "cost": 2,
-        "supportValue": 100,
-        "supportScope": "Battlefield",
-        "imageSrc": "SD01-004.png"
-    },
-    {
-        "id": "SD01-005",
-        "name": "Hammann",
-        "power": 500,
-        "skills": [],
-        "type": "Ship",
-        "cost": 3,
-        "supportValue": 100,
-        "supportScope": "Hand",
-        "imageSrc": "SD01-005.png"
-    },
-    {
-        "id": "SD01-006",
-        "name": "Atlanta",
-        "power": 500,
-        "skills": [],
-        "type": "Ship",
-        "cost": 3,
-        "supportValue": 100,
-        "supportScope": "Both",
-        "imageSrc": "SD01-006.png"
-    },
-    {
-        "id": "SD01-007",
-        "name": "Juneau",
-        "power": 600,
-        "skills": [],
-        "type": "Ship",
-        "cost": 4,
-        "supportValue": 100,
-        "supportScope": "Both",
-        "imageSrc": "SD01-007.png"
-    },
-    {
-        "id": "SD01-008",
-        "name": "Anchorage",
-        "power": 500,
-        "skills": [],
-        "type": "Ship",
-        "cost": 6,
-        "supportValue": 100,
-        "supportScope": "Battlefield",
-        "imageSrc": "SD01-008.png"
-    }
+	{
+		"id": "SD01-Cube",
+		"name": "Cube",
+		"type": "Cube",
+		"imageSrc": "Cube01.png",
+		"backImageSrc": "CubeBack.png"
+	},
+	{
+		"id": "SD01-001",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Washington",
+		"power": 400,
+		"skills": [
+			{   
+				"condition": [
+					{ "conditionId": "Durability", "conditionAmount": 1 },
+					{ "conditionId": "EndOfTurn" }
+				],
+				"effectId": "Awakening",
+				"effectLabel": "When the durability of your flagship is 1 or less, turn this card face down."
+			}
+		],
+		"type": "Flagship",
+		"durability": 5,
+		"imageSrc": "SD01-001.png",
+		"backImageSrc": "SD01-001B.png"
+	},
+	{
+		"id": "SD01-002",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Cassin",
+		"power": 300,
+		"skills": [],
+		"type": "Ship",
+		"cost": 1,
+		"supportValue": 100,
+		"supportScope": "Hand",
+		"imageSrc": "SD01-002.png"
+	},
+	{
+		"id": "SD01-003",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Downes",
+		"power": 400,
+		"skills": [],
+		"type": "Ship",
+		"cost": 2,
+		"supportValue": 100,
+		"supportScope": "Hand",
+		"imageSrc": "SD01-003.png"
+	},
+	{
+		"id": "SD01-004",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Sims",
+		"power": 400,
+		"skills": [
+			{
+				"effectId": "noSupportBackRow",
+				"effectLabel": "This card on the battlefield cannot support cards in the back row."
+			}
+		],
+		"type": "Ship",
+		"cost": 2,
+		"supportValue": 100,
+		"supportScope": "Battlefield",
+		"imageSrc": "SD01-004.png"
+	},
+	{
+		"id": "SD01-005",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Hammann",
+		"power": 500,
+		"skills": [
+			{
+				"condition": [
+					{ "conditionId": "IsDefending" },
+					{ "conditionId": "IsSupported" }
+				],
+				"duration": "OncePerTurn",
+				"effectId": "Get100Power",
+				"effectLabel": "When this card is supported by a card on the battlefield, this card gains +100 Power for that battle."
+			}
+		],
+		"type": "Ship",
+		"cost": 3,
+		"supportValue": 100,
+		"supportScope": "Hand",
+		"imageSrc": "SD01-005.png"
+	},
+	{
+		"id": "SD01-006",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Atlanta",
+		"power": 500,
+		"skills": [],
+		"type": "Ship",
+		"cost": 3,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD01-006.png"
+	},
+	{
+		"id": "SD01-007",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Juneau",
+		"power": 600,
+		"skills": [],
+		"type": "Ship",
+		"cost": 4,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD01-007.png"
+	},
+	{
+		"id": "SD01-008",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Anchorage",
+		"power": 500,
+		"skills": [
+			{
+				"condition": [ 
+					{ "conditionId": "StartsAttack" }
+				],
+				"duration": "AttackPhase",
+				"effectId": "Get100Power",
+				"effectLabel": "During a battle when this card attacks, this card gains +100 Power"
+			}
+		],
+		"type": "Ship",
+		"cost": 6,
+		"supportValue": 100,
+		"supportScope": "Battlefield",
+		"imageSrc": "SD01-008.png"
+	},
+	{
+		"id": "SD01-009",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Portland",
+		"power": 500,
+		"skills": [
+			{
+				"condition": [
+					{ "conditionId": "IsAttacked" }
+				],
+				"duration": "AttackPhase",
+				"effectId": "Get100Power",
+				"effectLabel": "During a battle when this card is attacked, this card gains +100 Power"
+			},
+			{
+				"condition": [
+					{ 
+						"conditionId": "IsSpecificCardOnField",
+						"conditionCard": "SD01-010"
+					}
+				],
+				"effectId": "Get100Power",
+				"effectLabel": "While there is a \"Indianapolis\" Ship Card on your battlefield, this card gains +100 Power."
+			}
+		],
+		"type": "Ship",
+		"cost": 4,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD01-009.png"
+	},
+	{
+		"id": "SD01-010",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Indianapolis",
+		"power": 400,
+		"skills": [
+			{
+				"condition": [
+					{ 
+						"conditionId": "HasCubes",
+						"conditionAmount": 3
+					},
+					{ 
+						"conditionId": "ThisCardIsFlagshipDurability"
+					},
+					{ 
+						"conditionId": "IsFlagshipAttacked"
+					}
+				],
+				"duration": "OncePerTurn",
+				"effectId": "PlaceToFieldForFree",
+				"effectLabel": "When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost"
+			}
+		],
+		"type": "Ship",
+		"cost": 3,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD01-010.png"
+	}
 ]
