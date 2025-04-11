@@ -73,7 +73,7 @@ public partial class Board : Node3D
         string playerName = player.Name.ToString();
         selectedCardPosition = position;
 
-        if (selectedCard.ContainsKey(playerName)) selectedCard[playerName].SetIsSelected(false);
+        if (selectedCard.TryGetValue(playerName, out Card value)) value.SetIsSelected(false);
 
         Card foundCard = GetCardsInTree().Find(card => card.PositionInBoard == position);
         if (foundCard is not null)
@@ -91,14 +91,14 @@ public partial class Board : Node3D
     public T? GetSelectedCard<T>(Player player) where T : Card
     {
         string playerName = player.Name.ToString();
-        return selectedCard.ContainsKey(playerName) ? selectedCard[playerName] as T : null;
+        return selectedCard.TryGetValue(playerName, out Card value) ? value as T : null;
     }
     public void ClearSelectionForPlayer(Player player)
     {
         string playerName = player.Name.ToString();
-        if (selectedCard.ContainsKey(playerName))
+        if (selectedCard.TryGetValue(playerName, out Card value))
         {
-            GD.Print($"[ClearSelectionForPlayer] {playerName} {selectedCard[playerName]} ");
+            GD.Print($"[ClearSelectionForPlayer] {playerName} {value} ");
             selectedCard.Remove(playerName);
         }
     }

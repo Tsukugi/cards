@@ -81,6 +81,7 @@ public partial class ALCard : Card
         }
     }
     public EAttackFieldType GetAttackFieldType() => attackFieldType;
+    public EAttackFieldType SetAttackFieldType(EAttackFieldType value) => attackFieldType = value;
     public bool GetIsAFlagship() => isFlagship;
 
     public void TakeDurabilityDamage()

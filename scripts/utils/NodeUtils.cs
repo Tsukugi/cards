@@ -15,7 +15,7 @@ public static class NodeUtils
         {
             currentNode = currentNode.GetParent();
             if (currentNode == null)  // We went to the root node
-                throw new System.Exception("[TryFindParentNodeOfType] Could not find a direct or indirect parent of this node with the specified type");
+                throw new System.Exception($"[TryFindParentNodeOfType] Could not find a direct or indirect parent of this node with the specified type {typeof(T).Name}");
             if (currentNode is T typedNode) return typedNode;
         }
     }

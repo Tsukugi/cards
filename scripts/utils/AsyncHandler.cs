@@ -10,10 +10,10 @@ public class AsyncHandler(Node node)
 
     public delegate bool SimpleCheck();
 
-    public void AwaitBefore(Action awaitedAction, float waitTime = 1f)
+    public async Task AwaitBefore(Action awaitedAction, float waitTime = 1f)
     {
         isLoading = true;
-        _ = callerNode.Wait(waitTime, () =>
+        await callerNode.Wait(waitTime, () =>
         {
             isLoading = false; awaitedAction();
         });
@@ -25,16 +25,21 @@ public class AsyncHandler(Node node)
 
         while (!check())
         {
-            if (elapsedTime > timeoutInSeconds * 10000) { isLoading = false; return; } // Return on timeout
+            if (elapsedTime >= (timeoutInSeconds * 1000))
+            {
+                GD.PushWarning($"[AwaitForCheck] Timeout of {timeoutInSeconds}s reached");
+                isLoading = false;
+                return; // Return on timeout
+            }
             await Task.Delay(intervalCheckMs);
             elapsedTime += intervalCheckMs;
-            // GD.Print($"[AwaitForCheck] Elapsed time: {elapsedTime}");
+            // GD.Print($"[AwaitForCheck] Elapsed time: {elapsedTime / 1000}");
         }
         isLoading = false;
         awaitedAction();
     }
 
-    public void Debounce(Action debouncedAction, float waitTime = 1f)
+    public async Task Debounce(Action debouncedAction, float waitTime = 1f)
     {
         if (isLoading)
         {
@@ -43,7 +48,7 @@ public class AsyncHandler(Node node)
         }
         debouncedAction();
         isLoading = true;
-        _ = callerNode.Wait(waitTime, () => isLoading = false);
+        await callerNode.Wait(waitTime, () => isLoading = false);
     }
     public static async Task RunAsyncFunctionsSequentially(List<Func<Task>> asyncFunctions)
     {
@@ -52,4 +57,6 @@ public class AsyncHandler(Node node)
             await asyncFunction(); // Await each function in sequence
         }
     }
+
+    public bool GetIsLoading() => isLoading;
 }

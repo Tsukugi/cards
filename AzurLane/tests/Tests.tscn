@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://chcjq0afarkic"]
+
+[ext_resource type="Script" uid="uid://bmjjv26ot6774" path="res://scripts/card/Board.cs" id="1_oih2n"]
+[ext_resource type="Script" uid="uid://bjnv8s24jt0c3" path="res://AzurLane/tests/Test_ALCard.cs" id="2_tk44o"]
+[ext_resource type="Script" uid="uid://dmqv5hruinyuy" path="res://AzurLane/tests/Test_Async.cs" id="3_8wtn2"]
+
+[node name="Setup" type="Node"]
+
+[node name="MockBoard" type="Node3D" parent="."]
+script = ExtResource("1_oih2n")
+
+[node name="TestALCard" type="Node3D" parent="MockBoard"]
+script = ExtResource("2_tk44o")
+
+[node name="CardDisplay" type="Node3D" parent="MockBoard/TestALCard"]
+
+[node name="TestAsync" type="Node" parent="."]
+script = ExtResource("3_8wtn2")

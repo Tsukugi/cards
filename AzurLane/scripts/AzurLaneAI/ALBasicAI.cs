@@ -6,7 +6,6 @@ using Godot;
 public class ALBasicAI
 {
     readonly AsyncHandler asyncHandler;
-    readonly ALPlayer player;
 
     readonly int actionDelay = 500; // Miliseconds for every AI action
 
@@ -15,7 +14,6 @@ public class ALBasicAI
     public ALBasicAI(ALPlayer _player)
     {
         asyncHandler = new(_player);
-        player = _player;
         actions = new(_player, actionDelay, asyncHandler);
     }
 
