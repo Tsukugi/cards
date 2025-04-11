@@ -157,6 +157,7 @@ vertical_alignment = 1
 autowrap_mode = 2
 
 [node name="SupportScopePanel" type="Panel" parent="Control/SelectedCardInfo"]
+layout_mode = 1
 offset_left = 49.0
 offset_top = 291.0
 offset_right = 145.0
@@ -177,10 +178,18 @@ vertical_alignment = 1
 autowrap_mode = 2
 
 [node name="ShipTypePanel" type="Panel" parent="Control/SelectedCardInfo"]
-offset_left = 310.0
-offset_top = 570.0
-offset_right = 418.0
-offset_bottom = 585.0
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -170.0
+offset_top = -76.0
+offset_right = -62.0
+offset_bottom = -61.0
+grow_horizontal = 0
+grow_vertical = 0
 
 [node name="ShipTypeLabel" type="Label" parent="Control/SelectedCardInfo/ShipTypePanel"]
 layout_mode = 1
@@ -194,29 +203,47 @@ label_settings = SubResource("LabelSettings_takk7")
 vertical_alignment = 1
 
 [node name="FactionCountryPanel" type="Panel" parent="Control/SelectedCardInfo"]
-offset_left = 199.0
-offset_top = 570.0
-offset_right = 307.0
-offset_bottom = 585.0
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -284.0
+offset_top = -76.0
+offset_right = -176.0
+offset_bottom = -61.0
+grow_horizontal = 0
+grow_vertical = 0
 
 [node name="FactionCountryLabel" type="Label" parent="Control/SelectedCardInfo/FactionCountryPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_bottom = 1.0
+offset_left = -1.0
+offset_top = -1.0
+offset_right = -1.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "Faction"
+text = "FactionCountry"
 label_settings = SubResource("LabelSettings_takk7")
 horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="FactionPanel" type="Panel" parent="Control/SelectedCardInfo"]
-offset_left = 255.0
-offset_top = 551.0
-offset_right = 363.0
-offset_bottom = 566.0
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -227.0
+offset_top = -95.0
+offset_right = -119.0
+offset_bottom = -80.0
+grow_horizontal = 0
+grow_vertical = 0
 
 [node name="FactionLabel" type="Label" parent="Control/SelectedCardInfo/FactionPanel"]
 layout_mode = 1

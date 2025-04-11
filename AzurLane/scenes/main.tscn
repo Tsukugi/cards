@@ -41,17 +41,21 @@ grow_vertical = 2
 [node name="Start" type="Button" parent="Panel/Vert"]
 layout_mode = 2
 size_flags_vertical = 3
+focus_neighbor_bottom = NodePath("../Options")
 theme = ExtResource("2_skdpf")
 text = "Start Match"
 
 [node name="Options" type="Button" parent="Panel/Vert"]
 layout_mode = 2
 size_flags_vertical = 3
+focus_neighbor_top = NodePath("../Start")
+focus_neighbor_bottom = NodePath("../Exit")
 theme = ExtResource("2_skdpf")
 text = "Options"
 
 [node name="Exit" type="Button" parent="Panel/Vert"]
 layout_mode = 2
 size_flags_vertical = 3
+focus_neighbor_top = NodePath("../Options")
 theme = ExtResource("2_skdpf")
 text = "Exit"

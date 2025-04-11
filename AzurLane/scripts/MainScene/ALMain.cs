@@ -14,6 +14,7 @@ public partial class ALMain : Control
         startBtn.Pressed += onStartPressed;
         optionsBtn.Pressed += onOptionsPressed;
         exitBtn.Pressed += onExitPressed;
+        startBtn.GrabFocus();
     }
 
     void onStartPressed()
