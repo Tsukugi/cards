@@ -26,6 +26,7 @@ outline_size = 4
 outline_color = Color(0.649063, 0.677992, 0.718958, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_qholi"]
+line_spacing = 1.0
 font = ExtResource("4_p865k")
 font_size = 12
 
@@ -143,18 +144,18 @@ offset_bottom = 510.0
 
 [node name="SkillsLabel" type="Label" parent="Control/SelectedCardInfo/SkillsPanel"]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -179.0
-offset_top = 5.0
-offset_right = 179.0
-offset_bottom = 32.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 7.0
+offset_top = 4.0
+offset_right = -8.0
+offset_bottom = 6.0
 grow_horizontal = 2
-text = "Skills"
+grow_vertical = 2
+text = "[awdawdawd] a dwawdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdaw"
 label_settings = SubResource("LabelSettings_qholi")
-vertical_alignment = 1
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="SupportScopePanel" type="Panel" parent="Control/SelectedCardInfo"]
 layout_mode = 1

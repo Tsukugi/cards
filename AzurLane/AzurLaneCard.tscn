@@ -1,9 +1,17 @@
-[gd_scene load_steps=9 format=3 uid="uid://dp7bqacq615oo"]
+[gd_scene load_steps=11 format=3 uid="uid://dp7bqacq615oo"]
 
 [ext_resource type="Script" uid="uid://u4loqtnkjdnn" path="res://AzurLane/scripts/ALCard.cs" id="1_hunl0"]
 [ext_resource type="BoxMesh" uid="uid://dn563cjoh3wan" path="res://Material/cardBack.tres" id="2_2htw4"]
 [ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="2_y1cnb"]
 [ext_resource type="BoxMesh" uid="uid://m6c665niqt0s" path="res://Material/cardFront.tres" id="3_l2p5i"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y1cnb"]
+transparency = 1
+albedo_color = Color(0.0862745, 0.0862745, 0.0862745, 0.423529)
+metallic = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_y1cnb"]
+material = SubResource("StandardMaterial3D_y1cnb")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hunl0"]
 albedo_color = Color(0.377919, 0.377919, 0.377919, 1)
@@ -32,7 +40,7 @@ selectedIndicatorColor = Color(4.57242e-06, 0.345255, 0.535879, 0.607843)
 [node name="PowerLabel" type="Label3D" parent="UI"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -1, 0.4, 2.6)
 billboard = 1
-texture_filter = 2
+texture_filter = 1
 modulate = Color(0.977595, 0.981628, 1, 1)
 outline_modulate = Color(0.532629, 0.476042, 0.409763, 1)
 text = "1000
@@ -50,6 +58,34 @@ text = "50
 font = ExtResource("2_y1cnb")
 font_size = 150
 outline_size = 50
+
+[node name="Skills" type="Label3D" parent="UI"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -1.82841, 0.236098, 0.677139)
+texture_filter = 1
+modulate = Color(0.977595, 0.981628, 1, 1)
+outline_modulate = Color(0.309508, 0.335157, 0.438212, 1)
+text = "adawdaw dwad awd awdad awdawda dawdawdawdawdawd awd awdaw dawd aw dawdawd awdawdawda da dwadad wadawdaa wad awdadwad awd wa dwaa a
+"
+font = ExtResource("2_y1cnb")
+font_size = 28
+outline_size = 1
+horizontal_alignment = 0
+vertical_alignment = 0
+autowrap_mode = 3
+width = 750.0
+
+[node name="Name" type="Label3D" parent="UI"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -0.031455, 0.2935, 2.15966)
+modulate = Color(0.977595, 0.981628, 1, 1)
+outline_modulate = Color(0.309508, 0.335157, 0.438212, 1)
+text = "Test
+"
+font = ExtResource("2_y1cnb")
+font_size = 50
+
+[node name="SkillsBackdrop" type="MeshInstance3D" parent="UI"]
+transform = Transform3D(3.81622, 0, 0, 0, 0.454065, 0, 0, 0, 2.14598, -0.00157845, 0, 1.72755)
+mesh = SubResource("BoxMesh_y1cnb")
 
 [node name="CardDisplay" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)

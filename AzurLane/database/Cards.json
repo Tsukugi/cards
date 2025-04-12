@@ -25,7 +25,8 @@
 		"type": "Flagship",
 		"durability": 5,
 		"imageSrc": "SD01-001.png",
-		"backImageSrc": "SD01-001B.png"
+		"backImageSrc": "SD01-001B.png",
+		"rarity": "L"
 	},
 	{
 		"id": "SD01-002",
@@ -61,7 +62,7 @@
 		"power": 400,
 		"skills": [
 			{
-				"effectId": "noSupportBackRow",
+				"effectId": "CantSupportBackRow",
 				"effectLabel": "This card on the battlefield cannot support cards in the back row."
 			}
 		],
@@ -92,7 +93,8 @@
 		"cost": 3,
 		"supportValue": 100,
 		"supportScope": "Hand",
-		"imageSrc": "SD01-005.png"
+		"imageSrc": "SD01-005.png",
+		"rarity": "SR"
 	},
 	{
 		"id": "SD01-006",
@@ -140,7 +142,8 @@
 		"cost": 6,
 		"supportValue": 100,
 		"supportScope": "Battlefield",
-		"imageSrc": "SD01-008.png"
+		"imageSrc": "SD01-008.png",
+		"rarity": "SSR"
 	},
 	{
 		"id": "SD01-009",
@@ -187,16 +190,10 @@
 						"conditionId": "HasCubes",
 						"conditionAmount": 3
 					},
-					{ 
-						"conditionId": "ThisCardIsFlagshipDurability"
-					},
-					{ 
-						"conditionId": "IsFlagshipAttacked"
-					}
+					{ "conditionId": "Retaliation" }
 				],
-				"duration": "OncePerTurn",
-				"effectId": "PlaceToFieldForFree",
-				"effectLabel": "When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost"
+				"effectId": "Retaliation",
+				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost)"
 			}
 		],
 		"type": "Ship",
@@ -204,5 +201,161 @@
 		"supportValue": 100,
 		"supportScope": "Both",
 		"imageSrc": "SD01-010.png"
+	},
+	{
+		"id": "SD01-011",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Pennsylvania",
+		"power": 500,
+		"skills": [
+			{
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "Always",
+				"effectId": "RangedAttack",
+				"effectLabel": "This card in the back row can attack the opponent's back row card."
+			},
+			{
+				"condition": [
+					{ "conditionId": "IsAttacked" }
+				],
+				"duration": "AttackPhase",
+				"effectId": "Get200Power",
+				"effectLabel": "During a battle when this card is attacked, this card gains +200 Power."
+			}
+		],
+		"type": "Ship",
+		"cost": 5,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD01-011.png"
+	},
+	{
+		"id": "SD01-012",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Arizona",
+		"power": 500,
+		"skills": [
+			{
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "Always",
+				"effectId": "RangedAttack",
+				"effectLabel": "This card in the back row can attack the opponent's back row card."
+			}
+		],
+		"type": "Ship",
+		"cost": 4,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD01-012.png"
+	},
+	{
+		"id": "SD01-013",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Bogue",
+		"power": 400,
+		"skills": [
+			{
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "Always",
+				"effectId": "RangedAttack",
+				"effectLabel": "This card in the back row can attack the opponent's back row card."
+			},
+			{
+				"duration": "OncePlayed",
+				"effectId": "ReturnToHand2CubeOrLess",
+				"effectLabel": "You can bounce 1 ship card with a cost of 2 or less on your opponent's battlefield back to your hand."
+			}
+		],
+		"type": "Ship",
+		"cost": 4,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD01-013.png"
+	},
+	{
+		"id": "SD01-014",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "All staff in place",
+		"skills": [
+			{
+				"condition": [
+					{ "conditionId": "Counter" }
+				],
+				"duration": "AttackPhase",
+				"effectId": "Get200Power",
+				"effectLabel": "(Can be activated during your defense step) During this battle, a card on your battlefield gains +200 power."
+			},
+			{
+				"condition": [
+					{ "conditionId": "Counter" }
+				],
+				"duration": "AttackPhase",
+				"effectId": "PutCardTopOrBottomDeck",
+				"effectLabel": "After that, look at the top card of your deck and choose to put it at the top or bottom of the deck."
+			}
+		],
+		"type": "Event",
+		"cost": 1,
+		"imageSrc": "SD01-014.png"
+	},
+	{
+		"id": "SD01-015",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Combat Power Supplements",
+		"skills": [
+			{
+				"condition": [
+					{ "conditionId": "Counter" }
+				],
+				"duration": "AttackPhase",
+				"effectId": "Get400Power",
+				"effectLabel": "(Can be activated during your Defense Step) During this battle, a card on your battlefield gains +400 Power."
+			},
+			{
+				"condition": [
+					{ "conditionId": "Counter" },
+					{ "conditionId": "EmptyHand" }
+				],
+				"duration": "AttackPhase",
+				"effectId": "DrawCard",
+				"effectLabel": "Afterwards, when your hand has 0 cards, draw 1 card."
+			}
+		],
+		"type": "Event",
+		"cost": 2,
+		"imageSrc": "SD01-015.png"
+	},
+	{
+		"id": "SD01-016",
+		"faction": "AzurLane",
+		"factionCountry": "EagleUnion",
+		"name": "Return to Base",
+		"skills": [
+			{
+				"condition": [
+					{ "conditionId": "Retaliation" }
+				],
+				"effectId": "Retaliation"
+			},
+			{
+				"duration": "MainPhase",
+				"effectId": "ReturnEnemyToHand3CubeOrLess",
+				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost) Return 1 ship card with a cost of 3 or less on the opponent's battlefield to their hand."
+			}
+		],
+		"type": "Event",
+		"cost": 3,
+		"imageSrc": "SD01-016.png"
 	}
 ]

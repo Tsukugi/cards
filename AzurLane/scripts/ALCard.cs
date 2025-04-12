@@ -4,8 +4,8 @@ using Godot;
 public partial class ALCard : Card
 {
     public event OnProvidedCardEvent OnDurabilityDamage;
-    Node3D UI;
-    Label3D powerLabel, stackCount;
+    Node3D UI, skillsBackdrop;
+    Label3D powerLabel, stackCount, nameLabel, skillsLabel;
     [Export]
     // Useful to differentiate from playable cards - ALTCG Gameplay: Cubes and Durability are resources
     bool isResource = false;
@@ -26,12 +26,16 @@ public partial class ALCard : Card
         UI = GetNodeOrNull<Node3D>("UI");
         powerLabel = GetNodeOrNull<Label3D>("UI/PowerLabel");
         stackCount = GetNodeOrNull<Label3D>("UI/StackCount");
+        nameLabel = GetNodeOrNull<Label3D>("UI/Name");
+        skillsLabel = GetNodeOrNull<Label3D>("UI/Skills");
+        skillsBackdrop = GetNodeOrNull<Node3D>("UI/SkillsBackdrop");
         UpdateAttributes<ALCardDTO>(new()); // ! HACK, I Do this to force a ALCardDTO attributes
     }
 
     protected override void OnCardUpdateHandler()
     {
         base.OnCardUpdateHandler();
+        ALCardDTO attrs = GetAttributes<ALCardDTO>();
         if (UI is not null)
         {
             // This rotates the Card UI to be seen from an inverted board (enemyBoard)
@@ -45,7 +49,6 @@ public partial class ALCard : Card
             powerLabel.Visible = isShown;
             if (isShown)
             {
-                var attrs = GetAttributes<ALCardDTO>();
                 powerLabel.Text = attrs.power.ToString();
             }
         }
@@ -56,10 +59,24 @@ public partial class ALCard : Card
             stackCount.Visible = isShown;
             if (isShown) stackCount.Text = CardStack.ToString();
         }
+
+        if (nameLabel is not null)
+        {
+            bool isShown = CanShowCardDetailsUI() && GetBoard().GetType() == typeof(ALHand);
+            nameLabel.Visible = isShown;
+            if (isShown) nameLabel.Text = attrs.name;
+        }
+
+        if (skillsLabel is not null)
+        {
+            bool isShown = CanShowCardDetailsUI() && GetBoard().GetType() == typeof(ALHand);
+            skillsLabel.Visible = isShown;
+            skillsBackdrop.Visible = isShown;
+            if (isShown) skillsLabel.Text = GetFormattedSkills();
+        }
     }
 
     // --- API ---
-
     public bool CanShowStackCount() => !IsEmptyField && CardStack > 1;
     public bool CanShowCardDetailsUI() => !IsEmptyField && !isDeck && !(isFlagship && GetIsFaceDown()) && !GetIsFaceDown();
     public bool CanShowPowerLabel() => !IsEmptyField && !isResource && !isDeck;

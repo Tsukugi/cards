@@ -158,7 +158,13 @@ public partial class ALPlayer : Player
             "SD01-007",
             "SD01-008",
             "SD01-009",
-            "SD01-010"
+            "SD01-010",
+            "SD01-011",
+            "SD01-012",
+            "SD01-013",
+            "SD01-014",
+            "SD01-015",
+            "SD01-016"
         ];
         for (int i = 0; i < 50; i++)
         {
