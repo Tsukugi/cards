@@ -7,15 +7,13 @@ public partial class ALPlayer : Player
 {
 
     // --- Events ---
-    public delegate void PhaseEvent(EALTurnPhase phase);
-    public delegate bool FindCardAction(ALCard card);
     public event Action OnTurnEnd;
-    public event PhaseEvent OnPhaseChange;
 
     // --- Refs ---
     List<ALCardDTO> Deck = [], CubeDeck = [], Retreat = [];
     ALCardDTO Flagship = new();
-    readonly ALDatabase database = new();
+    ALGameMatchManager matchManager;
+    ALDatabase database;
 
     // --- AI ---
     ALBasicAI ai;
@@ -26,80 +24,30 @@ public partial class ALPlayer : Player
     ALCard deckField, cubeDeckField, flagshipField, retreatField;
     [Export]
     ALPhaseButton phaseButtonField;
-    [Export]
-    MenuButton matchMenuBtn;
 
     // --- State ---
-    EALTurnPhase currentPhase = EALTurnPhase.Reset;
-    // State updated externally, represents the synched phase running between all players
-    EALTurnPhase synchedPhase = EALTurnPhase.Reset;
     ALCard battleAttackerCard, battleAttackedCard;
-
-    // --- UI --- 
-    Control control;
-    Panel selectedCardInfo;
-    Label phaseLabel, selectedCardNameLabel, selectedCardSkillsLabel, selectedCardSupportScopeLabel, selectedCardFactionCountryLabel, selectedCardShipTypeLabel, selectedCardFactionLabel;
-    TextureRect selectedCardImage;
 
     // --- Phase ---
     AsyncHandler asyncPhase;
-    readonly ALPhase phase = new();
+    ALPhase phase;
 
     public override void _Ready()
     {
         base._Ready(); // Call it at the end as the overrided code can use the refs correctly
+        matchManager = this.TryFindParentNodeOfType<ALGameMatchManager>();
+        database = matchManager.GetDatabase();
+
         ai = new(this);
         asyncPhase = new(this);
+        phase = new(this);
 
         ALBoard board = GetPlayerBoard<ALBoard>();
         costArea = board.GetNode<Node3D>("CostArea");
         unitsArea = board.GetNode<Node3D>("Units");
         durabilityArea = board.GetNode<Node3D>("FlagshipDurability");
-        control = GetNode<Control>("Control");
-        phaseLabel = GetNode<Label>("Control/PhaseLabel");
-        selectedCardInfo = GetNode<Panel>("Control/SelectedCardInfo");
-        selectedCardImage = GetNode<TextureRect>("Control/SelectedCardInfo/SelectedCardImage");
-        selectedCardNameLabel = GetNode<Label>("Control/SelectedCardInfo/NamePanel/NameLabel");
-        selectedCardSkillsLabel = GetNode<Label>("Control/SelectedCardInfo/SkillsPanel/SkillsLabel");
-        selectedCardSupportScopeLabel = GetNode<Label>("Control/SelectedCardInfo/SupportScopePanel/SupportScopeLabel");
-        selectedCardFactionCountryLabel = GetNode<Label>("Control/SelectedCardInfo/FactionCountryPanel/FactionCountryLabel");
-        selectedCardFactionLabel = GetNode<Label>("Control/SelectedCardInfo/FactionPanel/FactionLabel");
-        selectedCardShipTypeLabel = GetNode<Label>("Control/SelectedCardInfo/ShipTypePanel/ShipTypeLabel");
-        matchMenuBtn = GetNode<MenuButton>("Control/MatchMenuBtn");
-        matchMenuBtn.GetPopup().IndexPressed += OnMatchMenuItemSelected;
 
-        selectedCardInfo.Visible = isControlledPlayer; // Hide it if not the controlled player
-
-        database.LoadData();
         Callable.From(StartGameForPlayer).CallDeferred();
-    }
-
-    public override void _Process(double delta)
-    {
-        base._Process(delta);
-        if (!isControlledPlayer) return;
-        phaseLabel.Text = phase.GetPhaseByIndex((int)synchedPhase);
-
-        if (selectedBoard.GetSelectedCard<ALCard>(this) is ALCard selectedCard)
-        {
-            bool CanShowCardDetailsUI = selectedCard.CanShowCardDetailsUI();
-            selectedCardInfo.Visible = CanShowCardDetailsUI;
-            if (CanShowCardDetailsUI)
-            {
-                ALCardDTO attributes = selectedCard.GetAttributes<ALCardDTO>();
-                selectedCardImage.Texture = (Texture2D)selectedCard.GetCardImageResource();
-                selectedCardNameLabel.Text = attributes.name;
-                selectedCardSkillsLabel.Text = selectedCard.GetFormattedSkills();
-                selectedCardSupportScopeLabel.Text = attributes.supportScope;
-                selectedCardShipTypeLabel.Text = attributes.type;
-                selectedCardFactionCountryLabel.Text = attributes.factionCountry;
-                selectedCardFactionLabel.Text = attributes.faction;
-            }
-        }
-        else
-        {
-            selectedCardInfo.Visible = false;
-        }
     }
 
     protected override void InitializeEvents()
@@ -193,9 +141,9 @@ public partial class ALPlayer : Player
 
         // Player preparation
         ALHand hand = GetPlayerHand<ALHand>();
+        DrawCardToHand(5);
         SelectBoard(hand);
         hand.SelectCardField(this, Vector2I.Zero);
-        DrawCardToHand(5);
         ApplyFlagshipDurability(); // Manual says that this step is after drawing hand cards
     }
 
@@ -206,109 +154,20 @@ public partial class ALPlayer : Player
 
         if (!isControlledPlayer) _ = ai.StartTurn();
         IsPlayingTurn = true;
-        PlayResetPhase();
-    }
-    void PlayResetPhase()
-    {
-        SetPlayState(EPlayState.Wait);
-        // Reset all Units into active state
-        GD.Print($"[{Name}.PlayResetPhase]");
-        SetBoardCardsAsActive();
-        UpdatePhase(EALTurnPhase.Reset);
-        _ = asyncPhase.AwaitBefore(PlayNextPhase);
-    }
-    void PlayPreparationPhase()
-    {
-        SetPlayState(EPlayState.Wait);
-        // Draw 1 card
-        // Place 1 face up cube if possible
-        GD.Print($"[{Name}.PlayPreparationPhase]");
-        TryDrawCubeToBoard();
-        DrawCardToHand();
-        UpdatePhase(EALTurnPhase.Preparation);
-        PlayNextPhase();
-    }
-    void PlayMainPhase()
-    {
-        // Player can play cards
-        GD.Print($"[{Name}.PlayMainPhase]");
-        SetPlayState(EPlayState.Select);
-        UpdatePhase(EALTurnPhase.Main);
-    }
-    void PlayBattlePhase()
-    {
-        // Player can declare attacks
-        GD.Print($"[{Name}.PlayBattlePhase]");
-        SetPlayState(EPlayState.Select);
-        UpdatePhase(EALTurnPhase.Battle);
-
-        EndBattlePhaseIfNoActiveCards();
-    }
-    void PlayEndPhase()
-    {
-        SetPlayState(EPlayState.Wait);
-        // Clean some things
-        GD.Print($"[{Name}.PlayEndPhase]");
-        UpdatePhase(EALTurnPhase.End);
-        _ = asyncPhase.AwaitBefore(EndTurn);
+        phase.StartTurn();
     }
 
-    void EndTurn()
+    public void EndTurn()
     {
         IsPlayingTurn = false;
         if (OnTurnEnd is not null) OnTurnEnd();
     }
 
-    void ApplyPhase(EALTurnPhase phase)
-    {
-        switch (phase)
-        {
-            case EALTurnPhase.Reset: PlayResetPhase(); return;
-            case EALTurnPhase.Preparation: PlayPreparationPhase(); return;
-            case EALTurnPhase.Main: PlayMainPhase(); return;
-            case EALTurnPhase.Battle: PlayBattlePhase(); return;
-            case EALTurnPhase.End: PlayEndPhase(); return;
-        }
-    }
-
-    void PlayNextPhase()
-    {
-        EALTurnPhase nextPhase = currentPhase + 1;
-        if (nextPhase > EALTurnPhase.End)
-        {
-            GD.PrintErr($"[PlayNextPhase] Trying to play next phase on End phase already!");
-            return;
-        }
-        _ = asyncPhase.AwaitBefore(() => ApplyPhase(nextPhase));
-    }
-
-    void EndBattlePhaseIfNoActiveCards()
-    {
-        List<ALCard> units = GetActiveUnitsInBoard();
-        if (units.Count > 0) return;
-        _ = asyncPhase.AwaitBefore(PlayNextPhase, 0.5f);
-        GD.Print($"[EndBattlePhaseIfNoActiveCards] No active cards, going to next phase");
-    }
-
     // Event handlers
-
-    public void OnMatchMenuItemSelected(long itemIndex)
-    {
-        GD.Print($"[OnMatchMenuItemSelected] index: {itemIndex}");
-        switch (itemIndex)
-        {
-            case 0:
-                this.ChangeScene($"{ALMain.ALSceneRootPath}/main.tscn");
-                break;
-            // Add more cases as needed
-            default:
-                GD.PrintErr("Unknown item selected");
-                break;
-        }
-    }
 
     public void OnCostPlayCardStartHandler(Card cardToPlay)
     {
+        var currentPhase = phase.GetCurrentPhase();
         if (currentPhase != EALTurnPhase.Main)
         {
             GD.PrintErr($"[OnCostPlayCardStartHandler] Cannot place cards outside main phase");
@@ -371,16 +230,17 @@ public partial class ALPlayer : Player
         OnPlaceCardStartHandler(cardToPlace);
     }
 
-    protected void OnCardTriggerHandler(Card card)
+    protected override void OnCardTriggerHandler(Card card)
     {
-        GD.Print($"[OnCardTriggerHandler] {card.Name}");
+        base.OnCardTriggerHandler(card);
         // Ignore repeated triggers 
         _ = asyncPhase.Debounce(() =>
         {
+            EALTurnPhase currentPhase = phase.GetCurrentPhase();
             if (card is ALPhaseButton)
             {
-                if (currentPhase == EALTurnPhase.Main) PlayNextPhase();
-                if (currentPhase == EALTurnPhase.Battle) PlayNextPhase();
+                if (currentPhase == EALTurnPhase.Main) phase.PlayNextPhase();
+                if (currentPhase == EALTurnPhase.Battle) phase.PlayNextPhase();
             }
             if (card is ALCard alCard)
             {
@@ -389,6 +249,7 @@ public partial class ALPlayer : Player
             }
         }, 1f);
     }
+
     void OnDurabilityDamageHandler(Card card)
     {
         List<ALCard> durabilityCards = GetDurabilityCards();
@@ -435,7 +296,7 @@ public partial class ALPlayer : Player
 
         // TODO: Add support ships gameplay
 
-        _ = asyncPhase.AwaitBefore(SettleBattle, 0.5f);
+        _ = asyncPhase.AwaitBefore(SettleBattle);
     }
 
     void SettleBattle()
@@ -461,7 +322,7 @@ public partial class ALPlayer : Player
         }
 
         SetPlayState(EPlayState.Select);
-        EndBattlePhaseIfNoActiveCards();
+        phase.EndBattlePhaseIfNoActiveCards();
     }
 
 
@@ -494,16 +355,6 @@ public partial class ALPlayer : Player
         if (deck.CardStack == 0) deck.IsEmptyField = true;
     }
 
-    void DrawCardToHand(int num = 1)
-    {
-        for (int i = 0; i < num; i++)
-        {
-            ALCardDTO cardToDraw = DrawCard(Deck, deckField);
-            ALHand hand = GetPlayerHand<ALHand>();
-            hand.AddCardToHand(cardToDraw);
-        }
-    }
-
     void AddToRetreatAreaOnTop(ALCardDTO cardToAdd)
     {
         // We add to the bottom as the deck works flipped down
@@ -522,7 +373,50 @@ public partial class ALPlayer : Player
         }
     }
 
-    void TryDrawCubeToBoard()
+    // Public Player Actions for AI 
+    public ALPhase Phase => phase;
+    public List<ALCard> GetActiveUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
+    public List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
+    public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
+    public List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
+    public ALCard FindAvailableEmptyFieldInRow(bool frontRow = false)
+    {
+        List<ALCard> fields = unitsArea.TryGetAllChildOfType<ALCard>();
+        if (frontRow) return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.FrontRow && field.IsEmptyField);
+        else return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.BackRow && field.IsEmptyField);
+    }
+
+    public string GetCurrentPhaseText() => phase.GetPhaseByIndex((int)matchManager.GetMatchPhase());
+
+    // Play actions
+    public void TriggerPhaseButton()
+    {
+        ALBoard board = GetPlayerBoard<ALBoard>();
+        SelectBoard(board);
+        // Select phase button
+        board.SelectCardField(this, phaseButtonField.PositionInBoard);
+        // Execute trigger handler directly
+        OnCardTriggerHandler(phaseButtonField);
+    }
+
+    public void DrawCardToHand(int num = 1)
+    {
+        for (int i = 0; i < num; i++)
+        {
+            ALCardDTO cardToDraw = DrawCard(Deck, deckField);
+            ALHand hand = GetPlayerHand<ALHand>();
+            hand.AddCardToHand(cardToDraw);
+        }
+    }
+
+    public void SetBoardCardsAsActive()
+    {
+        // We wanna only reset units and cost area cards in AzurLane TCG
+        costArea.TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
+        unitsArea.TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
+    }
+
+    public void TryDrawCubeToBoard()
     {
         try
         {
@@ -542,44 +436,6 @@ public partial class ALPlayer : Player
         }
     }
 
-    void SetBoardCardsAsActive()
-    {
-        // We wanna only reset units and cost area cards in AzurLane TCG
-        costArea.TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
-        unitsArea.TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
-    }
-
-
-    void UpdatePhase(EALTurnPhase phase)
-    {
-        currentPhase = phase;
-        if (OnPhaseChange is not null) OnPhaseChange(phase);
-    }
-
-    // Public Player Actions for AI 
-    public List<ALCard> GetActiveUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
-    public List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
-    public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
-    public List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
-    public void TriggerPhaseButton()
-    {
-        ALBoard board = GetPlayerBoard<ALBoard>();
-        SelectBoard(board);
-        // Select phase button
-        board.SelectCardField(this, phaseButtonField.PositionInBoard);
-        // Execute trigger handler directly
-        OnCardTriggerHandler(phaseButtonField);
-    }
-    public void TriggerSelectedCardInBoard(Board board) => OnCardTriggerHandler(board.GetSelectedCard<ALCard>(this));
-    public ALCard FindAvailableEmptyFieldInRow(bool frontRow = false)
-    {
-        List<ALCard> fields = unitsArea.TryGetAllChildOfType<ALCard>();
-        if (frontRow) return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.FrontRow && field.IsEmptyField);
-        else return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.BackRow && field.IsEmptyField);
-    }
-
-    public EALTurnPhase GetCurrentPhase() => currentPhase;
-    public EALTurnPhase SyncPhase(EALTurnPhase phase) => synchedPhase = phase;
 }
 
 public enum EALTurnPhase

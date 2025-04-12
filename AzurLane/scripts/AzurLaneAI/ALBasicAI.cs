@@ -20,19 +20,19 @@ public class ALBasicAI
     public async Task SkipTurn()
     {
         await actions.WaitUntilPhase(EALTurnPhase.Main);
-        actions.PlayNextPhase();
+        await actions.PlayNextPhase();
         await actions.WaitUntilPhase(EALTurnPhase.Battle);
-        actions.PlayNextPhase();
+        await actions.PlayNextPhase();
     }
 
     public async Task SummonAndAttackFlagship()
     {
         await actions.WaitUntilPhase(EALTurnPhase.Main);
         await actions.MainPhasePlayExpensiveCard();
-        actions.PlayNextPhase();
+        await actions.PlayNextPhase();
         await actions.WaitUntilPhase(EALTurnPhase.Battle);
         await actions.BattlePhaseAttackFlagship();
-        actions.PlayNextPhase();
+        await actions.PlayNextPhase();
     }
 
     public async Task StartTurn()

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Godot;
 
@@ -43,7 +44,9 @@ public class AsyncHandler(Node node)
     {
         if (isLoading)
         {
-            GD.PrintErr($"[Debounce] Debounced {debouncedAction.GetType()}");
+            var msg = $"[Debounce] Debounced {debouncedAction.GetMethodInfo().Name}";
+            GD.PrintErr(msg);
+            GD.PushError(msg);
             return;
         }
         debouncedAction();

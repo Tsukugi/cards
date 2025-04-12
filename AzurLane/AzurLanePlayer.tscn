@@ -1,10 +1,11 @@
-[gd_scene load_steps=13 format=3 uid="uid://s57i3tk6c7m0"]
+[gd_scene load_steps=14 format=3 uid="uid://s57i3tk6c7m0"]
 
 [ext_resource type="Script" uid="uid://biyxii1wtj4x7" path="res://AzurLane/scripts/ALPlayer.cs" id="1_vpce2"]
 [ext_resource type="PackedScene" uid="uid://dhr0v03l7g4a7" path="res://AzurLane/AzurLaneBoard.tscn" id="2_1wl4u"]
 [ext_resource type="Script" uid="uid://lhhhy72pnqs7" path="res://AzurLane/scripts/ALHand.cs" id="3_vpce2"]
 [ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="4_p865k"]
 [ext_resource type="Theme" uid="uid://da83adtsk1ikk" path="res://Material/UITheme.tres" id="4_qholi"]
+[ext_resource type="Script" uid="uid://btm5886munwdh" path="res://AzurLane/scripts/ALPlayerUI.cs" id="4_takk7"]
 [ext_resource type="Texture2D" uid="uid://5g3o4xkut2ou" path="res://AzurLane/res/SD01-001B.png" id="5_6ma6x"]
 
 [sub_resource type="Sky" id="Sky_p865k"]
@@ -57,13 +58,15 @@ environment = SubResource("Environment_6ma6x")
 fov = 45.0
 near = 0.2
 
-[node name="Control" type="Control" parent="."]
+[node name="Control" type="Control" parent="." node_paths=PackedStringArray("matchMenuBtn")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("4_takk7")
+matchMenuBtn = NodePath("MatchMenuBtn")
 
 [node name="MatchMenuBtn" type="MenuButton" parent="Control"]
 layout_mode = 1

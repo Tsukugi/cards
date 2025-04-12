@@ -67,7 +67,6 @@ public partial class Player : Node3D
         board.OnBoardEdge += OnBoardEdgeHandler;
         board.OnSelectFixedCardEdge += OnSelectFixedCardEdgeHandler;
     }
-    protected Board GetSelectedBoard() => orderedBoards[selectedBoardIndex];
     protected void HandleInput()
     {
         Vector2I axis = axisInputHandler.GetAxis();
@@ -149,7 +148,7 @@ public partial class Player : Node3D
         if (selectedBoard is not null) AssignBoardEvents(selectedBoard);
     }
 
-    protected void SetPlayState(EPlayState state)
+    public void SetPlayState(EPlayState state)
     {
         EPlayState oldState = playState;
         _ = boardInputAsync.AwaitBefore(() => // This delay allows to avoid trigering different EPlayState events on the same frame
@@ -179,11 +178,24 @@ public partial class Player : Node3D
         orderedBoards = [hand, board, enemyBoard, enemyHand]; // assign order
         GD.Print($"[AssignEnemyBoards] Boards assigned for {Name}");
     }
+    protected virtual void OnCardTriggerHandler(Card card)
+    {
+        GD.Print($"[OnCardTriggerHandler] {card.Name}");
+    }
+    public void SelectAndTriggerCard(Card card)
+    {
+        var foundBoard = orderedBoards.Find(orderedBoard => orderedBoard == card.GetBoard());
+        if (foundBoard is null) GD.PrintErr($"[SelectAndTriggerCard] Board {card.GetBoard()} cannot be found ");
+        SelectBoard(foundBoard);
+        foundBoard.SelectCardField(this, card.PositionInBoard);
+        OnCardTriggerHandler(card);
+    }
 
     public EPlayState GetPlayState() => playState;
     public bool GetIsControllerPlayer() => isControlledPlayer;
     public Color GetPlayerColor() => playerColor;
     public bool AllowsInputFromPlayer(Board board) => GetSelectedBoard() == board;
+    public Board GetSelectedBoard() => orderedBoards[selectedBoardIndex];
     public virtual T GetPlayerHand<T>() where T : PlayerHand => hand as T;
     public virtual T GetPlayerBoard<T>() where T : PlayerBoard => board as T;
     public virtual T GetEnemyPlayerHand<T>() where T : PlayerHand => enemyHand as T;

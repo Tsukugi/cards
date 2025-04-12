@@ -70,7 +70,7 @@ public class ALAIActions(ALPlayer _player, int _actionDelay, AsyncHandler _async
     {
         // Select attacker
         card.GetBoard().SelectCardField(player, card.PositionInBoard);
-        player.TriggerSelectedCardInBoard(card.GetBoard());
+        player.SelectAndTriggerCard(card);
         GD.Print($"[SelectAndTriggerCardUnit] {player.Name} selects and triggers {card.Name}");
     }
 
@@ -102,8 +102,8 @@ public class ALAIActions(ALPlayer _player, int _actionDelay, AsyncHandler _async
     public async Task WaitUntilPhase(EALTurnPhase phase)
     {
         await asyncHandler.AwaitForCheck(() =>
-            GD.Print($"[WaitUntilPhase] {player.GetCurrentPhase()} {phase}"),
-            () => player.GetCurrentPhase() == phase);
+            GD.Print($"[WaitUntilPhase] {player.Phase.GetCurrentPhase()} {phase}"),
+            () => player.Phase.GetCurrentPhase() == phase);
         await Task.Delay(actionDelay);
     }
     public async Task WaitUntilPlayState(EPlayState playState)
@@ -114,8 +114,9 @@ public class ALAIActions(ALPlayer _player, int _actionDelay, AsyncHandler _async
         await Task.Delay(actionDelay);
     }
 
-    public void PlayNextPhase()
+    public async Task PlayNextPhase()
     {
+        await Task.Delay(actionDelay);
         player.TriggerPhaseButton();
     }
 }

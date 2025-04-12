@@ -81,7 +81,7 @@ public partial class PlayerHand : Board
         selectedCardPosition = newPosition;
         SelectCardField(player, selectedCardPosition);
         RepositionHandCards();
-        GD.Print($"[PlayerHand.OnAxisChangeHandler] SelectCardField in board for position {newPosition}");
+        // GD.Print($"[PlayerHand.OnAxisChangeHandler] SelectCardField in board for position {newPosition}");
     }
 
     protected List<Card> GetCardsInHand()
