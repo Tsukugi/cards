@@ -43,7 +43,7 @@ public class AsyncHandler(Node node)
     {
         if (isLoading)
         {
-            // GD.PushWarning($"[Debounce] Debounced {debouncedAction.GetType()}");
+            GD.PrintErr($"[Debounce] Debounced {debouncedAction.GetType()}");
             return;
         }
         debouncedAction();

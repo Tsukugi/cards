@@ -79,8 +79,9 @@ public partial class Player : Node3D
     {
         if (!isControlledPlayer) return;
         InputAction action = actionInputHandler.GetAction();
-        if (action != InputAction.None) GD.Print($"[Action Triggered by player {Name}] {GetSelectedBoard().Name}.{action}");
-        boardInputAsync.Debounce(() => GetSelectedBoard().OnActionHandler(this, action), 0.1f);
+        if (action == InputAction.None) return;
+        GD.Print($"[Action Triggered by player {Name}] {GetSelectedBoard().Name}.{action}");
+        _ = boardInputAsync.Debounce(() => GetSelectedBoard().OnActionHandler(this, action), 0.1f);
     }
 
     protected void OnPlaceCardCancelHandler(Card cardPlaced)
@@ -151,11 +152,11 @@ public partial class Player : Node3D
     protected void SetPlayState(EPlayState state)
     {
         EPlayState oldState = playState;
-        boardInputAsync.AwaitBefore(() => // This delay allows to avoid trigering different EPlayState events on the same frame
-          {
-              playState = state;
-              GD.Print("[SetPlayState] " + oldState + " -> " + playState);
-          }, 0.1f);
+        _ = boardInputAsync.AwaitBefore(() => // This delay allows to avoid trigering different EPlayState events on the same frame
+            {
+                playState = state;
+                GD.Print("[SetPlayState] " + oldState + " -> " + playState);
+            }, 0.1f);
     }
 
     protected static T DrawCard<T>(List<T> deck)

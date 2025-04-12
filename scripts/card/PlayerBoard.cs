@@ -19,8 +19,8 @@ public partial class PlayerBoard : Board
                     switch (player.GetPlayState())
                     {
                         case EPlayState.PlaceCard: StartPlaceCard(CardToPlace); break;
-                        case EPlayState.Select: TriggerCard(); break;
-                        case EPlayState.SelectTarget: TriggerCard(); break;
+                        case EPlayState.Select: TriggerCard(player); break;
+                        case EPlayState.SelectTarget: TriggerCard(player); break;
                     }
                     break;
                 }
@@ -36,9 +36,9 @@ public partial class PlayerBoard : Board
         }
     }
 
-    void TriggerCard()
+    void TriggerCard(Player player)
     {
-        Card card = GetSelectedCard<Card>(GetPlayerPlayingTurn());
+        Card card = GetSelectedCard<Card>(player);
         GD.Print($"[TriggerCard] Triggering card {card}");
         if (OnCardTrigger is not null && card is not null) OnCardTrigger(card);
     }
@@ -64,7 +64,7 @@ public partial class PlayerBoard : Board
 
         selectedCardPosition = card.PositionInBoard;
         SelectCardField(player, selectedCardPosition);
-        GD.Print($"[{player.Name}.PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {selectedCardPosition}");
+        // GD.Print($"[{player.Name}.PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {selectedCardPosition}");
     }
 
     void CancelPlaceCard()
