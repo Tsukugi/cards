@@ -89,7 +89,8 @@ public partial class ALCard : Card
         foreach (var item in attributes)
         {
             var formattedSkils = "";
-            if (item.duration != "always") formattedSkils += $"[{item.duration}] - ";
+            formattedSkils += $"[{item.duration}] - ";
+            if (item.effectId is not null) formattedSkils += $"[{item.effectId}] - ";
             if (item.condition is ALCardSkillConditionDTO[] conditions && conditions.Length > 0)
             {
                 formattedSkils += "[";

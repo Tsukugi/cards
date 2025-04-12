@@ -2,6 +2,7 @@ public class ALCardDTO : CardDTO
 {
     public string faction = "None"; // None, AzurLane, CrimsonAxis    public string type = "Ship"; // Ship, Flagship, Cube, Event
     public string rarity = "N"; // N, R, SR, SSR, L
+    public string type = "Ship"; // Ship, Flagship, Cube, Event
 
     // Flagship, Ship
     public int power;
@@ -29,7 +30,7 @@ public class ALCardSkillDTO
 
 public class ALCardSkillConditionDTO
 {
-    public string conditionId;  // Condtition for this effect to activate - EnemyTurn, Retaliation, Counter, StartsAttack, IsAttacked, IsSpecificCardOnField
+    public string conditionId;  // Condtition for this effect to activate - EnemyTurn, Retaliation, Counter , StartsAttack, IsAttacked, IsSpecificCardOnField
     public string conditionCard;
     public string conditionAmount;
 }
