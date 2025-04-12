@@ -104,4 +104,10 @@ public partial class PlayerBoard : Board
         OnPlaceCardEnd(cardToPlace);
         CardToPlace = null;
     }
+
+    public T GetCardInPosition<T>(ALPlayer player, Vector2I position) where T : Card
+    {
+        SelectCardField(player, position);
+        return GetSelectedCard<T>(player);
+    }
 }

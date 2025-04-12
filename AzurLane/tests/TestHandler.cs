@@ -73,7 +73,9 @@ namespace TCG.Tests
             failedAsserts++;
         }
 
-        public void Assert(bool value, bool expected) => HandleAssert<bool>(value == expected, value, expected);
-        public void Assert(int value, int expected) => HandleAssert<int>(value == expected, value, expected);
+        public void Assert(bool value, bool expected) => HandleAssert(value == expected, value, expected);
+        public void Assert(int value, int expected) => HandleAssert(value == expected, value, expected);
+        public void Assert(Vector2 value, Vector2 expected) => HandleAssert(value == expected, value, expected);
+        public void Assert(string value, string expected) => HandleAssert(value == expected, value, expected);
     }
 }

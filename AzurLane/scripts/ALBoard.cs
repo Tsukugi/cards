@@ -20,17 +20,13 @@ public partial class ALBoard : PlayerBoard
         selectedField.UpdateAttributes(cardToPlace.GetAttributes<ALCardDTO>());
     }
 
-    public ALCard? GetCardInPosition(ALPlayer player, Vector2I position)
-    {
-        SelectCardField(player, position);
-        return GetSelectedCard<ALCard>(player);
-    }
     public static ALCard FindLastActiveCardInRow(List<ALCard> row)
     {
         var index = row.FindLastIndex(card => card.GetIsInActiveState());
         if (index == -1) GD.PrintErr("[FindLastActiveCardInRow] Cannot find last active index");
         return row[index];
     }
+
     public ALCard GetFlagship()
     {
         if (flagshipCard is null) GD.PushWarning("[GetFlagship] This ALBoard doesn't have any flagship assigned");

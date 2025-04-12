@@ -532,7 +532,7 @@ public partial class ALPlayer : Player
             );
             cubeField.IsInputSelectable = true;
             GetPlayerBoard<ALBoard>()
-                .GetCardInPosition(this, cubeField.PositionInBoard)
+                .GetCardInPosition<ALCard>(this, cubeField.PositionInBoard)
                 .UpdateAttributes(cardToDraw);
         }
         catch (Exception e)
