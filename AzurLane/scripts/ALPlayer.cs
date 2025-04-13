@@ -6,7 +6,12 @@ using Godot;
 
 public partial class ALPlayer : Player
 {
+    public event ProvideCardInteractionEvent OnAttackStart;
+    public event ProvideCardInteractionEvent OnAttackTargetAdquired;
+    public event InteractionEvent OnAttackEnd;
     public event EnemyInteractionRequestEvent OnAttackGuardStart;
+    public event InteractionEvent OnAttackGuardEnd;
+    public event ProvideCardInteractionEvent OnGuardProvided;
 
     // --- Events ---
     public event Action OnTurnEnd;
@@ -29,8 +34,7 @@ public partial class ALPlayer : Player
     [Export]
     ALPhaseButton phaseButtonField;
 
-    // --- State ---
-    ALCard battleAttackerCard, battleAttackedCard;
+
 
     // --- Phase ---
     AsyncHandler playerAsyncHandler;
@@ -237,40 +241,52 @@ public partial class ALPlayer : Player
         {
             base.OnCardTriggerHandler(field);
             EALTurnPhase currentPhase = phaseManager.GetCurrentPhase();
+            EALTurnPhase matchPhase = matchManager.GetMatchPhase(); // I want the synched match phase so both player can interact
+
             if (field is ALPhaseButton)
             {
                 if (currentPhase == EALTurnPhase.Main) phaseManager.PlayNextPhase();
-                if (currentPhase == EALTurnPhase.Battle) phaseManager.PlayNextPhase();
+                if (matchPhase == EALTurnPhase.Battle)
+                {
+                    if (GetPlayState() == EPlayState.Select) phaseManager.PlayNextPhase();
+                    if (GetPlayState() == EPlayState.EnemyInteraction) EndGuardPhase();
+                }
             }
             if (field is ALCard card)
             {
                 if (currentPhase == EALTurnPhase.Battle)
                 {
                     if (GetPlayState() == EPlayState.Select) StartBattle(card);
-                    if (GetPlayState() == EPlayState.SelectTarget) AttackCard(battleAttackerCard, card);
-                    if (GetPlayState() == EPlayState.EnemyInteraction) PlayCardAsGuard(card, battleAttackedCard);
+                    if (GetPlayState() == EPlayState.SelectTarget) AttackCard(matchManager.GetAttackerCard(), card);
+
+                }
+                if (matchPhase == EALTurnPhase.Battle)
+                {
+                    if (GetPlayState() == EPlayState.EnemyInteraction) PlayCardAsGuard(card);
                 }
             }
         }, 1f);
     }
 
-    void PlayCardAsGuard(ALCard cardToGuard, ALCard battleAttackedCard)
+    void EndGuardPhase()
+    {
+        GD.PrintErr($"[EndGuardPhase]");
+        if (OnAttackGuardEnd is not null) OnAttackGuardEnd(this);
+    }
+    void PlayCardAsGuard(ALCard cardToGuard)
     {
         if (cardToGuard.GetBoard() != GetPlayerBoard<ALBoard>() && cardToGuard.GetBoard() != GetPlayerHand<ALHand>())
         {
-            GD.PrintErr($"[StartBattle] Guard cards can only be played from hand or board - cardToGuard: {cardToGuard.GetAttributes<ALCardDTO>().name}");
+            GD.PrintErr($"[PlayCardAsGuard] Guard cards can only be played from hand or board - cardToGuard: {cardToGuard.GetAttributes<ALCardDTO>().name}");
             return;
         }
         if (!cardToGuard.GetIsInActiveState())
         {
-            GD.PrintErr($"[OnDurabilityDamageHandler] Select a valid card, selected: {cardToGuard.Name}");
+            GD.PrintErr($"[PlayCardAsGuard] Select an active card, selected: {cardToGuard.Name}");
             return;
         };
-        ALCardDTO attrs = cardToGuard.GetAttributes<ALCardDTO>();
 
-        GD.Print($"[PlayCardAsGuard] Buff {battleAttackedCard.GetAttributes<ALCardDTO>().name} with {attrs.name}'s {attrs.supportValue}");
-
-        // TODO make a buff for the attacked card
+        if (OnGuardProvided is not null) OnGuardProvided(this, cardToGuard);
 
         cardToGuard.DestroyCard();
     }
@@ -300,7 +316,8 @@ public partial class ALPlayer : Player
             GD.PrintErr($"[StartBattle] You must start an attack from your board and with an active card - Attacker: {attacker.GetAttributes<ALCardDTO>().name}");
             return;
         }
-        battleAttackerCard = attacker;
+
+        if (OnAttackStart is not null) OnAttackStart(this, attacker);
         SetPlayState(EPlayState.SelectTarget);
     }
 
@@ -327,34 +344,32 @@ public partial class ALPlayer : Player
             GD.PrintErr($"[AttackCard] {attacker.Name} cannot attack {target.Name}");
             return;
         }
-        battleAttackedCard = target;
 
-        battleAttackerCard.SetIsInActiveState(false);
-        GD.Print($"[AttackCard] {battleAttackerCard.Name} attacks {battleAttackedCard}!");
+        if (OnAttackTargetAdquired is not null) OnAttackTargetAdquired(this, target);
 
         // Start guard phase    
-        if (OnAttackGuardStart is not null) OnAttackGuardStart(this, target.GetBoard().TryFindParentNodeOfType<ALPlayer>()); // TODO: improve me to avoid node search
+        if (OnAttackGuardStart is not null) OnAttackGuardStart(this, target.GetOwnerPlayer<ALPlayer>());
     }
 
     public async Task SettleBattle()
     {
         SetPlayState(EPlayState.Wait);
 
-        ALCardDTO attackerAttrs = battleAttackerCard.GetAttributes<ALCardDTO>();
-        ALCardDTO attackedAttrs = battleAttackedCard.GetAttributes<ALCardDTO>();
+        ALCardDTO attackerAttrs = matchManager.GetAttackerCard().GetAttributes<ALCardDTO>();
+        ALCardDTO attackedAttrs = matchManager.GetAttackedCard().GetAttributes<ALCardDTO>();
         bool isAttackSuccessful = attackerAttrs.power >= attackedAttrs.power;
 
         if (isAttackSuccessful)
         {
-            if (battleAttackedCard.GetIsAFlagship())
+            if (matchManager.GetAttackedCard().GetIsAFlagship())
             {
                 GD.Print($"[SettleBattle] {attackedAttrs.name} Takes durability damage!");
-                battleAttackedCard.TakeDurabilityDamage();
+                matchManager.GetAttackedCard().TakeDurabilityDamage();
             }
             else
             {
                 GD.Print($"[SettleBattle] {attackedAttrs.name} destroyed!");
-                battleAttackedCard.DestroyCard();
+                matchManager.GetAttackedCard().DestroyCard();
             }
         }
         else
@@ -364,11 +379,9 @@ public partial class ALPlayer : Player
 
         // Clean
         SetPlayState(EPlayState.Select);
-        battleAttackedCard = null;
-        battleAttackerCard = null;
+        if (OnAttackEnd is not null) OnAttackEnd(this);
         await phaseManager.EndBattlePhaseIfNoActiveCards();
     }
-
 
     // Nodes
 
@@ -430,7 +443,11 @@ public partial class ALPlayer : Player
     public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
     public List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
 
-    public bool IsAwaitingBattleGuard() => phaseManager.GetCurrentPhase() == EALTurnPhase.Battle && GetPlayState() == EPlayState.AwaitEnemyInteraction && battleAttackedCard is not null && battleAttackerCard is not null;
+    public bool IsAwaitingBattleGuard() =>
+        phaseManager.GetCurrentPhase() == EALTurnPhase.Battle
+        && GetPlayState() == EPlayState.AwaitEnemyInteraction
+        && matchManager.IsAttackInProgress();
+
     public ALCard FindAvailableEmptyFieldInRow(bool frontRow = false)
     {
         List<ALCard> fields = unitsArea.TryGetAllChildOfType<ALCard>();

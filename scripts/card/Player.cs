@@ -6,6 +6,8 @@ using Godot;
 public partial class Player : Node3D
 {
     public delegate void EnemyInteractionRequestEvent(Player playerStartingInteraction, Player targetPlayerToInteract);
+    public delegate void InteractionEvent(Player playerStartingInteraction);
+    public delegate void ProvideCardInteractionEvent(Player playerStartingInteraction, Card card);
 
     [Export]
     protected bool isControlledPlayer = false;

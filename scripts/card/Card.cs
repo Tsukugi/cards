@@ -8,6 +8,7 @@ public partial class Card : CardField
     protected Node3D cardDisplay;
     protected MeshInstance3D front = null, back = null, side = null, selectedIndicator = null;
     protected Board board;
+    Player ownerPlayer;
 
     Resource cardImage, cardBackImage;
 
@@ -26,6 +27,7 @@ public partial class Card : CardField
 
     public override void _Ready()
     {
+        ownerPlayer = this.TryFindParentNodeOfType<ALPlayer>();
         board = this.TryFindParentNodeOfType<Board>();
         cardDisplay = GetNode<Node3D>("CardDisplay");
         selectedIndicator = GetNodeOrNull<MeshInstance3D>("CardDisplay/SelectedIndicator");
@@ -75,7 +77,11 @@ public partial class Card : CardField
         else cardDisplay.RotationDegrees = cardDisplay.RotationDegrees.WithY(0);
     }
 
-    public T GetAttributes<T>() where T : CardDTO => attributes as T;
+    public T GetAttributes<T>() where T : CardDTO
+    {
+        if(attributes is null) GD.PushError($"[GetAttributes] No attributes are set");
+        return attributes as T;
+    }
     public void UpdateAttributes<T>(T newCardDTO) where T : CardDTO
     {
         attributes = newCardDTO;
@@ -131,4 +137,7 @@ public partial class Card : CardField
 
     public Resource GetCardImageResource() => isFaceDown ? cardBackImage : cardImage;
     public Board GetBoard() => board;
+
+    public void SetOwnerPlayer(Player player) => ownerPlayer = player;
+    public T GetOwnerPlayer<T>() where T : Player => ownerPlayer as T;
 }
