@@ -74,7 +74,7 @@ public partial class ALGameMatchManager : Node
         });
     }
 
-    ALPlayer GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
+    public ALPlayer GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
 
     ALPlayer PickNextPlayer()
     {

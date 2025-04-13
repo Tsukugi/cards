@@ -244,15 +244,23 @@ public partial class ALPlayer : Player
             }
             if (field is ALCard card)
             {
-                if (currentPhase == EALTurnPhase.Battle && GetPlayState() == EPlayState.Select) StartBattle(card);
-                if (currentPhase == EALTurnPhase.Battle && GetPlayState() == EPlayState.SelectTarget) AttackCard(battleAttackerCard, card);
-                if (currentPhase == EALTurnPhase.Battle && GetPlayState() == EPlayState.EnemyInteraction) PlayCardAsGuard(card, battleAttackedCard);
+                if (currentPhase == EALTurnPhase.Battle)
+                {
+                    if (GetPlayState() == EPlayState.Select) StartBattle(card);
+                    if (GetPlayState() == EPlayState.SelectTarget) AttackCard(battleAttackerCard, card);
+                    if (GetPlayState() == EPlayState.EnemyInteraction) PlayCardAsGuard(card, battleAttackedCard);
+                }
             }
         }, 1f);
     }
 
-    static void PlayCardAsGuard(ALCard cardToGuard, ALCard battleAttackedCard)
+    void PlayCardAsGuard(ALCard cardToGuard, ALCard battleAttackedCard)
     {
+        if (cardToGuard.GetBoard() != GetPlayerBoard<ALBoard>() && cardToGuard.GetBoard() != GetPlayerHand<ALHand>())
+        {
+            GD.PrintErr($"[StartBattle] Guard cards can only be played from hand or board - cardToGuard: {cardToGuard.GetAttributes<ALCardDTO>().name}");
+            return;
+        }
         if (!cardToGuard.GetIsInActiveState())
         {
             GD.PrintErr($"[OnDurabilityDamageHandler] Select a valid card, selected: {cardToGuard.Name}");
@@ -287,6 +295,11 @@ public partial class ALPlayer : Player
 
     void StartBattle(ALCard attacker)
     {
+        if (attacker.GetBoard() != GetPlayerBoard<ALBoard>() || !attacker.GetIsInActiveState())
+        {
+            GD.PrintErr($"[StartBattle] You must start an attack from your board and with an active card - Attacker: {attacker.GetAttributes<ALCardDTO>().name}");
+            return;
+        }
         battleAttackerCard = attacker;
         SetPlayState(EPlayState.SelectTarget);
     }
@@ -297,6 +310,11 @@ public partial class ALPlayer : Player
     // Flagship -> All Ships
     void AttackCard(ALCard attacker, ALCard target)
     {
+        if (target.GetBoard() != GetEnemyPlayerBoard<ALBoard>() || !target.IsCardUnit())
+        {
+            GD.PrintErr($"[AttackCard] Target must be from the enemy board and has to be a placed unit card - Target: {target.GetBoard().Name}.{target.GetAttributes<ALCardDTO>().name}");
+            return;
+        }
         if (attacker.GetBoard().GetIsEnemyBoard() == target.GetBoard().GetIsEnemyBoard())
         {
             GD.PrintErr($"[AttackCard] {attacker.Name} cannot attack {target.Name} as they are allies!");
@@ -406,7 +424,6 @@ public partial class ALPlayer : Player
         if (playerAsyncHandler is null) GD.PushError("[GetPlayerAsyncHandler] No asyncHandler is set");
         return playerAsyncHandler;
     }
-    public ALBasicAI AI { get => ai; }
 
     public List<ALCard> GetActiveUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
@@ -423,6 +440,7 @@ public partial class ALPlayer : Player
 
     public string GetCurrentPhaseText() => phaseManager.GetPhaseByIndex((int)matchManager.GetMatchPhase());
     public EALTurnPhase GetCurrentPhase() => phaseManager.GetCurrentPhase();
+    public ALGameMatchManager GetMatchManager() => matchManager;
 
     // Play actions
     public void TriggerPhaseButton()

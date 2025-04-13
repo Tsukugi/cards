@@ -46,7 +46,7 @@ public class AsyncHandler(Node node)
             }
             await Task.Delay(intervalCheckMs);
             elapsedTime += intervalCheckMs;
-            GD.Print($"[AwaitForCheck] Elapsed time: {elapsedTime / 1000}");
+            // GD.Print($"[AwaitForCheck] Elapsed time: {elapsedTime / 1000}");
         }
         SetIsLoading(false);
         awaitedAction();

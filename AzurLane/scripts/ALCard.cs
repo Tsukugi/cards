@@ -79,7 +79,8 @@ public partial class ALCard : Card
     // --- API ---
     public bool CanShowStackCount() => !IsEmptyField && CardStack > 1;
     public bool CanShowCardDetailsUI() => !IsEmptyField && !isDeck && !(isFlagship && GetIsFaceDown()) && !GetIsFaceDown();
-    public bool CanShowPowerLabel() => !IsEmptyField && !isResource && !isDeck;
+    public bool CanShowPowerLabel() => IsCardUnit();
+    public bool IsCardUnit() => !IsEmptyField && !isResource && !isDeck; // Refers to a placed card
 
     public string GetFormattedSkills()
     //TODO : Add colors for duration and condition

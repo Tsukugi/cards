@@ -35,6 +35,7 @@ public partial class ALPlayerUI : Control
         base._Process(delta);
         if (!player.GetIsControllerPlayer()) return;
         phaseLabel.Text = player.GetCurrentPhaseText();
+        phaseLabel.Modulate = player.GetMatchManager().GetPlayerPlayingTurn().GetPlayerColor();
         playStateLabel.Text = $"{player.GetPlayState()} - {player.GetEnemyPlayerBoard<ALBoard>().TryFindParentNodeOfType<ALPlayer>().GetPlayState()}";
 
         if (player.GetSelectedBoard().GetSelectedCard<ALCard>(player) is ALCard selectedCard)
