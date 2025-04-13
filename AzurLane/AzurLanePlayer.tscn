@@ -262,6 +262,18 @@ label_settings = SubResource("LabelSettings_takk7")
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="PlayState" type="Label" parent="Control"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -20.0
+offset_right = 20.0
+offset_bottom = 23.0
+grow_horizontal = 2
+theme = ExtResource("4_qholi")
+text = "State"
+
 [node name="SpotLight3D" type="SpotLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.11934, 0.992853, 0, -0.992853, -0.11934, 0, 6.14471, -4.39417)
 light_color = Color(1, 1, 0.807843, 1)

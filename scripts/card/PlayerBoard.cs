@@ -6,7 +6,6 @@ public partial class PlayerBoard : Board
     public event PlaceCardEvent OnPlaceCardStart;
     public event PlaceCardEvent OnPlaceCardEnd;
     public event PlaceCardEvent OnPlaceCardCancel;
-    public event CardTriggerEvent OnCardTrigger;
     public override event BoardEdgeEvent OnBoardEdge;
     public override event BoardCardEvent OnSelectFixedCardEdge;
     public Card CardToPlace = null;
@@ -21,6 +20,7 @@ public partial class PlayerBoard : Board
                         case EPlayState.PlaceCard: StartPlaceCard(CardToPlace); break;
                         case EPlayState.Select: TriggerCard(player); break;
                         case EPlayState.SelectTarget: TriggerCard(player); break;
+                        case EPlayState.EnemyInteraction: TriggerCard(player); break;
                     }
                     break;
                 }
@@ -30,17 +30,11 @@ public partial class PlayerBoard : Board
                     switch (player.GetPlayState())
                     {
                         case EPlayState.PlaceCard: CancelPlaceCard(); break;
+                        case EPlayState.EnemyInteraction: SkipInteraction(player); break;
                     }
                     break;
                 }
         }
-    }
-
-    void TriggerCard(Player player)
-    {
-        Card card = GetSelectedCard<Card>(player);
-        GD.Print($"[TriggerCard] Triggering card {card}");
-        if (OnCardTrigger is not null && card is not null) OnCardTrigger(card);
     }
 
     public override void OnInputAxisChange(Player player, Vector2I axis)
@@ -92,10 +86,9 @@ public partial class PlayerBoard : Board
     }
 
     public static Card FindLastEmptyFieldInRow(List<Card> row) => row.Find(card => card.IsEmptyField == true);
-    public virtual void PlaceCardInBoardFromHand<T>(T cardToPlace) where T : Card
+    public virtual void PlaceCardInBoardFromHand<T>(Player player, T cardToPlace) where T : Card
     {
-        Player playingPlayer = GetPlayerPlayingTurn();
-        T? selectedCard = GetSelectedCard<T>(playingPlayer);
+        T? selectedCard = GetSelectedCard<T>(player);
         if (selectedCard is null) { GD.PrintErr("[PlaceCardInBoardFromHand] This card place cannot be found!"); return; }
         if (!selectedCard.CanPlayerPlaceInThisField()) { GD.PrintErr("[PlaceCardInBoardFromHand] This card place is not placeable!"); return; }
         var attributes = cardToPlace.GetAttributes<CardDTO>();

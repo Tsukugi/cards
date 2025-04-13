@@ -4,4 +4,6 @@ public enum EPlayState
     SelectTarget,
     PlaceCard,
     Wait,
+    EnemyInteraction,
+    AwaitEnemyInteraction,
 }

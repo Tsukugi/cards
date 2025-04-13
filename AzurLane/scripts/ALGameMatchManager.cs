@@ -31,13 +31,32 @@ public partial class ALGameMatchManager : Node
 
         orderedPlayers.ForEach(player =>
         {
+            player.OnAttackGuardStart -= OnAttackGuardStartHandler;
+            player.OnAttackGuardStart += OnAttackGuardStartHandler;
             player.OnTurnEnd -= OnTurnEndHandler;
             player.OnTurnEnd += OnTurnEndHandler;
             player.Phase.OnPhaseChange -= OnPhaseChangeHandler;
             player.Phase.OnPhaseChange += OnPhaseChangeHandler;
+            player.GetPlayerBoard<ALBoard>().OnSkipInteraction -= OnSkipInteractionHandler;
+            player.GetPlayerBoard<ALBoard>().OnSkipInteraction += OnSkipInteractionHandler;
+            player.GetPlayerHand<ALHand>().OnSkipInteraction -= OnSkipInteractionHandler;
+            player.GetPlayerHand<ALHand>().OnSkipInteraction += OnSkipInteractionHandler;
         });
 
-        StartTurn();
+        Callable.From(GetPlayerPlayingTurn().StartTurn).CallDeferred();
+    }
+
+    void OnSkipInteractionHandler(Player player, Board triggeringBoard)
+    {
+        player.SetPlayState(EPlayState.Wait);
+        ALPlayer playingPlayer = GetPlayerPlayingTurn();
+        if (playingPlayer.IsAwaitingBattleGuard()) _ = playingPlayer.SettleBattle();
+    }
+
+    void OnAttackGuardStartHandler(Player attackerPlayer, Player attackedPlayer)
+    {
+        attackerPlayer.SetPlayState(EPlayState.AwaitEnemyInteraction);
+        attackedPlayer.SetPlayState(EPlayState.EnemyInteraction);
     }
 
     void OnPhaseChangeHandler(EALTurnPhase phase)
@@ -47,22 +66,23 @@ public partial class ALGameMatchManager : Node
 
     void OnTurnEndHandler()
     {
-        ALPlayer playingPlayer = orderedPlayers[playerIndexPlayingTurn];
-        GD.Print($"[OnTurnEndHandler] {playingPlayer.Name} Turn ended!");
-        // Pick next player
-        playerIndexPlayingTurn = orderedPlayers.Count.ApplyCircularBounds(playerIndexPlayingTurn + 1);
-        StartTurn();
+        _ = this.Wait(1f, () =>
+        {
+            ALPlayer playingPlayer = GetPlayerPlayingTurn();
+            GD.Print($"[OnTurnEndHandler] {playingPlayer.Name} Turn ended!");
+            PickNextPlayer().StartTurn();
+        });
     }
 
-    void StartTurn()
+    ALPlayer GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
+
+    ALPlayer PickNextPlayer()
     {
-        ALPlayer playingPlayer = orderedPlayers[playerIndexPlayingTurn];
-        GD.Print($"[StartTurn] {playingPlayer.Name} Starting turn!");
-        playingPlayer.StartTurn();
+        playerIndexPlayingTurn = orderedPlayers.Count.ApplyCircularBounds(playerIndexPlayingTurn + 1);
+        return GetPlayerPlayingTurn();
     }
 
     public EALTurnPhase GetMatchPhase() => matchCurrentPhase;
     public ALDatabase GetDatabase() => database;
-    public Player GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
 
 }

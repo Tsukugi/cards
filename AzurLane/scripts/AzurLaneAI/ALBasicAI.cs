@@ -1,20 +1,15 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Godot;
 
 public class ALBasicAI
 {
-    readonly AsyncHandler asyncHandler;
-
     readonly int actionDelay = 500; // Miliseconds for every AI action
-
     readonly ALAIActions actions;
-
+    readonly ALPlayer player;
     public ALBasicAI(ALPlayer _player)
     {
-        asyncHandler = new(_player);
-        actions = new(_player, actionDelay, asyncHandler);
+        player = _player;
+        actions = new(_player, actionDelay);
     }
 
     public async Task SkipTurn()
@@ -35,8 +30,16 @@ public class ALBasicAI
         await actions.PlayNextPhase();
     }
 
+    public async Task SkipAttackGuards()
+    {
+        await actions.WaitUntilPlayState(EPlayState.EnemyInteraction);
+        player.TriggerAction(InputAction.Cancel);
+        await SkipAttackGuards();
+    }
     public async Task StartTurn()
     {
+        GD.Print($"[StartTurn] AI playing turn for player {player.Name}");
+        _ = SkipAttackGuards();
         // TODO: Make a proper handler for proper AI
         await SummonAndAttackFlagship();
     }

@@ -5,8 +5,7 @@ using Godot;
 
 public partial class Player : Node3D
 {
-    public delegate void SelectPlayerBoardPositionEvent(Vector2I position, Board.BoardProvidedCallback boardEvent);
-    public delegate void SelectPlayerBoardEvent(Board board);
+    public delegate void EnemyInteractionRequestEvent(Player playerStartingInteraction, Player targetPlayerToInteract);
 
     [Export]
     protected bool isControlledPlayer = false;
@@ -24,8 +23,7 @@ public partial class Player : Node3D
     int selectedBoardIndex = 0;
 
     // PlayState
-    EPlayState playState = EPlayState.Select;
-    public bool IsPlayingTurn = false;
+    EPlayState playState = EPlayState.Wait;
     public override void _Ready()
     {
         boardInputAsync = new(this);
@@ -79,8 +77,7 @@ public partial class Player : Node3D
         if (!isControlledPlayer) return;
         InputAction action = actionInputHandler.GetAction();
         if (action == InputAction.None) return;
-        GD.Print($"[Action Triggered by player {Name}] {GetSelectedBoard().Name}.{action}");
-        _ = boardInputAsync.Debounce(() => GetSelectedBoard().OnActionHandler(this, action), 0.1f);
+        boardInputAsync.Debounce(() => TriggerAction(action), 0.2f);
     }
 
     protected void OnPlaceCardCancelHandler(Card cardPlaced)
@@ -92,7 +89,7 @@ public partial class Player : Node3D
 
     protected void OnPlaceCardStartHandler(Card cardPlaced)
     {
-        board.PlaceCardInBoardFromHand(cardPlaced);
+        board.PlaceCardInBoardFromHand(this, cardPlaced);
     }
 
     protected void OnPlaceCardEndHandler(Card cardPlaced)
@@ -188,7 +185,12 @@ public partial class Player : Node3D
         if (foundBoard is null) GD.PrintErr($"[SelectAndTriggerCard] Board {card.GetBoard()} cannot be found ");
         SelectBoard(foundBoard);
         foundBoard.SelectCardField(this, card.PositionInBoard);
-        OnCardTriggerHandler(card);
+        TriggerAction(InputAction.Ok);
+    }
+    public void TriggerAction(InputAction action)
+    {
+        GD.Print($"[Action Triggered by player {Name}] {GetSelectedBoard().Name}.{action}");
+        GetSelectedBoard().OnActionHandler(this, action);
     }
 
     public EPlayState GetPlayState() => playState;

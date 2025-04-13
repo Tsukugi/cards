@@ -3,16 +3,15 @@ using Godot;
 
 public partial class Board : Node3D
 {
+    public delegate void InteractionEvent(Player player, Board board);
     public delegate void PlaceCardEvent(Card card);
     public delegate void CardTriggerEvent(Card card);
-    public delegate void BoardProvidedCallback(Board board);
     public delegate void BoardEdgeEvent(Board board, Vector2I axis);
     public delegate void BoardCardEvent(Board board, Card card);
-    public delegate void BoardEvent();
-    public delegate void CardPositionEvent(Player player, Vector2I position, Card.OnProvidedCardEvent callback);
-    public event BoardEvent OnClearSelection;
     public virtual event BoardEdgeEvent OnBoardEdge;
     public virtual event BoardCardEvent OnSelectFixedCardEdge;
+    public event CardTriggerEvent OnCardTrigger;
+    public event InteractionEvent OnSkipInteraction;
 
     // --- State ---
     bool isEnemyBoard = false;
@@ -25,6 +24,18 @@ public partial class Board : Node3D
     protected Vector2I selectedCardPosition = Vector2I.Zero;
     [Export]
     public Vector2I BoardPositionInGrid = new();
+    protected void TriggerCard(Player player)
+    {
+        Card card = GetSelectedCard<Card>(player);
+        GD.Print($"[{GetType()}.TriggerCard] Triggering card {card}");
+        if (OnCardTrigger is not null && card is not null) OnCardTrigger(card);
+    }
+
+    protected void SkipInteraction(Player player)
+    {
+        GD.Print($"[{GetType()}.SkipInteraction] {player.Name} skips interaction");
+        if (OnSkipInteraction is not null) OnSkipInteraction(player, this);
+    }
 
     List<Card> GetCardsInTree() => this.TryGetAllChildOfType<Card>(true);
     static Card? FindCard(List<Card> cards, Vector2I position) => cards.Find(card => card.PositionInBoard == position);
@@ -51,8 +62,6 @@ public partial class Board : Node3D
         }
         return null;
     }
-
-    protected Player GetPlayerPlayingTurn() => this.TryFindParentNodeOfType<ALGameMatchManager>().GetPlayerPlayingTurn();
 
     // Takes an axis and return an offset with Range added to the direction and offset to the opposite axis
     static Vector2I FindOffsetBasedOnAxis(Vector2I axis, int range, int sideOffset)

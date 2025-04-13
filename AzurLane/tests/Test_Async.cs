@@ -85,7 +85,7 @@ namespace ALTCG.Tests
 
             var timeoutTime = 1f;
             test.Assert(async.GetIsLoading(), false);
-            Task testAwait = async.Debounce(() =>
+            async.Debounce(() =>
             {
                 test.Assert(async.GetIsLoading(), false);
             }, timeoutTime);
@@ -102,9 +102,9 @@ namespace ALTCG.Tests
             int lastResolved = 0;
             test.Assert(lastResolved, 0);
             Task testAwait = AsyncHandler.RunAsyncFunctionsSequentially(new List<Func<Task>>() {
-                async () => { await this.Wait(1f); lastResolved = 1; test.Assert(lastResolved, 1);},
-                async () => { await this.Wait(1f); lastResolved = 2; test.Assert(lastResolved, 2);},
-                async () => { await this.Wait(1f); lastResolved = 3; test.Assert(lastResolved, 3);},
+                async () => { await this.Wait(1f); test.Assert(lastResolved, 0); lastResolved = 1;},
+                async () => { await this.Wait(1f); test.Assert(lastResolved, 1); lastResolved = 2; },
+                async () => { await this.Wait(1f); test.Assert(lastResolved, 2); lastResolved = 3; },
             });
 
             await this.Wait(5f);

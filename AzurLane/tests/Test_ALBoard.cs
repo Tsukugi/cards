@@ -24,9 +24,10 @@ namespace ALTCG.Tests
             ALCard mockCard = new();
 
             SelectCardField(player, Vector2I.One);
-            PlaceCardInBoardFromHand(mockCard);
+            PlaceCardInBoardFromHand(player, mockCard);
             test.Assert(GetSelectedCardPosition(), Vector2I.One);
             test.Assert(GetSelectedCard<ALCard>(player).Name, mockCard.Name);
+            await Task.CompletedTask;
         }
     }
 }

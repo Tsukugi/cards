@@ -4,7 +4,7 @@ public partial class ALPlayerUI : Control
 {
     ALPlayer player;
     Panel selectedCardInfo;
-    Label phaseLabel, selectedCardNameLabel, selectedCardSkillsLabel, selectedCardSupportScopeLabel, selectedCardFactionCountryLabel, selectedCardShipTypeLabel, selectedCardFactionLabel;
+    Label playStateLabel, phaseLabel, selectedCardNameLabel, selectedCardSkillsLabel, selectedCardSupportScopeLabel, selectedCardFactionCountryLabel, selectedCardShipTypeLabel, selectedCardFactionLabel;
     TextureRect selectedCardImage;
     [Export]
     MenuButton matchMenuBtn;
@@ -22,10 +22,12 @@ public partial class ALPlayerUI : Control
         selectedCardFactionCountryLabel = GetNode<Label>("SelectedCardInfo/FactionCountryPanel/FactionCountryLabel");
         selectedCardFactionLabel = GetNode<Label>("SelectedCardInfo/FactionPanel/FactionLabel");
         selectedCardShipTypeLabel = GetNode<Label>("SelectedCardInfo/ShipTypePanel/ShipTypeLabel");
+        playStateLabel = GetNode<Label>("PlayState");
         matchMenuBtn = GetNode<MenuButton>("MatchMenuBtn");
         matchMenuBtn.GetPopup().IndexPressed += OnMatchMenuItemSelected;
 
-        selectedCardInfo.Visible = player.GetIsControllerPlayer(); // Hide it if not the controlled player
+        //selectedCardInfo.Visible = player.GetIsControllerPlayer(); // Hide it if not the controlled player
+        Visible = player.GetIsControllerPlayer();
     }
 
     public override void _Process(double delta)
@@ -33,6 +35,7 @@ public partial class ALPlayerUI : Control
         base._Process(delta);
         if (!player.GetIsControllerPlayer()) return;
         phaseLabel.Text = player.GetCurrentPhaseText();
+        playStateLabel.Text = $"{player.GetPlayState()} - {player.GetEnemyPlayerBoard<ALBoard>().TryFindParentNodeOfType<ALPlayer>().GetPlayState()}";
 
         if (player.GetSelectedBoard().GetSelectedCard<ALCard>(player) is ALCard selectedCard)
         {

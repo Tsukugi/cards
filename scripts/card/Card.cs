@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 
 public partial class Card : CardField
@@ -21,6 +22,7 @@ public partial class Card : CardField
     bool isSideWays = false;
 
     CardDTO attributes = new();
+    Dictionary<string, float> modifiers = []; // <attributeName, value>
 
     public override void _Ready()
     {

@@ -7,16 +7,15 @@ public partial class ALBoard : PlayerBoard
     ALCard flagshipCard;
 
     protected new PackedScene cardTemplate = GD.Load<PackedScene>("AzurLane/AzurLaneCard.tscn");
-    public override void PlaceCardInBoardFromHand<T>(T cardToPlace)
+    public override void PlaceCardInBoardFromHand<T>(Player player, T cardToPlace)
     {
-        Player playingPlayer = GetPlayerPlayingTurn();
-        ALCard selectedField = GetSelectedCard<ALCard>(playingPlayer);
+        ALCard selectedField = GetSelectedCard<ALCard>(player);
         if (selectedField is null)
         {
             GD.PrintErr($"[PlaceCardInBoardFromHand] Field cannot be found");
             return;
         }
-        base.PlaceCardInBoardFromHand(cardToPlace);
+        base.PlaceCardInBoardFromHand(player, cardToPlace);
         selectedField.UpdateAttributes(cardToPlace.GetAttributes<ALCardDTO>());
     }
 

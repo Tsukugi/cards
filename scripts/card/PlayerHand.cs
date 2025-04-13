@@ -35,6 +35,16 @@ public partial class PlayerHand : Board
                     switch (player.GetPlayState())
                     {
                         case EPlayState.Select: StartPlayCard(GetSelectedCard<Card>(player)); break;
+                        case EPlayState.EnemyInteraction: TriggerCard(player); break;
+                    }
+                    break;
+                }
+
+            case InputAction.Cancel:
+                {
+                    switch (player.GetPlayState())
+                    {
+                        case EPlayState.EnemyInteraction: SkipInteraction(player); break;
                     }
                     break;
                 }
