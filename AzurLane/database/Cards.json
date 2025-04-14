@@ -19,11 +19,13 @@
 					{ "conditionId": "EndOfTurn" }
 				],
 				"effectId": "Awakening",
-				"effectLabel": "When the durability of your flagship is 1 or less, turn this card face down."
+				"effectLabel": "■【At the end of your turn】Activate this card. When the durability of your flagship is 1 or less, turn this card face down."
 			}
 		],
 		"type": "Flagship",
 		"durability": 5,
+		"supportValue": 100,
+		"supportScope": "Battlefield",
 		"imageSrc": "SD01-001.png",
 		"backImageSrc": "SD01-001B.png",
 		"rarity": "L"
@@ -34,7 +36,6 @@
 		"factionCountry": "EagleUnion",
 		"name": "Cassin",
 		"power": 300,
-		"skills": [],
 		"type": "Ship",
 		"cost": 1,
 		"supportValue": 100,
@@ -47,7 +48,6 @@
 		"factionCountry": "EagleUnion",
 		"name": "Downes",
 		"power": 400,
-		"skills": [],
 		"type": "Ship",
 		"cost": 2,
 		"supportValue": 100,
@@ -102,7 +102,6 @@
 		"factionCountry": "EagleUnion",
 		"name": "Atlanta",
 		"power": 500,
-		"skills": [],
 		"type": "Ship",
 		"cost": 3,
 		"supportValue": 100,
@@ -115,7 +114,6 @@
 		"factionCountry": "EagleUnion",
 		"name": "Juneau",
 		"power": 600,
-		"skills": [],
 		"type": "Ship",
 		"cost": 4,
 		"supportValue": 100,
@@ -357,5 +355,29 @@
 		"type": "Event",
 		"cost": 3,
 		"imageSrc": "SD01-016.png"
+	},
+	{
+		"id": "SD02-001",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Hood",
+		"power": 400,
+		"skills": [
+			{   
+				"condition": [
+					{ "conditionId": "Durability", "conditionAmount": 1 },
+					{ "conditionId": "EndOfTurn" }
+				],
+				"effectId": "Awakening",
+				"effectLabel": "■【At the end of your turn】Activate 1 of your own Cube Cards. [Awakening] When the durability of your flagship is 1 or less, turn this card face down."
+			}
+		],
+		"type": "Flagship",
+		"durability": 5,
+		"supportValue": 100,
+		"supportScope": "Battlefield",
+		"imageSrc": "SD02-001.png",
+		"backImageSrc": "SD02-001B.png",
+		"rarity": "L"
 	}
 ]

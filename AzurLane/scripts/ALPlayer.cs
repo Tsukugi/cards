@@ -63,15 +63,13 @@ public partial class ALPlayer : Player
         base.InitializeEvents();
         ALHand hand = GetPlayerHand<ALHand>();
         ALBoard board = GetPlayerBoard<ALBoard>();
-        board.OnCardTrigger -= OnCardTriggerHandler;
-        board.OnCardTrigger += OnCardTriggerHandler;
         hand.OnPlayCardStart -= OnPlayCardStartHandler; // Unload default event
         hand.OnPlayCardStart -= OnCostPlayCardStartHandler;
         hand.OnPlayCardStart += OnCostPlayCardStartHandler;
         board.OnPlaceCardCancel -= OnPlaceCardCancelHandler; // Unload default event
         board.OnPlaceCardCancel -= OnCostPlaceCardCancelHandler;
         board.OnPlaceCardCancel += OnCostPlaceCardCancelHandler;
-        board.OnPlaceCardStart -= OnPlaceCardStartHandler;
+        board.OnPlaceCardStart -= OnPlaceCardStartHandler; // Unload default event
         board.OnPlaceCardStart -= OnALPlaceCardStartHandler;
         board.OnPlaceCardStart += OnALPlaceCardStartHandler;
         List<ALCard> units = unitsArea.TryGetAllChildOfType<ALCard>();
@@ -169,7 +167,6 @@ public partial class ALPlayer : Player
     }
 
     // Event handlers
-
     public void OnCostPlayCardStartHandler(Card cardToPlay)
     {
         var currentPhase = phaseManager.GetCurrentPhase();
@@ -242,7 +239,7 @@ public partial class ALPlayer : Player
             base.OnCardTriggerHandler(field);
             EALTurnPhase currentPhase = phaseManager.GetCurrentPhase();
             EALTurnPhase matchPhase = matchManager.GetMatchPhase(); // I want the synched match phase so both player can interact
-
+            GD.Print($"{currentPhase} {matchPhase}");
             if (field is ALPhaseButton)
             {
                 if (currentPhase == EALTurnPhase.Main) phaseManager.PlayNextPhase();
@@ -273,11 +270,14 @@ public partial class ALPlayer : Player
         GD.PrintErr($"[EndGuardPhase]");
         if (OnAttackGuardEnd is not null) OnAttackGuardEnd(this);
     }
+
+    // You can guard cards from field and hand
     void PlayCardAsGuard(ALCard cardToGuard)
     {
-        if (cardToGuard.GetBoard() != GetPlayerBoard<ALBoard>() && cardToGuard.GetBoard() != GetPlayerHand<ALHand>())
+        var selectedGuard = cardToGuard.GetBoard();
+        if (selectedGuard != GetPlayerBoard<ALBoard>() && selectedGuard != GetPlayerHand<ALHand>())
         {
-            GD.PrintErr($"[PlayCardAsGuard] Guard cards can only be played from hand or board - cardToGuard: {cardToGuard.GetAttributes<ALCardDTO>().name}");
+            GD.PrintErr($"[PlayCardAsGuard] Guard cards can only be played from your hand or board - cardToGuard: {cardToGuard.GetAttributes<ALCardDTO>().name}");
             return;
         }
         if (!cardToGuard.GetIsInActiveState())
@@ -285,10 +285,35 @@ public partial class ALPlayer : Player
             GD.PrintErr($"[PlayCardAsGuard] Select an active card, selected: {cardToGuard.Name}");
             return;
         };
+        if (cardToGuard.GetIsAFlagship())
+        {
+            GD.PrintErr($"[PlayCardAsGuard] You cannot guard with a flagship, selected: {cardToGuard.Name}");
+            return;
+        }
 
+        ALCardDTO attrs = cardToGuard.GetAttributes<ALCardDTO>();
+        if (selectedGuard is ALBoard guardingBoard)
+        {
+            if (attrs.supportScope == EALSupportScope.Hand.ToString())
+            {
+                GD.PrintErr($"[PlayCardAsGuard] This card cannot be played as Guard from your board, selected: {attrs.name} {attrs.supportScope}");
+                return;
+            }
+            // Supporting cards are into resting when used
+            cardToGuard.SetIsInActiveState(false);
+        }
+        if (selectedGuard is ALHand guardingHand)
+        {
+            if (attrs.supportScope == EALSupportScope.Battlefield.ToString())
+            {
+                GD.PrintErr($"[PlayCardAsGuard] This card cannot be played as Guard from your hand, selected: {attrs.name} {attrs.supportScope}");
+                return;
+            }
+            // Supporting cards are discarded when used
+            AddToRetreatAreaOnTop(cardToGuard.GetAttributes<ALCardDTO>());
+            guardingHand.RemoveCardFromHand(cardToGuard);
+        }
         if (OnGuardProvided is not null) OnGuardProvided(this, cardToGuard);
-
-        cardToGuard.DestroyCard();
     }
 
     void OnDurabilityDamageHandler(Card card)

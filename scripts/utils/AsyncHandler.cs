@@ -11,7 +11,11 @@ public class AsyncHandler(Node node)
 
     public delegate bool SimpleCheck();
 
-    void SetIsLoading(bool value) { GD.Print($"[{callerNode.Name}.SetIsLoading] {value}"); isLoading = value; }
+    void SetIsLoading(bool value)
+    {
+        // GD.Print($"[{callerNode.Name}.SetIsLoading] {value}");
+        isLoading = value;
+    }
 
     public bool GetIsLoading() { GD.Print($"[{callerNode.Name}.GetIsLoading] {isLoading}"); return isLoading; }
 

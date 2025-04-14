@@ -79,7 +79,7 @@ public partial class Card : CardField
 
     public T GetAttributes<T>() where T : CardDTO
     {
-        if(attributes is null) GD.PushError($"[GetAttributes] No attributes are set");
+        if (attributes is null) GD.PushError($"[GetAttributes] No attributes are set");
         return attributes as T;
     }
     public void UpdateAttributes<T>(T newCardDTO) where T : CardDTO

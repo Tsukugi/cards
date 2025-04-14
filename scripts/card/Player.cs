@@ -45,6 +45,10 @@ public partial class Player : Node3D
 
     protected virtual void InitializeEvents()
     {
+        board.OnCardTrigger -= OnCardTriggerHandler;
+        board.OnCardTrigger += OnCardTriggerHandler;
+        hand.OnCardTrigger -= OnCardTriggerHandler;
+        hand.OnCardTrigger += OnCardTriggerHandler;
         hand.OnPlayCardStart -= OnPlayCardStartHandler;
         hand.OnPlayCardStart += OnPlayCardStartHandler;
         board.OnPlaceCardStart -= OnPlaceCardStartHandler;

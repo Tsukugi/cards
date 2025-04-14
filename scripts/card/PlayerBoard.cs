@@ -11,6 +11,7 @@ public partial class PlayerBoard : Board
     public Card CardToPlace = null;
     public override void OnActionHandler(Player player, InputAction action)
     {
+        base.OnActionHandler(player, action);
         switch (action)
         {
             case InputAction.Ok:
@@ -20,7 +21,6 @@ public partial class PlayerBoard : Board
                         case EPlayState.PlaceCard: StartPlaceCard(CardToPlace); break;
                         case EPlayState.Select: TriggerCard(player); break;
                         case EPlayState.SelectTarget: TriggerCard(player); break;
-                        case EPlayState.EnemyInteraction: TriggerCard(player); break;
                     }
                     break;
                 }
@@ -30,7 +30,6 @@ public partial class PlayerBoard : Board
                     switch (player.GetPlayState())
                     {
                         case EPlayState.PlaceCard: CancelPlaceCard(); break;
-                        case EPlayState.EnemyInteraction: SkipInteraction(player); break;
                     }
                     break;
                 }

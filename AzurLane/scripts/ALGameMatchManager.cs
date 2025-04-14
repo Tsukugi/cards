@@ -24,6 +24,7 @@ public partial class ALGameMatchManager : Node
         ALBoard userBoard = userPlayer.GetPlayerBoard<ALBoard>();
         ALBoard enemyBoard = enemyPlayer.GetPlayerBoard<ALBoard>();
 
+        // ! NOTE: This only works thinking that always the player is down and enemy is up
         // IsEnemyBoard is needed for thinks like flipping the Input axis
         enemyHand.SetIsEnemyBoard(true);
         enemyBoard.SetIsEnemyBoard(true);
@@ -69,7 +70,7 @@ public partial class ALGameMatchManager : Node
     void OnAttackStartHandler(Player guardingPlayer, Card card)
     {
         attackerCard = card.CastToALCard();
-        GD.Print($"[OnAttackTargetAdquiredHandler] {GetAttackerCard().Name} starts an attack!");
+        GD.Print($"[OnAttackStartHandler] {GetAttackerCard().Name} starts an attack!");
     }
 
     void OnAttackTargetAdquiredHandler(Player guardingPlayer, Card card)

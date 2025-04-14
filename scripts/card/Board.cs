@@ -5,12 +5,14 @@ public partial class Board : Node3D
 {
     public delegate void InteractionEvent(Player player, Board board);
     public delegate void PlaceCardEvent(Card card);
-    public delegate void CardTriggerEvent(Card card);
+    public delegate void CardEvent(Card card);
     public delegate void BoardEdgeEvent(Board board, Vector2I axis);
     public delegate void BoardCardEvent(Board board, Card card);
     public virtual event BoardEdgeEvent OnBoardEdge;
     public virtual event BoardCardEvent OnSelectFixedCardEdge;
-    public event CardTriggerEvent OnCardTrigger;
+    public event CardEvent OnRetireCardEvent;
+
+    public event CardEvent OnCardTrigger;
     public event InteractionEvent OnSkipInteraction;
 
     // --- State ---
@@ -27,7 +29,7 @@ public partial class Board : Node3D
     protected void TriggerCard(Player player)
     {
         Card card = GetSelectedCard<Card>(player);
-        GD.Print($"[{GetType()}.TriggerCard] Triggering card {card}");
+        GD.Print($"[{GetType()}.TriggerCard] Triggering card {card.Name}");
         if (OnCardTrigger is not null && card is not null) OnCardTrigger(card);
     }
 
@@ -95,7 +97,36 @@ public partial class Board : Node3D
     }
 
     public virtual void OnInputAxisChange(Player player, Vector2I axis) => GD.Print($"[OnInputAxisChange] {player.Name}.{axis}");
-    public virtual void OnActionHandler(Player player, InputAction action) => GD.Print($"[OnActionHandler] {player.Name}");
+    public virtual void OnActionHandler(Player player, InputAction action)
+    {
+        EPlayState playState = player.GetPlayState();
+        GD.Print($"[OnActionHandler] {player.Name} - Action: {action} - PlayState {playState}");
+        switch (action)
+        {
+            case InputAction.Ok:
+                {
+                    switch (playState)
+                    {
+                        case EPlayState.EnemyInteraction: TriggerCard(player); break;
+                    }
+                    break;
+                }
+
+            case InputAction.Cancel:
+                {
+                    switch (playState)
+                    {
+                        case EPlayState.EnemyInteraction: SkipInteraction(player); break;
+                    }
+                    break;
+                }
+        }
+    }
+    public virtual void RetireCard(Card card)
+    {
+        GD.Print($"[RetireCard] Retire {card.Name}");
+        if (OnRetireCardEvent is not null) OnRetireCardEvent(card);
+    }
     public bool GetCanReceivePlayerInput(Player player) => player.AllowsInputFromPlayer(this);
     public T? GetSelectedCard<T>(Player player) where T : Card
     {
