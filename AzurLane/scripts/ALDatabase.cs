@@ -3,6 +3,7 @@ using Godot;
 public class ALDatabase
 {
     public Dictionary<string, ALCardDTO> cards = [];
+    public Dictionary<string, ALDeckDTO> decks = [];
 
     protected JSONLoader loader = new("./AzurLane/database/");
 
@@ -10,6 +11,7 @@ public class ALDatabase
     public void LoadData()
     {
         cards = Load<ALCardDTO>("Cards");
+        decks = Load<ALDeckDTO>("Decks");
     }
 
     public Dictionary<string, T> Load<T>(string name) where T : BaseDTO
@@ -21,6 +23,5 @@ public class ALDatabase
         });
         return values;
     }
-
 }
 

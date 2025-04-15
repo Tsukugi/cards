@@ -17,13 +17,8 @@ public partial class ALPlayer : Player
     public event Action OnTurnEnd;
 
     // --- Refs ---
-    private readonly List<ALCardDTO> Deck = [];
-    private readonly List<ALCardDTO> CubeDeck = [];
-    private readonly List<ALCardDTO> Retreat = [];
-    ALCardDTO Flagship = new();
+    ALDeckSet deckSet = new();
     ALGameMatchManager matchManager;
-    ALDatabase database;
-
     // --- AI ---
     ALBasicAI ai;
 
@@ -42,7 +37,6 @@ public partial class ALPlayer : Player
     {
         base._Ready(); // Call it at the end as the overrided code can use the refs correctly
         matchManager = this.TryFindParentNodeOfType<ALGameMatchManager>();
-        database = matchManager.GetDatabase();
 
         playerAsyncHandler = new(this);
         ai = new(this);
@@ -94,54 +88,22 @@ public partial class ALPlayer : Player
         if (enemyBoard is not null) enemyBoard.OnCardTrigger += OnCardTriggerHandler;
     }
 
-    void BuildDeck()
+    public void AssignDeck(ALDeckSet deckDefinition)
     {
-        // TODO: Customize deck
-        // Flagship
-        Flagship = database.cards["SD01-001"];
-
-        // Deck
-        List<string> availableDeckKeys = [
-            "SD01-002",
-            "SD01-003",
-            "SD01-004",
-            "SD01-005",
-            "SD01-006",
-            "SD01-007",
-            "SD01-008",
-            "SD01-009",
-            "SD01-010",
-            "SD01-011",
-            "SD01-012",
-            "SD01-013",
-            "SD01-014",
-            "SD01-015",
-            "SD01-016"
-        ];
-        for (int i = 0; i < 50; i++)
-        {
-            Deck.Add(database.cards[availableDeckKeys.GetRandKey()]);
-        }
-
-        // CubeDeck
-        for (int i = 0; i < 10; i++)
-        {
-            CubeDeck.Add(database.cards["SD01-Cube"]);
-        }
+        deckSet = deckDefinition;
+        GD.Print($"[AssignDeck] Deck size: {deckDefinition.deck.Count}");
     }
 
     void StartGameForPlayer()
     {
-        BuildDeck();
-
         // Deck setup
-        deckField.CardStack = Deck.Count; // Set it as deck size
-        deckField.UpdateAttributes(Deck[^1]); // Use last card as template
+        deckField.CardStack = deckSet.deck.Count; // Set it as deck size
+        deckField.UpdateAttributes(deckSet.deck[^1]); // Use last card as template
         // CubeDeck setup
-        cubeDeckField.CardStack = CubeDeck.Count; // Set it as deck size
-        cubeDeckField.UpdateAttributes(CubeDeck[^1]); // Use last card as template
+        cubeDeckField.CardStack = deckSet.cubeDeck.Count; // Set it as deck size
+        cubeDeckField.UpdateAttributes(deckSet.cubeDeck[^1]); // Use last card as template
         // Flagship setup
-        flagshipField.UpdateAttributes(Flagship);
+        flagshipField.UpdateAttributes(deckSet.flagship);
 
         // Player preparation
         ALHand hand = GetPlayerHand<ALHand>();
@@ -417,9 +379,9 @@ public partial class ALPlayer : Player
 
     static ALCardDTO DrawCard(List<ALCardDTO> deck, ALCard relatedField)
     {
-        var res = Player.DrawCard(deck);
+        ALCardDTO drawnCard = Player.DrawCard(deck);
         UpdateDeckStackSize(relatedField, deck.Count);
-        return res;
+        return drawnCard;
     }
 
     static void AddCardToDeck(ALCardDTO cardToAdd, List<ALCardDTO> deck, ALCard boardField, bool top = true)
@@ -438,6 +400,7 @@ public partial class ALPlayer : Player
 
     static void UpdateDeckStackSize(ALCard deck, int size)
     {
+        GD.Print($"[UpdateDeckStackSize] {deck.CardStack} -> {size}");
         deck.CardStack = size;
         if (deck.CardStack == 0) deck.IsEmptyField = true;
     }
@@ -445,7 +408,7 @@ public partial class ALPlayer : Player
     void AddToRetreatAreaOnTop(ALCardDTO cardToAdd)
     {
         // We add to the bottom as the deck works flipped down
-        AddCardToDeck(cardToAdd, Retreat, retreatField, false);
+        AddCardToDeck(cardToAdd, deckSet.retreatDeck, retreatField, false);
     }
 
     void ApplyFlagshipDurability()
@@ -454,7 +417,7 @@ public partial class ALPlayer : Player
         List<ALCard> durabilityList = durabilityArea.TryGetAllChildOfType<ALCard>();
         for (int i = 0; i < durability; i++)
         {
-            ALCardDTO cardToDraw = DrawCard(Deck, deckField);
+            ALCardDTO cardToDraw = DrawCard(deckSet.deck, deckField);
             durabilityList[i].UpdateAttributes(cardToDraw);
             durabilityList[i].IsInputSelectable = true;
         }
@@ -503,7 +466,7 @@ public partial class ALPlayer : Player
     {
         for (int i = 0; i < num; i++)
         {
-            ALCardDTO cardToDraw = DrawCard(Deck, deckField);
+            ALCardDTO cardToDraw = DrawCard(deckSet.deck, deckField);
             ALHand hand = GetPlayerHand<ALHand>();
             hand.AddCardToHand(cardToDraw);
         }
@@ -520,7 +483,7 @@ public partial class ALPlayer : Player
     {
         try
         {
-            ALCardDTO cardToDraw = DrawCard(CubeDeck, cubeDeckField);
+            ALCardDTO cardToDraw = DrawCard(deckSet.cubeDeck, cubeDeckField);
             Card cubeField = PlayerBoard.FindLastEmptyFieldInRow(
                 costArea.TryGetAllChildOfType<Card>()
             );

@@ -17,6 +17,8 @@ public partial class ALGameMatchManager : Node
     {
         base._Ready();
         database.LoadData();
+
+        // --- Players --- 
         orderedPlayers = [enemyPlayer, userPlayer]; // TODO add some shuffling, with a minigame
 
         ALHand userHand = userPlayer.GetPlayerHand<ALHand>();
@@ -35,6 +37,7 @@ public partial class ALGameMatchManager : Node
 
         orderedPlayers.ForEach(player =>
         {
+            player.AssignDeck(BuildDeckSet("SD01"));
             player.OnAttackStart -= OnAttackStartHandler;
             player.OnAttackStart += OnAttackStartHandler;
             player.OnAttackTargetAdquired -= OnAttackTargetAdquiredHandler;
@@ -156,5 +159,31 @@ public partial class ALGameMatchManager : Node
         if (IsAttackInProgress()) return attackedCard;
         GD.PushError($"[GetAttackedCard] Attack not in progress");
         return null;
+    }
+
+    public ALDeckSet BuildDeckSet(string deckId)
+    {
+        ALDeckDTO deckDefinition = database.decks[deckId];
+        ALDeckSet deckToUse = new()
+        {
+            name = deckDefinition.name,
+            flagship = database.cards[deckDefinition.flagship],
+            deck = TransformCardDictToList(deckDefinition.cards, database.cards).Shuffle(),
+            cubeDeck = TransformCardDictToList(deckDefinition.cubes, database.cards).Shuffle()
+        };
+        return deckToUse;
+    }
+
+    public static List<ALCardDTO> TransformCardDictToList(Dictionary<string, int> deckDict, Dictionary<string, ALCardDTO> cardsDatabase)
+    {
+        List<ALCardDTO> cardList = [];
+        foreach (var card in deckDict)
+        {
+            for (int i = 0; i < card.Value; i++)
+            {
+                cardList.Add(cardsDatabase[card.Key]);
+            }
+        }
+        return cardList;
     }
 }
