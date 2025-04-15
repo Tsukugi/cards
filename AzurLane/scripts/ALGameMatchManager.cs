@@ -137,14 +137,14 @@ public partial class ALGameMatchManager : Node
         });
     }
 
-    public ALPlayer GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
-
     ALPlayer PickNextPlayer()
     {
         playerIndexPlayingTurn = orderedPlayers.Count.ApplyCircularBounds(playerIndexPlayingTurn + 1);
         return GetPlayerPlayingTurn();
     }
 
+    // ----- API -----
+    public ALPlayer GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
     public EALTurnPhase GetMatchPhase() => matchCurrentPhase;
     public ALDatabase GetDatabase() => database;
     public bool IsAttackInProgress() => attackedCard is not null && attackerCard is not null;
