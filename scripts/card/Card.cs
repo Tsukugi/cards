@@ -23,7 +23,7 @@ public partial class Card : CardField
     bool isSideWays = false;
 
     CardDTO attributes = new();
-    Dictionary<string, float> modifiers = []; // <attributeName, value>
+    readonly List<AttributeModifier> activeModifiers = []; // <attributeName, value>
 
     public override void _Ready()
     {
@@ -60,6 +60,30 @@ public partial class Card : CardField
         if (front is not null) front.Visible = !IsEmptyField;
         if (back is not null) back.Visible = !IsEmptyField;
         if (side is not null) side.Visible = !IsEmptyField;
+    }
+
+    // --- API ---
+    public void AddModifier(AttributeModifier modifier)
+    {
+        GD.Print($"[AddModifier] {Name} {modifier.AttributeName} {modifier.Amount} {modifier.Duration}");
+        activeModifiers.Add(modifier);
+    }
+    public void RemoveModifier(AttributeModifier modifier)
+    {
+        GD.Print($"[RemoveModifier] {Name} {modifier.AttributeName} {modifier.Amount} {modifier.Duration}");
+        activeModifiers.Remove(modifier);
+    }
+    public int GetAttributeWithModifiers<T>(string attributeName) where T : CardDTO
+    {
+        T attrs = GetAttributes<T>();
+
+        int attribute = attrs.GetPropertyValue<int>(attributeName);
+        foreach (AttributeModifier modifier in activeModifiers)
+        {
+            attribute += modifier.Amount;
+            // GD.Print($"[GetAttributeWithModifiers] {attribute} {modifier.Amount}");
+        }
+        return attribute;
     }
 
     public bool GetIsFaceDown() => isFaceDown;

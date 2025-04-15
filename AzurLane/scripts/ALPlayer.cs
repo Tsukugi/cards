@@ -34,8 +34,6 @@ public partial class ALPlayer : Player
     [Export]
     ALPhaseButton phaseButtonField;
 
-
-
     // --- Phase ---
     AsyncHandler playerAsyncHandler;
     ALPhase phaseManager;
@@ -98,7 +96,7 @@ public partial class ALPlayer : Player
 
     void BuildDeck()
     {
-        //TODO: Customize deck
+        // TODO: Customize deck
         // Flagship
         Flagship = database.cards["SD01-001"];
 
@@ -379,10 +377,17 @@ public partial class ALPlayer : Player
     public async Task SettleBattle()
     {
         SetPlayState(EPlayState.Wait);
+        ALCard attackerCard = matchManager.GetAttackerCard();
+        ALCard attackedCard = matchManager.GetAttackedCard();
+        ALCardDTO attackerAttrs = attackerCard.GetAttributes<ALCardDTO>();
+        ALCardDTO attackedAttrs = attackedCard.GetAttributes<ALCardDTO>();
+        float attackerPower = attackerCard.GetAttributeWithModifiers<ALCardDTO>("Power");
+        float attackedPower = attackedCard.GetAttributeWithModifiers<ALCardDTO>("Power");
 
-        ALCardDTO attackerAttrs = matchManager.GetAttackerCard().GetAttributes<ALCardDTO>();
-        ALCardDTO attackedAttrs = matchManager.GetAttackedCard().GetAttributes<ALCardDTO>();
-        bool isAttackSuccessful = attackerAttrs.power >= attackedAttrs.power;
+        bool isAttackSuccessful = attackerPower >= attackedPower;
+        GD.Print($"[SettleBattle] {attackerAttrs.name} Power: has base {attackerAttrs.power} with modifiers {attackerPower}");
+        GD.Print($"[SettleBattle] {attackedAttrs.name} Power: has base {attackedAttrs.power} with modifiers {attackedPower}");
+        GD.Print($"[SettleBattle] Is attack succesful: {isAttackSuccessful}");
 
         if (isAttackSuccessful)
         {

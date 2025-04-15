@@ -1,8 +1,8 @@
 public class ALCardDTO : CardDTO
 {
-    public string faction = EALFaction.None.ToString(); // None, AzurLane, CrimsonAxis    
+    public string faction = EALFaction.None.ToString();
     public string rarity = EALCardRarity.N.ToString();
-    public string type = EALCardType.Ship.ToString(); // Ship, Flagship, Cube, Event
+    public string type = EALCardType.Ship.ToString();
 
     // Flagship, Ship
     public int power = 0;
@@ -18,12 +18,15 @@ public class ALCardDTO : CardDTO
     // Ship, Event
     public int cost = 0;
 
+    // Dynamic readable properties for Modifiers
+    public int Power { get => power; }
 }
+
 
 public class ALCardSkillDTO
 {
     public ALCardSkillConditionDTO[] condition = [];
-    public string duration = "OncePerTurn"; // When this effect is active - Always, OncePerTurn, OncePerMatch, AttackPhase, MainPhase
+    public string duration = EALCardSkillDuration.OncePerTurn.ToString();
     public string effectId;
     public string effectLabel;
 }
@@ -62,7 +65,6 @@ public enum EALFactionCountry
     SakuraEmpire,
     IronBlood
 }
-
 public enum EALCardRarity
 {
     N,
@@ -70,4 +72,13 @@ public enum EALCardRarity
     L,
     SR,
     SSR
+}
+public enum EALCardSkillDuration
+{
+    Always,
+    OncePerTurn,
+    OncePerMatch,
+    AttackPhase,
+    MainPhase,
+    CurrentBattle,
 }

@@ -103,9 +103,13 @@ public partial class ALGameMatchManager : Node
 
     void OnGuardProvidedHandler(Player guardingPlayer, Card card)
     {
-        GD.Print($"[OnGuardProvidedHandler]");
-        GD.PrintErr($"[OnGuardProvidedHandler] TODO make a buff for the attacked card");
-        // TODO make a buff for the attacked card
+        GetAttackedCard().AddModifier(new AttributeModifier()
+        {
+            AttributeName = "Power",
+            Duration = EALCardSkillDuration.CurrentBattle.ToString(),
+            Amount = card.GetAttributes<ALCardDTO>().supportValue,
+        });
+        GD.Print($"[OnGuardProvidedHandler] Add Guard Modifier for {GetAttackedCard().GetAttributes<ALCardDTO>().name}");
     }
 
     void OnAttackEndHandler(Player guardingPlayer)

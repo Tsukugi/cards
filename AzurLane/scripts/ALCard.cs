@@ -29,7 +29,7 @@ public partial class ALCard : Card
         nameLabel = GetNodeOrNull<Label3D>("UI/Name");
         skillsLabel = GetNodeOrNull<Label3D>("UI/Skills");
         skillsBackdrop = GetNodeOrNull<Node3D>("UI/SkillsBackdrop");
-        UpdateAttributes<ALCardDTO>(new()); // ! HACK, I Do this to force a ALCardDTO attributes
+        UpdateAttributes<ALCardDTO>(new()); // I Do this to force a ALCardDTO attributes
     }
 
     protected override void OnCardUpdateHandler()
@@ -49,7 +49,10 @@ public partial class ALCard : Card
             powerLabel.Visible = isShown;
             if (isShown)
             {
-                powerLabel.Text = attrs.power.ToString();
+                var shipPower = GetAttributeWithModifiers<ALCardDTO>("Power");
+
+                powerLabel.Scale = Vector3.One * (1 + (shipPower - attrs.power) / 500); // if pow 400 - modPow 600 => 1 + 200/500 => scale is 1.4
+                powerLabel.Text = shipPower.ToString();
             }
         }
 
@@ -83,7 +86,7 @@ public partial class ALCard : Card
     public bool IsCardUnit() => !IsEmptyField && !isResource && !isDeck; // Refers to a placed card
 
     public string GetFormattedSkills()
-    //TODO : Add colors for duration and condition
+    // TODO : Add colors for duration and condition
     {
         ALCardSkillDTO[] attributes = GetAttributes<ALCardDTO>().skills;
         StringBuilder stringBuilder = new();
