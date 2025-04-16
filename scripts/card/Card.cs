@@ -38,7 +38,6 @@ public partial class Card : CardField
         SetIsSideWays(isSideWays);
     }
 
-
     public override void _Process(double delta)
     {
         OnSelectHandler(isSelected);
@@ -60,6 +59,30 @@ public partial class Card : CardField
         if (front is not null) front.Visible = !IsEmptyField;
         if (back is not null) back.Visible = !IsEmptyField;
         if (side is not null) side.Visible = !IsEmptyField;
+    }
+
+    Resource LoadCardImage(string path)
+    {
+        return GD.Load($"{resourcePath}{path}");
+    }
+
+    protected static void UpdateImageTexture(MeshInstance3D target, CompressedTexture2D texture)
+    {
+        var material = target.GetActiveMaterial(0).Duplicate(); // I wanna break the reference on the prefab
+        if (material is StandardMaterial3D material3D)
+        {
+            material3D.AlbedoTexture = texture;
+            target.SetSurfaceOverrideMaterial(0, material3D);
+        }
+    }
+    protected static void UpdateColor(MeshInstance3D target, Color color)
+    {
+        var material = target.GetActiveMaterial(0).Duplicate(); // I wanna break the reference on the prefab
+        if (material is StandardMaterial3D material3D)
+        {
+            material3D.AlbedoColor = color;
+            target.SetSurfaceOverrideMaterial(0, material3D);
+        }
     }
 
     // --- API ---
@@ -127,30 +150,6 @@ public partial class Card : CardField
     public void DestroyCard()
     {
         IsEmptyField = true;
-    }
-
-    Resource LoadCardImage(string path)
-    {
-        return GD.Load($"{resourcePath}{path}");
-    }
-
-    protected static void UpdateImageTexture(MeshInstance3D target, CompressedTexture2D texture)
-    {
-        var material = target.GetActiveMaterial(0).Duplicate(); // I wanna break the reference on the prefab
-        if (material is StandardMaterial3D material3D)
-        {
-            material3D.AlbedoTexture = texture;
-            target.SetSurfaceOverrideMaterial(0, material3D);
-        }
-    }
-    protected static void UpdateColor(MeshInstance3D target, Color color)
-    {
-        var material = target.GetActiveMaterial(0).Duplicate(); // I wanna break the reference on the prefab
-        if (material is StandardMaterial3D material3D)
-        {
-            material3D.AlbedoColor = color;
-            target.SetSurfaceOverrideMaterial(0, material3D);
-        }
     }
 
     public void UpdatePlayerSelectedColor(Player player)

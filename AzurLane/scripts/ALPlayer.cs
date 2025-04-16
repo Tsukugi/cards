@@ -88,10 +88,10 @@ public partial class ALPlayer : Player
         if (enemyBoard is not null) enemyBoard.OnCardTrigger += OnCardTriggerHandler;
     }
 
-    public void AssignDeck(ALDeckSet deckDefinition)
+    public void AssignDeck(ALDeckSet newDeckSet)
     {
-        deckSet = deckDefinition;
-        GD.Print($"[AssignDeck] Deck size: {deckDefinition.deck.Count}");
+        deckSet = newDeckSet;
+        GD.Print($"[AssignDeck] Deck size: {newDeckSet.deck.Count}");
     }
 
     void StartGameForPlayer()
