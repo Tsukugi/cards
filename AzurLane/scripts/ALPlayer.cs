@@ -35,7 +35,7 @@ public partial class ALPlayer : Player
 
     public override void _Ready()
     {
-        base._Ready(); // Call it at the end as the overrided code can use the refs correctly
+        base._Ready(); // Required for board/hand refs
         matchManager = this.TryFindParentNodeOfType<ALGameMatchManager>();
 
         playerAsyncHandler = new(this);
@@ -289,7 +289,7 @@ public partial class ALPlayer : Player
         durabilityCard.DestroyCard(); // Destroy card from board
         ALHand hand = GetPlayerHand<ALHand>();
         hand.AddCardToHand(durabilityCard.GetAttributes<ALCardDTO>());
-        GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown())}/{durabilityCards.Count}");
+        GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown()).Count}/{durabilityCards.Count}");
     }
 
     // Actions 

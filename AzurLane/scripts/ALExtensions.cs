@@ -12,15 +12,4 @@ public static class ALExtensions
         }
         return alCard;
     }
-    public static ALCardDTO CastToALCardDTO(this CardDTO card)
-    {
-        if (card is null) return null;
-        if (card is not ALCardDTO aLCardDTO)
-        {
-            GD.PushError($"[CastToALCardDTO] Cannot use a card not belonging to AzurLane TCG, {card.name} is {card.GetType()} ");
-            return null;
-        }
-        return aLCardDTO;
-    }
-
 }
