@@ -40,6 +40,7 @@ selectedIndicatorColor = Color(4.57242e-06, 0.345255, 0.535879, 0.607843)
 [node name="PowerLabel" type="Label3D" parent="UI"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -1, 0.4, 2.6)
 billboard = 1
+no_depth_test = true
 texture_filter = 1
 modulate = Color(0.977595, 0.981628, 1, 1)
 outline_modulate = Color(0.532629, 0.476042, 0.409763, 1)

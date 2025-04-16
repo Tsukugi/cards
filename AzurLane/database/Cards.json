@@ -18,6 +18,7 @@
 					{ "conditionId": "Durability", "conditionAmount": 1 },
 					{ "conditionId": "EndOfTurn" }
 				],
+				"duration": "Always",
 				"effectId": "Awakening",
 				"effectLabel": "■【At the end of your turn】Activate this card. When the durability of your flagship is 1 or less, turn this card face down."
 			}
@@ -62,6 +63,7 @@
 		"power": 400,
 		"skills": [
 			{
+				"duration": "Always",
 				"effectId": "CantSupportBackRow",
 				"effectLabel": "This card on the battlefield cannot support cards in the back row."
 			}
@@ -131,7 +133,7 @@
 				"condition": [ 
 					{ "conditionId": "StartsAttack" }
 				],
-				"duration": "AttackPhase",
+				"duration": "CurrentBattle",
 				"effectId": "Get100Power",
 				"effectLabel": "During a battle when this card attacks, this card gains +100 Power"
 			}
@@ -154,7 +156,7 @@
 				"condition": [
 					{ "conditionId": "IsAttacked" }
 				],
-				"duration": "AttackPhase",
+				"duration": "CurrentBattle",
 				"effectId": "Get100Power",
 				"effectLabel": "During a battle when this card is attacked, this card gains +100 Power"
 			},
@@ -165,6 +167,7 @@
 						"conditionCard": "SD01-010"
 					}
 				],
+				"duration": "Always",
 				"effectId": "Get100Power",
 				"effectLabel": "While there is a \"Indianapolis\" Ship Card on your battlefield, this card gains +100 Power."
 			}
@@ -190,6 +193,7 @@
 					},
 					{ "conditionId": "Retaliation" }
 				],
+				"duration": "OncePerTurn",
 				"effectId": "Retaliation",
 				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost)"
 			}
@@ -219,7 +223,7 @@
 				"condition": [
 					{ "conditionId": "IsAttacked" }
 				],
-				"duration": "AttackPhase",
+				"duration": "CurrentBattle",
 				"effectId": "Get200Power",
 				"effectLabel": "During a battle when this card is attacked, this card gains +200 Power."
 			}
@@ -268,9 +272,12 @@
 				"effectLabel": "This card in the back row can attack the opponent's back row card."
 			},
 			{
-				"duration": "OncePlayed",
+				"condition": [
+					{ "conditionId": "OnCardPlayed" }
+				],
+				"duration": "OncePerTurn",
 				"effectId": "ReturnToHand2CubeOrLess",
-				"effectLabel": "You can bounce 1 ship card with a cost of 2 or less on your opponent's battlefield back to your hand."
+				"effectLabel": "You can bounce 1 ship card with a cost of 2 or less on your opponent's battlefield back to their hand."
 			}
 		],
 		"type": "Ship",
@@ -289,7 +296,7 @@
 				"condition": [
 					{ "conditionId": "Counter" }
 				],
-				"duration": "AttackPhase",
+				"duration": "CurrentBattle",
 				"effectId": "Get200Power",
 				"effectLabel": "(Can be activated during your defense step) During this battle, a card on your battlefield gains +200 power."
 			},
@@ -297,7 +304,7 @@
 				"condition": [
 					{ "conditionId": "Counter" }
 				],
-				"duration": "AttackPhase",
+				"duration": "CurrentBattle",
 				"effectId": "PutCardTopOrBottomDeck",
 				"effectLabel": "After that, look at the top card of your deck and choose to put it at the top or bottom of the deck."
 			}
@@ -316,7 +323,7 @@
 				"condition": [
 					{ "conditionId": "Counter" }
 				],
-				"duration": "AttackPhase",
+				"duration": "CurrentBattle",
 				"effectId": "Get400Power",
 				"effectLabel": "(Can be activated during your Defense Step) During this battle, a card on your battlefield gains +400 Power."
 			},
@@ -325,7 +332,7 @@
 					{ "conditionId": "Counter" },
 					{ "conditionId": "EmptyHand" }
 				],
-				"duration": "AttackPhase",
+				"duration": "CurrentBattle",
 				"effectId": "DrawCard",
 				"effectLabel": "Afterwards, when your hand has 0 cards, draw 1 card."
 			}

@@ -50,8 +50,8 @@ public partial class ALCard : Card
             if (isShown)
             {
                 var shipPower = GetAttributeWithModifiers<ALCardDTO>("Power");
-
-                powerLabel.Scale = Vector3.One * (1 + (shipPower - attrs.power) / 500); // if pow 400 - modPow 600 => 1 + 200/500 => scale is 1.4
+                float sizeMod = 1f + ((shipPower - attrs.power) / 300f); // if pow 400 - modPow 600 => 1 + 200/300 => scale is 1.6
+                powerLabel.FontSize = (int)(120 * sizeMod);
                 powerLabel.Text = shipPower.ToString();
             }
         }
