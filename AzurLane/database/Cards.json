@@ -18,7 +18,7 @@
 					{ "conditionId": "Durability", "conditionAmount": 1 },
 					{ "conditionId": "EndOfTurn" }
 				],
-				"duration": "Always",
+				"duration": "WhileVisible",
 				"effectId": "Awakening",
 				"effectLabel": "■【At the end of your turn】Activate this card. When the durability of your flagship is 1 or less, turn this card face down."
 			}
@@ -63,7 +63,7 @@
 		"power": 400,
 		"skills": [
 			{
-				"duration": "Always",
+				"duration": "WhileVisible",
 				"effectId": "CantSupportBackRow",
 				"effectLabel": "This card on the battlefield cannot support cards in the back row."
 			}
@@ -86,7 +86,7 @@
 					{ "conditionId": "IsDefending" },
 					{ "conditionId": "IsSupported" }
 				],
-				"duration": "OncePerTurn",
+				"duration": "CurrentBattle",
 				"effectId": "Get100Power",
 				"effectLabel": "When this card is supported by a card on the battlefield, this card gains +100 Power for that battle."
 			}
@@ -167,7 +167,7 @@
 						"conditionCard": "SD01-010"
 					}
 				],
-				"duration": "Always",
+				"duration": "WhileVisible",
 				"effectId": "Get100Power",
 				"effectLabel": "While there is a \"Indianapolis\" Ship Card on your battlefield, this card gains +100 Power."
 			}
@@ -193,7 +193,6 @@
 					},
 					{ "conditionId": "Retaliation" }
 				],
-				"duration": "OncePerTurn",
 				"effectId": "Retaliation",
 				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost)"
 			}
@@ -215,7 +214,7 @@
 				"condition": [
 					{ "conditionId": "OnBackRow" }
 				],
-				"duration": "Always",
+				"duration": "WhileVisible",
 				"effectId": "RangedAttack",
 				"effectLabel": "This card in the back row can attack the opponent's back row card."
 			},
@@ -245,7 +244,7 @@
 				"condition": [
 					{ "conditionId": "OnBackRow" }
 				],
-				"duration": "Always",
+				"duration": "WhileVisible",
 				"effectId": "RangedAttack",
 				"effectLabel": "This card in the back row can attack the opponent's back row card."
 			}
@@ -267,15 +266,14 @@
 				"condition": [
 					{ "conditionId": "OnBackRow" }
 				],
-				"duration": "Always",
+				"duration": "WhileVisible",
 				"effectId": "RangedAttack",
 				"effectLabel": "This card in the back row can attack the opponent's back row card."
 			},
 			{
 				"condition": [
-					{ "conditionId": "OnCardPlayed" }
+					{ "conditionId": "WhenPlayed" }
 				],
-				"duration": "OncePerTurn",
 				"effectId": "ReturnToHand2CubeOrLess",
 				"effectLabel": "You can bounce 1 ship card with a cost of 2 or less on your opponent's battlefield back to their hand."
 			}

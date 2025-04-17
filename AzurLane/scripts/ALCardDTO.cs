@@ -26,14 +26,14 @@ public class ALCardDTO : CardDTO
 public class ALCardSkillDTO
 {
     public ALCardSkillConditionDTO[] condition = [];
-    public string duration = EALCardSkillDuration.OncePerTurn.ToString();
+    public string duration = EALCardSkillDuration.WhileVisible.ToString();
     public string effectId;
     public string effectLabel;
 }
 
 public class ALCardSkillConditionDTO
 {
-    public string conditionId;  // Condtition for this effect to activate - EnemyTurn, Retaliation, Counter , StartsAttack, IsAttacked, IsSpecificCardOnField
+    public string conditionId = EALCardSkillCondition.ManuallyActivated.ToString();
     public string conditionCard;
     public string conditionAmount;
 }
@@ -75,10 +75,21 @@ public enum EALCardRarity
 }
 public enum EALCardSkillDuration
 {
-    Always,
-    OncePerTurn,
-    OncePerMatch,
-    AttackPhase,
-    MainPhase,
-    CurrentBattle,
+    WhileVisible, // Tt is always active as soon the card is in hand or board
+    MainPhase, // While in the main phase
+    AttackPhase,  // While in the attack phase
+    CurrentBattle, // While in a battle
+}
+public enum EALCardSkillCondition
+{
+    ManuallyActivated,
+    WhenPlayed, // Every time this card is played into the board
+    OncePerTurn, // Every turn 
+    OncePerMatch, // Once for all match
+    EnemyTurnStart,
+    Retaliation,
+    Counter,
+    StartsAttack,
+    IsAttacked,
+    IsSpecificCardOnField
 }

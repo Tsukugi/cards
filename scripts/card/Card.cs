@@ -96,6 +96,16 @@ public partial class Card : CardField
         GD.Print($"[RemoveModifier] {Name} {modifier.AttributeName} {modifier.Amount} {modifier.Duration}");
         activeModifiers.Remove(modifier);
     }
+    public virtual void TryToExpireModifier(string duration)
+    {
+        GD.Print($"[TryToExpireModifier] {duration}");
+        var modifiers = activeModifiers.FindAll(modifier => modifier.Duration.ToString() == duration);
+        modifiers.ForEach(RemoveModifier);
+    }
+    public virtual void TryToTriggerCard(string condition)
+    {
+        GD.Print($"[TryToTriggerCard] {condition}");
+    }
     public int GetAttributeWithModifiers<T>(string attributeName) where T : CardDTO
     {
         T attrs = GetAttributes<T>();
@@ -160,7 +170,7 @@ public partial class Card : CardField
 
     public Resource GetCardImageResource() => isFaceDown ? cardBackImage : cardImage;
     public Board GetBoard() => board;
-
+    public List<AttributeModifier> GetModifiers() => activeModifiers;
     public void SetOwnerPlayer(Player player) => ownerPlayer = player;
     public T GetOwnerPlayer<T>() where T : Player => ownerPlayer as T;
 }

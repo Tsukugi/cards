@@ -135,6 +135,15 @@ public partial class ALCard : Card
     {
         if (OnDurabilityDamage is not null) OnDurabilityDamage(this);
     }
+    public override void TryToTriggerCard(string condition)
+    {
+        base.TryToTriggerCard(condition);
+        ALCardDTO attrs = GetAttributes<ALCardDTO>();
+        foreach (var skill in attrs.skills)
+        {
+            if (skill.condition.ToString() == condition) GD.Print($"[TryToTriggerCard] Trigger card effect!!!!");
+        }
+    }
 }
 
 public enum EAttackFieldType

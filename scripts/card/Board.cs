@@ -15,22 +15,33 @@ public partial class Board : Node3D
     public event CardEvent OnCardTrigger;
     public event InteractionEvent OnSkipInteraction;
 
+    // --- Refs ---
+
+    protected PackedScene cardTemplate = GD.Load<PackedScene>("scenes/card.tscn");
+    protected readonly ActionInputHandler actionInputHandler = new();
+
     // --- State ---
     bool isEnemyBoard = false;
     readonly Dictionary<string, Card> selectedCard = []; // <PlayerName selecting the card, Card>
 
-    // --- Public ---
-
-    protected PackedScene cardTemplate = GD.Load<PackedScene>("scenes/card.tscn");
-    protected readonly ActionInputHandler actionInputHandler = new();
     protected Vector2I selectedCardPosition = Vector2I.Zero;
     [Export]
     public Vector2I BoardPositionInGrid = new();
-    protected void TriggerCard(Player player)
+
+    protected virtual void TriggerCard(Player player)
     {
         Card card = GetSelectedCard<Card>(player);
+        if (OnCardTrigger is null)
+        {
+            GD.PrintErr($"[{GetType()}.TriggerCard] No events attached"); return;
+        }
+        if (card is null)
+        {
+            GD.PrintErr($"[{GetType()}.TriggerCard] No card selected, select a card to trigger"); return;
+        }
+
         GD.Print($"[{GetType()}.TriggerCard] Triggering card {card.Name}");
-        if (OnCardTrigger is not null && card is not null) OnCardTrigger(card);
+        OnCardTrigger(card);
     }
 
     protected void SkipInteraction(Player player)
@@ -39,8 +50,22 @@ public partial class Board : Node3D
         if (OnSkipInteraction is not null) OnSkipInteraction(player, this);
     }
 
-    List<Card> GetCardsInTree() => this.TryGetAllChildOfType<Card>(true);
     static Card? FindCard(List<Card> cards, Vector2I position) => cards.Find(card => card.PositionInBoard == position);
+    // Takes an axis and return an offset with Range added to the direction and offset to the opposite axis
+    static Vector2I FindOffsetBasedOnAxis(Vector2I axis, int range, int sideOffset)
+    {
+        Vector2I newAddedPosition = Vector2I.Zero;
+        if (axis == Vector2I.Right) newAddedPosition = new Vector2I(range, sideOffset);
+        if (axis == Vector2I.Left) newAddedPosition = new Vector2I(-range, sideOffset);
+        if (axis == Vector2I.Down) newAddedPosition = new Vector2I(sideOffset, range);
+        if (axis == Vector2I.Up) newAddedPosition = new Vector2I(sideOffset, -range);
+        // GD.Print($"[FindPosition] {range} - {sideOffset} -> {newAddedPosition}");
+        return newAddedPosition;
+    }
+
+    // ----- API -----
+
+    public List<Card> GetCardsInTree() => this.TryGetAllChildOfType<Card>(true);
     public Card? FindCardInTree(Vector2I position) => FindCard(GetCardsInTree(), position);
 
     // Search for an available card in a specified range and also oposed axis to find diagonal matches
@@ -63,18 +88,6 @@ public partial class Board : Node3D
             currentRange++;
         }
         return null;
-    }
-
-    // Takes an axis and return an offset with Range added to the direction and offset to the opposite axis
-    static Vector2I FindOffsetBasedOnAxis(Vector2I axis, int range, int sideOffset)
-    {
-        Vector2I newAddedPosition = Vector2I.Zero;
-        if (axis == Vector2I.Right) newAddedPosition = new Vector2I(range, sideOffset);
-        if (axis == Vector2I.Left) newAddedPosition = new Vector2I(-range, sideOffset);
-        if (axis == Vector2I.Down) newAddedPosition = new Vector2I(sideOffset, range);
-        if (axis == Vector2I.Up) newAddedPosition = new Vector2I(sideOffset, -range);
-        // GD.Print($"[FindPosition] {range} - {sideOffset} -> {newAddedPosition}");
-        return newAddedPosition;
     }
 
     // --- Public API---

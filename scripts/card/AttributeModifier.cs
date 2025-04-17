@@ -4,9 +4,7 @@ public class AttributeModifier
     public string Duration;
     public int Amount;
 
-    public AttributeModifier() {
-    }
-
+    public AttributeModifier() { }
     public AttributeModifier(string attributeName, int amount, string duration)
     {
         AttributeName = attributeName;

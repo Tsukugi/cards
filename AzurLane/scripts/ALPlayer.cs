@@ -422,6 +422,11 @@ public partial class ALPlayer : Player
             durabilityList[i].IsInputSelectable = true;
         }
     }
+    void TryToExpireCardsModifierDuration(EALCardSkillDuration duration)
+    {
+        GetPlayerBoard<ALBoard>().GetCardsInTree().ForEach(card => card.TryToExpireModifier(duration.ToString()));
+        GetPlayerHand<ALHand>().GetCardsInTree().ForEach(card => card.TryToExpireModifier(duration.ToString()));
+    }
 
     // Public Player Actions for AI 
     public ALPhase Phase => phaseManager;

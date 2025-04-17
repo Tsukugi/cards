@@ -117,9 +117,9 @@ public class ALPhase
 
     public async Task EndBattlePhaseIfNoActiveCards()
     {
-        if (currentPhase != EALTurnPhase.Battle) return;
+        if (currentPhase != EALTurnPhase.Battle) { GD.PrintErr($"[EndBattlePhaseIfNoActiveCards] We can only end a battlePhase if we are already in it"); return; }
         List<ALCard> units = player.GetActiveUnitsInBoard();
-        if (units.Count > 0) return;
+        if (units.Count > 0) { GD.Print($"[EndBattlePhaseIfNoActiveCards] Cards active: {units.Count}"); return; }
         GD.Print($"[EndBattlePhaseIfNoActiveCards] No active cards, going to next phase");
         await asyncPhase.AwaitBefore(PlayNextPhase);
     }

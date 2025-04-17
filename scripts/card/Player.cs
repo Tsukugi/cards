@@ -26,6 +26,7 @@ public partial class Player : Node3D
 
     // PlayState
     EPlayState playState = EPlayState.Wait;
+
     public override void _Ready()
     {
         boardInputAsync = new(this);
@@ -101,6 +102,7 @@ public partial class Player : Node3D
     protected void OnPlaceCardEndHandler(Card cardPlaced)
     {
         hand.RemoveCardFromHand(cardPlaced);
+        // TODO Add oncePlayed trigger
         SetPlayState(EPlayState.Select);
         SelectBoard(hand);
     }
@@ -184,6 +186,7 @@ public partial class Player : Node3D
     protected virtual void OnCardTriggerHandler(Card card)
     {
         GD.Print($"[OnCardTriggerHandler] {card.Name}");
+        card.TryToTriggerCard(EALCardSkillCondition.ManuallyActivated.ToString());
     }
     public void SelectAndTriggerCard(Card card)
     {

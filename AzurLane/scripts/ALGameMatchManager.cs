@@ -117,8 +117,10 @@ public partial class ALGameMatchManager : Node
 
     void OnAttackEndHandler(Player guardingPlayer)
     {
+        attackerCard.TryToExpireModifier(EALCardSkillDuration.CurrentBattle.ToString());
+        attackedCard.TryToExpireModifier(EALCardSkillDuration.CurrentBattle.ToString());
         attackerCard = null;
-        attackedCard = null;
+        attackedCard = null;        
         GD.Print($"[OnAttackEndHandler]");
     }
 
