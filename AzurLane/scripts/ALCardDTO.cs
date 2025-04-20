@@ -1,20 +1,20 @@
 public class ALCardDTO : CardDTO
 {
-    public string faction = EALFaction.None.ToString();
-    public string rarity = EALCardRarity.N.ToString();
-    public string type = EALCardType.Ship.ToString();
+    public string faction = ALFaction.None;
+    public string rarity = CardRarity.N;
+    public string type = ALCardType.Ship;
 
     // Flagship, Ship
     public int power = 0;
-    public ALCardSkillDTO[] skills = [];
-    public string factionCountry = EALFactionCountry.None.ToString();
+    public CardEffectDTO[] skills = [];
+    public string factionCountry = ALFactionCountry.None;
 
     // Flagship 
     public int durability = 0;
 
     // Ship
     public int supportValue = 0;
-    public string supportScope = EALSupportScope.Both.ToString();
+    public string supportScope = ALSupportScope.Both;
     // Ship, Event
     public int cost = 0;
 
@@ -22,78 +22,60 @@ public class ALCardDTO : CardDTO
     public int Power { get => power; }
 }
 
-
-public class ALCardSkillDTO
+public static class ALCardType
 {
-    public ALCardSkillConditionDTO[] condition = [];
-    public string triggerEvent = EALCardSkillTrigger.ManuallyActivated.ToString();
-    public string duration = EALCardSkillDuration.WhileVisible.ToString();
-    public string effectId;
-    public string effectLabel;
+    public static readonly string Ship = "Ship";
+    public static readonly string Flagship = "Flagship";
+    public static readonly string Cube = "Cube";
+    public static readonly string Event = "Event";
 }
 
-public class ALCardSkillConditionDTO
+public static class ALSupportScope
 {
-    public string conditionId;
-    public string conditionCard;
-    public string conditionAmount;
+    public static readonly string Hand = "Hand";
+    public static readonly string Battlefield = "Battlefield";
+    public static readonly string Both = "Both";
 }
 
-public enum EALCardType
+public static class ALFaction
 {
-    Ship,
-    Flagship,
-    Cube,
-    Event
+    public static readonly string None = "None";
+    public static readonly string CrimsonAxis = "CrimsonAxis";
+    public static readonly string AzurLane = "AzurLane";
 }
-public enum EALSupportScope
+
+public static class ALFactionCountry
 {
-    Hand,
-    Battlefield,
-    Both
+    public static readonly string None = "None";
+    public static readonly string EagleUnion = "EagleUnion";
+    public static readonly string RoyalNavy = "RoyalNavy";
+    public static readonly string SakuraEmpire = "SakuraEmpire";
+    public static readonly string IronBlood = "IronBlood";
 }
-public enum EALFaction
+
+public static class ALCardRarity
 {
-    None,
-    CrimsonAxis,
-    AzurLane,
+    public static readonly string L = "L";
 }
-public enum EALFactionCountry
+
+public static class ALCardSkillDuration
 {
-    None,
-    EagleUnion,
-    RoyalNavy,
-    SakuraEmpire,
-    IronBlood
+    public static readonly string MainPhase = "MainPhase"; // While in the main phase
+    public static readonly string AttackPhase = "AttackPhase"; // While in the attack phase
+    public static readonly string CurrentBattle = "CurrentBattle"; // While in a battle
 }
-public enum EALCardRarity
+
+public static class ALCardSkillCondition
 {
-    N,
-    R,
-    L,
-    SR,
-    SSR
+    public static readonly string IsSpecificCardOnField = "IsSpecificCardOnField";
 }
-public enum EALCardSkillDuration
+
+public static class ALCardSkillTrigger
 {
-    WhileVisible, // Tt is always active as soon the card is in hand or board
-    MainPhase, // While in the main phase
-    AttackPhase,  // While in the attack phase
-    CurrentBattle, // While in a battle
-}
-public enum EALCardSkillCondition
-{
-    StartsAttack,
-    IsAttacked,
-    IsSpecificCardOnField
-}
-public enum EALCardSkillTrigger
-{
-    ManuallyActivated,
-    WhenPlayed, // Every time this card is played into the board
-    OncePerTurn, // Every turn 
-    OncePerMatch, // Once for all match
-    EnemyTurnStart,
-    Retaliation,
-    Counter
+    public static readonly string StartsAttack = "StartsAttack";
+    public static readonly string IsAttacked = "IsAttacked";
+    public static readonly string IsBattleSupported = "IsBattleSupported"; // Another ship supports this card
+    public static readonly string Retaliation = "Retaliation"; // (When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost)
+    public static readonly string Counter = "Counter"; // (Can be activated during your Defense Step) 
+    public static readonly string OnceDestroyed = "OnceDestroyed"; // When this card is send to the retreat zone
 }

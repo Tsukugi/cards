@@ -254,7 +254,7 @@ public partial class ALPlayer : Player
         ALCardDTO attrs = cardToGuard.GetAttributes<ALCardDTO>();
         if (selectedGuard is ALBoard guardingBoard)
         {
-            if (attrs.supportScope == EALSupportScope.Hand.ToString())
+            if (attrs.supportScope == ALSupportScope.Hand)
             {
                 GD.PrintErr($"[PlayCardAsGuard] This card cannot be played as Guard from your board, selected: {attrs.name} {attrs.supportScope}");
                 return;
@@ -264,7 +264,7 @@ public partial class ALPlayer : Player
         }
         if (selectedGuard is ALHand guardingHand)
         {
-            if (attrs.supportScope == EALSupportScope.Battlefield.ToString())
+            if (attrs.supportScope == ALSupportScope.Battlefield)
             {
                 GD.PrintErr($"[PlayCardAsGuard] This card cannot be played as Guard from your hand, selected: {attrs.name} {attrs.supportScope}");
                 return;
@@ -422,10 +422,10 @@ public partial class ALPlayer : Player
             durabilityList[i].IsInputSelectable = true;
         }
     }
-    void TryToExpireCardsModifierDuration(EALCardSkillDuration duration)
+    void TryToExpireCardsModifierDuration(string duration)
     {
-        GetPlayerBoard<ALBoard>().GetCardsInTree().ForEach(card => card.TryToExpireModifier(duration.ToString()));
-        GetPlayerHand<ALHand>().GetCardsInTree().ForEach(card => card.TryToExpireModifier(duration.ToString()));
+        GetPlayerBoard<ALBoard>().GetCardsInTree().ForEach(card => card.TryToExpireModifier(duration));
+        GetPlayerHand<ALHand>().GetCardsInTree().ForEach(card => card.TryToExpireModifier(duration));
     }
 
     // Public Player Actions for AI 

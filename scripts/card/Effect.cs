@@ -1,16 +1,9 @@
-using System;
-using System.Reflection;
 using Godot;
 
-public class Effect
+public class Effect(Card _card, Player _ownerPlayer)
 {
-    protected Card card;
-    protected Player ownerPlayer;
-    public Effect(Card _card, Player _ownerPlayer)
-    {
-        card = _card;
-        ownerPlayer = _ownerPlayer;
-    }
+    protected Card card = _card;
+    protected Player ownerPlayer = _ownerPlayer;
 
     protected bool CheckCondition(string conditionId)
     {
@@ -21,6 +14,6 @@ public class Effect
 
     public virtual void TryToApplyEffects(string triggerEvent)
     {
-        GD.Print($"[TryToApplyEffects]");
+        GD.Print($"[TryToApplyEffects] {triggerEvent}");
     }
 }

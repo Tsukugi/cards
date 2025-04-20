@@ -14,6 +14,7 @@ public partial class ALHand : PlayerHand
         newCard.RotationDegrees = new Vector3(0, 0, 1); // To add the card stacking
         newCard.PositionInBoard = new Vector2I(numCardsInHand, 0);
         newCard.UpdateAttributes(attributes);
+        newCard.TryToTriggerCardEffect(CardEffectTrigger.OnVisible);
         RepositionHandCards();
     }
     protected new List<ALCard> GetCardsInHand()

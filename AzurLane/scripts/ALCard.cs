@@ -4,6 +4,7 @@ using Godot;
 public partial class ALCard : Card
 {
     public event OnProvidedCardEvent OnDurabilityDamage;
+    new ALEffect effect;
     Node3D UI, skillsBackdrop;
     Label3D powerLabel, stackCount, nameLabel, skillsLabel;
     [Export]
@@ -19,10 +20,10 @@ public partial class ALCard : Card
     [Export]
     // AzurLane TCG: If this field/card is a flagship
     bool isFlagship = false;
-
     public override void _Ready()
     {
         base._Ready();
+        effect = new(this, GetOwnerPlayer<ALPlayer>(), GetOwnerPlayer<ALPlayer>().GetMatchManager());
         UI = GetNodeOrNull<Node3D>("UI");
         powerLabel = GetNodeOrNull<Label3D>("UI/PowerLabel");
         stackCount = GetNodeOrNull<Label3D>("UI/StackCount");
@@ -88,14 +89,14 @@ public partial class ALCard : Card
     public string GetFormattedSkills()
     // TODO : Add colors for duration and condition
     {
-        ALCardSkillDTO[] attributes = GetAttributes<ALCardDTO>().skills;
+        CardEffectDTO[] skills = GetAttributes<ALCardDTO>().skills;
         StringBuilder stringBuilder = new();
-        foreach (var item in attributes)
+        foreach (var skill in skills)
         {
             var formattedSkils = "";
-            formattedSkils += $"[{item.duration}] - ";
-            if (item.effectId is not null) formattedSkils += $"[{item.effectId}] - ";
-            if (item.condition is ALCardSkillConditionDTO[] conditions && conditions.Length > 0)
+            formattedSkils += $"[{skill.triggerEvent}] - ";
+            if (skill.duration is not null) formattedSkils += $"[{skill.duration}] - ";
+            if (skill.condition is CardEffectConditionDTO[] conditions && conditions.Length > 0)
             {
                 formattedSkils += "[";
                 for (int i = 0; i < conditions.Length; i++)
@@ -107,7 +108,8 @@ public partial class ALCard : Card
                 }
                 formattedSkils += "] - ";
             }
-            stringBuilder.AppendLine($"{formattedSkils}{item.effectLabel}");
+            if (skill.effectId is not null) formattedSkils += $"[{skill.effectId}] - ";
+            stringBuilder.AppendLine($"{formattedSkils}{skill.effectLabel}");
         }
         return stringBuilder.ToString();
     }
@@ -134,15 +136,6 @@ public partial class ALCard : Card
     public void TakeDurabilityDamage()
     {
         if (OnDurabilityDamage is not null) OnDurabilityDamage(this);
-    }
-    public override void TryToTriggerCard(string condition)
-    {
-        base.TryToTriggerCard(condition);
-        ALCardDTO attrs = GetAttributes<ALCardDTO>();
-        foreach (var skill in attrs.skills)
-        {
-            if (skill.condition.ToString() == condition) GD.Print($"[TryToTriggerCard] Trigger card effect!!!!");
-        }
     }
 }
 

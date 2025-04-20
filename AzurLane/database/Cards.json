@@ -14,9 +14,9 @@
 		"power": 400,
 		"skills": [
 			{   
+				"triggerEvent": "EndOfTurn",
 				"condition": [
-					{ "conditionId": "Durability", "conditionAmount": 1 },
-					{ "conditionId": "EndOfTurn" }
+					{ "conditionId": "Durability", "conditionAmount": 1 }
 				],
 				"duration": "WhileVisible",
 				"effectId": "Awakening",
@@ -63,6 +63,7 @@
 		"power": 400,
 		"skills": [
 			{
+				"triggerEvent": "OnVisible",
 				"duration": "WhileVisible",
 				"effectId": "CantSupportBackRow",
 				"effectLabel": "This card on the battlefield cannot support cards in the back row."
@@ -82,10 +83,7 @@
 		"power": 500,
 		"skills": [
 			{
-				"condition": [
-					{ "conditionId": "IsDefending" },
-					{ "conditionId": "IsSupported" }
-				],
+				"triggerEvent": "IsBattleSupported",
 				"duration": "CurrentBattle",
 				"effectId": "Get100Power",
 				"effectLabel": "When this card is supported by a card on the battlefield, this card gains +100 Power for that battle."
@@ -130,9 +128,7 @@
 		"power": 500,
 		"skills": [
 			{
-				"condition": [ 
-					{ "conditionId": "StartsAttack" }
-				],
+				"triggerEvent": "StartsAttack",
 				"duration": "CurrentBattle",
 				"effectId": "Get100Power",
 				"effectLabel": "During a battle when this card attacks, this card gains +100 Power"
@@ -153,9 +149,7 @@
 		"power": 500,
 		"skills": [
 			{
-				"condition": [
-					{ "conditionId": "IsAttacked" }
-				],
+				"triggerEvent": "IsAttacked",
 				"duration": "CurrentBattle",
 				"effectId": "Get100Power",
 				"effectLabel": "During a battle when this card is attacked, this card gains +100 Power"
@@ -167,6 +161,7 @@
 						"conditionCard": "SD01-010"
 					}
 				],
+				"triggerEvent": "OnVisible",
 				"duration": "WhileVisible",
 				"effectId": "Get100Power",
 				"effectLabel": "While there is a \"Indianapolis\" Ship Card on your battlefield, this card gains +100 Power."
@@ -186,12 +181,12 @@
 		"power": 400,
 		"skills": [
 			{
+				"triggerEvent": "Retaliation",
 				"condition": [
 					{ 
 						"conditionId": "HasCubes",
 						"conditionAmount": 3
-					},
-					{ "conditionId": "Retaliation" }
+					}
 				],
 				"effectId": "Retaliation",
 				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost)"
@@ -211,17 +206,16 @@
 		"power": 500,
 		"skills": [
 			{
+				"triggerEvent": "WhenPlayed",
 				"condition": [
 					{ "conditionId": "OnBackRow" }
 				],
-				"duration": "WhileVisible",
+				"duration": "WhileOnBattlefield",
 				"effectId": "RangedAttack",
 				"effectLabel": "This card in the back row can attack the opponent's back row card."
 			},
 			{
-				"condition": [
-					{ "conditionId": "IsAttacked" }
-				],
+				"triggerEvent": "IsAttacked",
 				"duration": "CurrentBattle",
 				"effectId": "Get200Power",
 				"effectLabel": "During a battle when this card is attacked, this card gains +200 Power."
@@ -241,10 +235,11 @@
 		"power": 500,
 		"skills": [
 			{
+				"triggerEvent": "WhenPlayed",
 				"condition": [
 					{ "conditionId": "OnBackRow" }
 				],
-				"duration": "WhileVisible",
+				"duration": "WhileOnBattlefield",
 				"effectId": "RangedAttack",
 				"effectLabel": "This card in the back row can attack the opponent's back row card."
 			}
@@ -263,17 +258,16 @@
 		"power": 400,
 		"skills": [
 			{
+				"triggerEvent": "WhenPlayed",
 				"condition": [
 					{ "conditionId": "OnBackRow" }
 				],
-				"duration": "WhileVisible",
+				"duration": "WhileOnBattlefield",
 				"effectId": "RangedAttack",
 				"effectLabel": "This card in the back row can attack the opponent's back row card."
 			},
-			{
-				"condition": [
-					{ "conditionId": "WhenPlayed" }
-				],
+			{	
+				"triggerEvent": "WhenPlayed",
 				"effectId": "ReturnToHand",
 				"effectArgAmount": 2, 
 				"effectTarget": "EnemyShipWithCube",
@@ -293,6 +287,7 @@
 		"name": "All staff in place",
 		"skills": [
 			{
+				"triggerEvent": "ManuallyActivated",
 				"condition": [
 					{ "conditionId": "Counter" }
 				],
@@ -301,6 +296,7 @@
 				"effectLabel": "(Can be activated during your defense step) During this battle, a card on your battlefield gains +200 power."
 			},
 			{
+				"triggerEvent": "ManuallyActivated",
 				"condition": [
 					{ "conditionId": "Counter" }
 				],
@@ -320,6 +316,7 @@
 		"name": "Combat Power Supplements",
 		"skills": [
 			{
+				"triggerEvent": "ManuallyActivated",
 				"condition": [
 					{ "conditionId": "Counter" }
 				],
@@ -328,6 +325,7 @@
 				"effectLabel": "(Can be activated during your Defense Step) During this battle, a card on your battlefield gains +400 Power."
 			},
 			{
+				"triggerEvent": "ManuallyActivated",
 				"condition": [
 					{ "conditionId": "Counter" },
 					{ "conditionId": "EmptyHand" }
@@ -348,13 +346,10 @@
 		"name": "Return to Base",
 		"skills": [
 			{
-				"condition": [
-					{ "conditionId": "Retaliation" }
-				],
+				"triggerEvent": "Retaliation",
 				"effectId": "Retaliation"
 			},
 			{
-				"duration": "MainPhase",
 				"effectId": "ReturnEnemyToHand3CubeOrLess",
 				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost) Return 1 ship card with a cost of 3 or less on the opponent's battlefield to their hand."
 			}
@@ -371,9 +366,9 @@
 		"power": 400,
 		"skills": [
 			{   
+				"triggerEvent": "EndOfTurn",
 				"condition": [
-					{ "conditionId": "Durability", "conditionAmount": 1 },
-					{ "conditionId": "EndOfTurn" }
+					{ "conditionId": "Durability", "conditionAmount": 1 }
 				],
 				"effectId": "Awakening",
 				"effectLabel": "■【At the end of your turn】Activate 1 of your own Cube Cards. [Awakening] When the durability of your flagship is 1 or less, turn this card face down."
@@ -395,6 +390,7 @@
 		"power": 400,
 		"skills": [
 			{  
+				"triggerEvent": "OnVisible",
 				"condition": [
 					{ 
 						"conditionId": "HasCubes",
@@ -433,9 +429,7 @@
 		"power": 400,
 		"skills": [
 			{
-				"condition": [
-					{ "conditionId": "OnceDestroyed" }
-				],
+				"triggerEvent": "OnceDestroyed",
 				"effectId": "DrawCubeDown",
 				"effectLabel": "Place 1 Cube card from your Cube Deck face down in the Cost Zone."
 			}
@@ -454,16 +448,12 @@
 		"power": 400,
 		"skills": [
 			{
-				"condition": [
-					{ "conditionId": "OncePlayed" }
-				],
+				"triggerEvent": "OncePlayed",
 				"effectId": "DiscardCard",
 				"effectLabel": "You can discard 1 card from your hand."
 			},
 			{	
-				"condition": [
-					{ "conditionId": "OncePlayed" }
-				],
+				"triggerEvent": "OncePlayed",
 				"effectId": "DrawCubeDown",
 				"effectLabel": "Put 1 Cube card from your Cube Deck face down into the Cost Zone."
 			}
@@ -482,16 +472,12 @@
 		"power": 400,
 		"skills": [
 			{
-				"condition": [
-					{ "conditionId": "OncePlayed" }
-				],
+				"triggerEvent": "OncePlayed",
 				"effectId": "DiscardCard",
 				"effectLabel": "You can discard 1 card from your hand."
 			},
 			{	
-				"condition": [
-					{ "conditionId": "OncePlayed" }
-				],
+				"triggerEvent": "OncePlayed",
 				"effectId": "DrawCubeDown",
 				"effectLabel": "Put 1 Cube card from your Cube Deck face down into the Cost Zone."
 			}
@@ -524,9 +510,7 @@
 		"power": 500,
 		"skills": [
 			{	
-				"condition": [
-					{ "conditionId": "OncePlayed" }
-				],
+				"triggerEvent": "OncePlayed",
 				"effectId": "RestEnemy4Cube",
 				"effectLabel": "Put a Ship Card with a cost of 4 or less on the opponent's battlefield to Rest."
 			}

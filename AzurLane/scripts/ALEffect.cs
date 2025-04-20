@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Godot;
 
-public class ALEffect : Effect
+public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _matchManager) : Effect(_card, _ownerPlayer)
 {
-    ALGameMatchManager matchManager;
-    public ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _matchManager) : base(_card, _ownerPlayer)
-    {
-        matchManager = _matchManager;
-    }
-    protected bool CheckCondition(ALCardSkillConditionDTO condition)
+    readonly ALGameMatchManager matchManager = _matchManager;
+
+    protected bool CheckCondition(CardEffectConditionDTO condition)
     {
         bool conditionResult = (bool)ClassUtils.CallMethod(this, condition.conditionId, [condition]);
         return conditionResult;
@@ -25,7 +21,7 @@ public class ALEffect : Effect
 
         foreach (var skill in affectedSkills)
         {
-            List<ALCardSkillConditionDTO> conditionsFulfilled = [];
+            List<CardEffectConditionDTO> conditionsFulfilled = [];
             foreach (var conditionDTO in skill.condition)
             {
 
@@ -36,19 +32,11 @@ public class ALEffect : Effect
         }
     }
 
-    public bool IsAttacked(object?[]? args)
-    {
-        return matchManager.GetAttackedCard() == card;
-    }
-
-    public bool StartsAttack(object?[]? args)
-    {
-        return matchManager.GetAttackerCard() == card;
-    }
+    // --- Condition ---
 
     public bool IsSpecificCardOnField(object?[]? args)
     {
-        ALCardSkillConditionDTO conditionDTO = (ALCardSkillConditionDTO)args[0];
+        CardEffectConditionDTO conditionDTO = (CardEffectConditionDTO)args[0];
         List<ALCard> units = ((ALPlayer)ownerPlayer).GetUnitsInBoard();
         ALCardDTO attrs = card.GetAttributes<ALCardDTO>();
 

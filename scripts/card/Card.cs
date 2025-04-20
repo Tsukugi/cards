@@ -9,6 +9,7 @@ public partial class Card : CardField
     protected Node3D cardDisplay;
     protected MeshInstance3D front = null, back = null, side = null, selectedIndicator = null;
     protected Board board;
+    protected Effect effect;
     Player ownerPlayer;
 
     Resource cardImage, cardBackImage;
@@ -25,7 +26,6 @@ public partial class Card : CardField
 
     CardDTO attributes = new();
     readonly List<AttributeModifier> activeModifiers = []; // <attributeName, value>
-    Effect effect;
     public override void _Ready()
     {
         ownerPlayer = this.TryFindParentNodeOfType<ALPlayer>();
@@ -105,7 +105,7 @@ public partial class Card : CardField
         var modifiers = activeModifiers.FindAll(modifier => modifier.Duration.ToString() == duration);
         modifiers.ForEach(RemoveModifier);
     }
-    public virtual void TryToTriggerCard(string triggerEvent)
+    public virtual void TryToTriggerCardEffect(string triggerEvent)
     {
         GD.Print($"[TryToTriggerCard] {triggerEvent}");
         effect.TryToApplyEffects(triggerEvent);
