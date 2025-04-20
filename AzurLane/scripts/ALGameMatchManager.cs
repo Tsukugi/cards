@@ -73,7 +73,7 @@ public partial class ALGameMatchManager : Node
     void OnAttackStartHandler(Player guardingPlayer, Card card)
     {
         attackerCard = card.CastToALCard();
-        attackerCard.TryToTriggerCardEffect(ALCardSkillTrigger.StartsAttack);
+        attackerCard.TryToTriggerCardEffect(ALCardEffectTrigger.StartsAttack);
         GD.Print($"[OnAttackStartHandler] {GetAttackerCard().Name} starts an attack!");
     }
 
@@ -101,7 +101,7 @@ public partial class ALGameMatchManager : Node
         guardingPlayer.SetPlayState(EPlayState.Wait);
         ALPlayer attackerPlayer = GetAttackerCard().GetOwnerPlayer<ALPlayer>();
         attackerPlayer.SetPlayState(EPlayState.Wait);
-        attackedCard.TryToTriggerCardEffect(ALCardSkillTrigger.IsAttacked);
+        attackedCard.TryToTriggerCardEffect(ALCardEffectTrigger.IsAttacked);
         _ = attackerPlayer.SettleBattle();
         GD.Print($"[OnAttackGuardEndHandler]");
     }
@@ -111,17 +111,17 @@ public partial class ALGameMatchManager : Node
         GetAttackedCard().AddModifier(new AttributeModifier()
         {
             AttributeName = "Power",
-            Duration = ALCardSkillDuration.CurrentBattle,
+            Duration = ALCardEffectDuration.CurrentBattle,
             Amount = card.GetAttributes<ALCardDTO>().supportValue,
         });
-        attackedCard.TryToTriggerCardEffect(ALCardSkillTrigger.IsBattleSupported);
+        attackedCard.TryToTriggerCardEffect(ALCardEffectTrigger.IsBattleSupported);
         GD.Print($"[OnGuardProvidedHandler] Add Guard Modifier for {GetAttackedCard().GetAttributes<ALCardDTO>().name}");
     }
 
     void OnAttackEndHandler(Player guardingPlayer)
     {
-        attackerCard.TryToExpireModifier(ALCardSkillDuration.CurrentBattle);
-        attackedCard.TryToExpireModifier(ALCardSkillDuration.CurrentBattle);
+        attackerCard.TryToExpireModifier(ALCardEffectDuration.CurrentBattle);
+        attackedCard.TryToExpireModifier(ALCardEffectDuration.CurrentBattle);
         attackerCard = null;
         attackedCard = null;
         GD.Print($"[OnAttackEndHandler]");

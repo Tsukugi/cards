@@ -89,27 +89,27 @@ public partial class ALCard : Card
     public string GetFormattedSkills()
     // TODO : Add colors for duration and condition
     {
-        CardEffectDTO[] skills = GetAttributes<ALCardDTO>().skills;
+        CardEffectDTO[] effects = GetAttributes<ALCardDTO>().effects;
         StringBuilder stringBuilder = new();
-        foreach (var skill in skills)
+        foreach (var effect in effects)
         {
-            var formattedSkils = "";
-            formattedSkils += $"[{skill.triggerEvent}] - ";
-            if (skill.duration is not null) formattedSkils += $"[{skill.duration}] - ";
-            if (skill.condition is CardEffectConditionDTO[] conditions && conditions.Length > 0)
+            var formattedEffects = "";
+            formattedEffects += $"[{effect.triggerEvent}] - ";
+            if (effect.duration is not null) formattedEffects += $"[{effect.duration}] - ";
+            if (effect.condition is CardEffectConditionDTO[] conditions && conditions.Length > 0)
             {
-                formattedSkils += "[";
+                formattedEffects += "[";
                 for (int i = 0; i < conditions.Length; i++)
                 {
-                    formattedSkils += $"{conditions[i].conditionId}";
-                    if (conditions[i].conditionAmount is string amount) formattedSkils += $" ({amount})";
-                    if (conditions[i].conditionCard is string card) formattedSkils += $" ({card})";
-                    if (i != conditions.Length - 1) formattedSkils += " - ";
+                    formattedEffects += $"{conditions[i].conditionId}";
+                    if (conditions[i].conditionAmount is string amount) formattedEffects += $" ({amount})";
+                    if (conditions[i].conditionCard is string card) formattedEffects += $" ({card})";
+                    if (i != conditions.Length - 1) formattedEffects += " - ";
                 }
-                formattedSkils += "] - ";
+                formattedEffects += "] - ";
             }
-            if (skill.effectId is not null) formattedSkils += $"[{skill.effectId}] - ";
-            stringBuilder.AppendLine($"{formattedSkils}{skill.effectLabel}");
+            if (effect.effectId is not null) formattedEffects += $"[{effect.effectId}] - ";
+            stringBuilder.AppendLine($"{formattedEffects}{effect.effectLabel}");
         }
         return stringBuilder.ToString();
     }

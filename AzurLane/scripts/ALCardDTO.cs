@@ -6,7 +6,6 @@ public class ALCardDTO : CardDTO
 
     // Flagship, Ship
     public int power = 0;
-    public CardEffectDTO[] skills = [];
     public string factionCountry = ALFactionCountry.None;
 
     // Flagship 
@@ -58,19 +57,19 @@ public static class ALCardRarity
     public static readonly string L = "L";
 }
 
-public static class ALCardSkillDuration
+public static class ALCardEffectDuration
 {
     public static readonly string MainPhase = "MainPhase"; // While in the main phase
     public static readonly string AttackPhase = "AttackPhase"; // While in the attack phase
     public static readonly string CurrentBattle = "CurrentBattle"; // While in a battle
 }
 
-public static class ALCardSkillCondition
+public static class ALCardEffectCondition
 {
     public static readonly string IsSpecificCardOnField = "IsSpecificCardOnField";
 }
 
-public static class ALCardSkillTrigger
+public static class ALCardEffectTrigger
 {
     public static readonly string StartsAttack = "StartsAttack";
     public static readonly string IsAttacked = "IsAttacked";

@@ -17,18 +17,18 @@ public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _m
         base.TryToApplyEffects(triggerEvent);
         ALCardDTO attrs = card.GetAttributes<ALCardDTO>();
         // Filter only the ones with the matching trigger event
-        var affectedSkills = Array.FindAll(attrs.skills, skill => skill.triggerEvent == triggerEvent);
+        var affectedEffects = Array.FindAll(attrs.effects, skill => skill.triggerEvent == triggerEvent);
 
-        foreach (var skill in affectedSkills)
+        foreach (var effects in affectedEffects)
         {
             List<CardEffectConditionDTO> conditionsFulfilled = [];
-            foreach (var conditionDTO in skill.condition)
+            foreach (var conditionDTO in effects.condition)
             {
 
                 bool fulfillsCondition = CheckCondition(conditionDTO);
                 if (fulfillsCondition) conditionsFulfilled.Add(conditionDTO);
             }
-            if (conditionsFulfilled.Count == skill.condition.Length) GD.Print($"[TryToApplyEffects] Apply effect {skill.effectId}: {skill.effectLabel}");
+            if (conditionsFulfilled.Count == effects.condition.Length) GD.Print($"[TryToApplyEffects] Apply effect {effects.effectId}: {effects.effectLabel}");
         }
     }
 
