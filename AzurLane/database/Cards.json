@@ -274,7 +274,9 @@
 				"condition": [
 					{ "conditionId": "WhenPlayed" }
 				],
-				"effectId": "ReturnToHand2CubeOrLess",
+				"effectId": "ReturnToHand",
+				"effectArgAmount": 2, 
+				"effectTarget": "EnemyShipWithCube",
 				"effectLabel": "You can bounce 1 ship card with a cost of 2 or less on your opponent's battlefield back to their hand."
 			}
 		],
@@ -378,11 +380,161 @@
 			}
 		],
 		"type": "Flagship",
-		"durability": 5,
+		"cost": 4,
 		"supportValue": 100,
 		"supportScope": "Battlefield",
 		"imageSrc": "SD02-001.png",
 		"backImageSrc": "SD02-001B.png",
 		"rarity": "L"
+	},
+	{
+		"id": "SD02-002",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Echo",
+		"power": 400,
+		"skills": [
+			{  
+				"condition": [
+					{ 
+						"conditionId": "HasCubes",
+						"conditionAmount": 5
+					}
+				],
+				"duration": "WhileVisible",
+				"effectId": "Get100Power",
+				"effectLabel": "When the number of your Cube Cards is 5 or more, this card in all areas gains +100."
+			}
+		],
+		"type": "Ship",
+		"cost": 2,
+		"supportValue": 0,
+		"supportScope": "Both",
+		"imageSrc": "SD02-002.png"
+	},
+	{
+		"id": "SD02-003",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "New Castle",
+		"power": 600,
+		"skills": [],
+		"type": "Ship",
+		"cost": 4,
+		"supportValue": 0,
+		"supportScope": "Both",
+		"imageSrc": "SD02-003.png"
+	},
+	{
+		"id": "SD02-004",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Sheffield",
+		"power": 400,
+		"skills": [
+			{
+				"condition": [
+					{ "conditionId": "OnceDestroyed" }
+				],
+				"effectId": "DrawCubeDown",
+				"effectLabel": "Place 1 Cube card from your Cube Deck face down in the Cost Zone."
+			}
+		],
+		"type": "Ship",
+		"cost": 3,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD02-004.png"
+	},
+	{
+		"id": "SD02-005",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Sheffield",
+		"power": 400,
+		"skills": [
+			{
+				"condition": [
+					{ "conditionId": "OncePlayed" }
+				],
+				"effectId": "DiscardCard",
+				"effectLabel": "You can discard 1 card from your hand."
+			},
+			{	
+				"condition": [
+					{ "conditionId": "OncePlayed" }
+				],
+				"effectId": "DrawCubeDown",
+				"effectLabel": "Put 1 Cube card from your Cube Deck face down into the Cost Zone."
+			}
+		],
+		"type": "Ship",
+		"cost": 3,
+		"supportValue": 100,
+		"supportScope": "Hand",
+		"imageSrc": "SD02-005.png"
+	},
+	{
+		"id": "SD02-006",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Belfast",
+		"power": 400,
+		"skills": [
+			{
+				"condition": [
+					{ "conditionId": "OncePlayed" }
+				],
+				"effectId": "DiscardCard",
+				"effectLabel": "You can discard 1 card from your hand."
+			},
+			{	
+				"condition": [
+					{ "conditionId": "OncePlayed" }
+				],
+				"effectId": "DrawCubeDown",
+				"effectLabel": "Put 1 Cube card from your Cube Deck face down into the Cost Zone."
+			}
+		],
+		"type": "Ship",
+		"cost": 4,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD02-006.png",
+		"rarity": "SR"
+	},
+	{
+		"id": "SD02-007",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Repulse",
+		"power": 500,
+		"skills": [],
+		"type": "Ship",
+		"cost": 3,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD02-007.png"
+	},
+	{
+		"id": "SD02-008",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Nelson",
+		"power": 500,
+		"skills": [
+			{	
+				"condition": [
+					{ "conditionId": "OncePlayed" }
+				],
+				"effectId": "RestEnemy4Cube",
+				"effectLabel": "Put a Ship Card with a cost of 4 or less on the opponent's battlefield to Rest."
+			}
+		],
+		"type": "Ship",
+		"cost": 5,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD02-008.png"
 	}
 ]

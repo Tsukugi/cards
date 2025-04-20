@@ -102,7 +102,7 @@ public partial class Player : Node3D
     protected void OnPlaceCardEndHandler(Card cardPlaced)
     {
         hand.RemoveCardFromHand(cardPlaced);
-        // TODO Add oncePlayed trigger
+        cardPlaced.TryToTriggerCard(EALCardSkillTrigger.WhenPlayed.ToString());
         SetPlayState(EPlayState.Select);
         SelectBoard(hand);
     }
@@ -186,7 +186,7 @@ public partial class Player : Node3D
     protected virtual void OnCardTriggerHandler(Card card)
     {
         GD.Print($"[OnCardTriggerHandler] {card.Name}");
-        card.TryToTriggerCard(EALCardSkillCondition.ManuallyActivated.ToString());
+        card.TryToTriggerCard(EALCardSkillTrigger.ManuallyActivated.ToString());
     }
     public void SelectAndTriggerCard(Card card)
     {

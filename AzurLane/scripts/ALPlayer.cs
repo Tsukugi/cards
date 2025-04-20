@@ -64,7 +64,7 @@ public partial class ALPlayer : Player
         board.OnPlaceCardStart -= OnPlaceCardStartHandler; // Unload default event
         board.OnPlaceCardStart -= OnALPlaceCardStartHandler;
         board.OnPlaceCardStart += OnALPlaceCardStartHandler;
-        List<ALCard> units = unitsArea.TryGetAllChildOfType<ALCard>();
+        List<ALCard> units = GetUnitsInBoard();
         units.ForEach(unit =>
         {
             unit.OnDurabilityDamage -= OnDurabilityDamageHandler;
@@ -436,7 +436,8 @@ public partial class ALPlayer : Player
         return playerAsyncHandler;
     }
 
-    public List<ALCard> GetActiveUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
+    public List<ALCard> GetUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>();
+    public List<ALCard> GetActiveUnitsInBoard() => GetUnitsInBoard().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
     public List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
@@ -448,7 +449,7 @@ public partial class ALPlayer : Player
 
     public ALCard FindAvailableEmptyFieldInRow(bool frontRow = false)
     {
-        List<ALCard> fields = unitsArea.TryGetAllChildOfType<ALCard>();
+        List<ALCard> fields = GetUnitsInBoard();
         if (frontRow) return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.FrontRow && field.IsEmptyField);
         else return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.BackRow && field.IsEmptyField);
     }
@@ -481,7 +482,7 @@ public partial class ALPlayer : Player
     {
         // We wanna only reset units and cost area cards in AzurLane TCG
         costArea.TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
-        unitsArea.TryGetAllChildOfType<ALCard>().ForEach(card => card.SetIsInActiveState(true));
+        GetUnitsInBoard().ForEach(card => card.SetIsInActiveState(true));
     }
 
     public void TryDrawCubeToBoard()

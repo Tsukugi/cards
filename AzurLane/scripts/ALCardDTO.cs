@@ -26,6 +26,7 @@ public class ALCardDTO : CardDTO
 public class ALCardSkillDTO
 {
     public ALCardSkillConditionDTO[] condition = [];
+    public string triggerEvent = EALCardSkillTrigger.ManuallyActivated.ToString();
     public string duration = EALCardSkillDuration.WhileVisible.ToString();
     public string effectId;
     public string effectLabel;
@@ -33,7 +34,7 @@ public class ALCardSkillDTO
 
 public class ALCardSkillConditionDTO
 {
-    public string conditionId = EALCardSkillCondition.ManuallyActivated.ToString();
+    public string conditionId;
     public string conditionCard;
     public string conditionAmount;
 }
@@ -82,14 +83,17 @@ public enum EALCardSkillDuration
 }
 public enum EALCardSkillCondition
 {
+    StartsAttack,
+    IsAttacked,
+    IsSpecificCardOnField
+}
+public enum EALCardSkillTrigger
+{
     ManuallyActivated,
     WhenPlayed, // Every time this card is played into the board
     OncePerTurn, // Every turn 
     OncePerMatch, // Once for all match
     EnemyTurnStart,
     Retaliation,
-    Counter,
-    StartsAttack,
-    IsAttacked,
-    IsSpecificCardOnField
+    Counter
 }

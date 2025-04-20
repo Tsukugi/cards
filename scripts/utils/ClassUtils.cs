@@ -40,7 +40,17 @@ public static class ClassUtils
         else
         {
             GD.PrintErr($"[GetPropertyValue] Property '{propertyName}' not found or is not readable. '{propertyInfo}' ");
-            return default(T); // Return default value for the type
+            return default; // Return default value for the type
         }
+    }
+
+    public static object? CallMethod(object target, string methodName, object?[]? parameters)
+    {
+        // Get the method info based on the effect name
+        MethodInfo method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        if (method != null) return method.Invoke(target, parameters);
+        else GD.Print($"Method '{methodName}' not found.");
+        return default;
     }
 }

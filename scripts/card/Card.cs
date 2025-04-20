@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using Godot;
 
 public partial class Card : CardField
@@ -24,11 +25,12 @@ public partial class Card : CardField
 
     CardDTO attributes = new();
     readonly List<AttributeModifier> activeModifiers = []; // <attributeName, value>
-
+    Effect effect;
     public override void _Ready()
     {
         ownerPlayer = this.TryFindParentNodeOfType<ALPlayer>();
         board = this.TryFindParentNodeOfType<Board>();
+        effect = new(this, ownerPlayer);
         cardDisplay = GetNode<Node3D>("CardDisplay");
         selectedIndicator = GetNodeOrNull<MeshInstance3D>("CardDisplay/SelectedIndicator");
         front = GetNodeOrNull<MeshInstance3D>("CardDisplay/Front");
@@ -86,6 +88,7 @@ public partial class Card : CardField
     }
 
     // --- API ---
+
     public void AddModifier(AttributeModifier modifier)
     {
         GD.Print($"[AddModifier] {Name} {modifier.AttributeName} {modifier.Amount} {modifier.Duration}");
@@ -102,9 +105,10 @@ public partial class Card : CardField
         var modifiers = activeModifiers.FindAll(modifier => modifier.Duration.ToString() == duration);
         modifiers.ForEach(RemoveModifier);
     }
-    public virtual void TryToTriggerCard(string condition)
+    public virtual void TryToTriggerCard(string triggerEvent)
     {
-        GD.Print($"[TryToTriggerCard] {condition}");
+        GD.Print($"[TryToTriggerCard] {triggerEvent}");
+        effect.TryToApplyEffects(triggerEvent);
     }
     public int GetAttributeWithModifiers<T>(string attributeName) where T : CardDTO
     {
