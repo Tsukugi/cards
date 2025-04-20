@@ -27,7 +27,7 @@ outline_size = 4
 outline_color = Color(0.649063, 0.677992, 0.718958, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_qholi"]
-line_spacing = 1.0
+line_spacing = 0.0
 font = ExtResource("4_p865k")
 font_size = 12
 
@@ -138,25 +138,29 @@ text = "Name"
 label_settings = SubResource("LabelSettings_vpce2")
 horizontal_alignment = 1
 
-[node name="SkillsPanel" type="Panel" parent="Control/SelectedCardInfo"]
-layout_mode = 0
-offset_left = 50.0
-offset_top = 387.0
-offset_right = 431.0
-offset_bottom = 510.0
-
-[node name="SkillsLabel" type="Label" parent="Control/SelectedCardInfo/SkillsPanel"]
+[node name="EffectsPanel" type="Panel" parent="Control/SelectedCardInfo"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 7.0
-offset_top = 4.0
-offset_right = -8.0
-offset_bottom = 6.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "[awdawdawd] a dwawdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdaw"
+anchors_preset = -1
+anchor_left = 0.104
+anchor_top = 0.5
+anchor_right = 0.894
+anchor_bottom = 0.789
+offset_left = -0.128002
+offset_top = 64.0
+offset_right = 0.09198
+offset_bottom = 0.305969
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Control/SelectedCardInfo/EffectsPanel"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 3.0
+offset_right = 378.0
+offset_bottom = 119.0
+
+[node name="EffectsLabel" type="Label" parent="Control/SelectedCardInfo/EffectsPanel/ScrollContainer"]
+custom_minimum_size = Vector2(370, 0)
+layout_mode = 2
+text = "[awdawdawd] a dwawdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdaw"
 label_settings = SubResource("LabelSettings_qholi")
 autowrap_mode = 3
 
@@ -181,53 +185,40 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="ShipTypePanel" type="Panel" parent="Control/SelectedCardInfo"]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -170.0
-offset_top = -76.0
-offset_right = -62.0
-offset_bottom = -61.0
-grow_horizontal = 0
-grow_vertical = 0
-
-[node name="ShipTypeLabel" type="Label" parent="Control/SelectedCardInfo/ShipTypePanel"]
+[node name="FactionPanel" type="Panel" parent="Control/SelectedCardInfo"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 182.0
+offset_top = 550.0
+offset_right = -54.0
+offset_bottom = -58.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ShipTypeLabel" type="Label" parent="Control/SelectedCardInfo/FactionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 128.0
+offset_top = 19.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "Ship"
 label_settings = SubResource("LabelSettings_takk7")
 vertical_alignment = 1
 
-[node name="FactionCountryPanel" type="Panel" parent="Control/SelectedCardInfo"]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -284.0
-offset_top = -76.0
-offset_right = -176.0
-offset_bottom = -61.0
-grow_horizontal = 0
-grow_vertical = 0
-
-[node name="FactionCountryLabel" type="Label" parent="Control/SelectedCardInfo/FactionCountryPanel"]
+[node name="FactionCountryLabel" type="Label" parent="Control/SelectedCardInfo/FactionPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -1.0
-offset_top = -1.0
-offset_right = -1.0
+offset_top = 19.0
+offset_right = -122.0
+offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "FactionCountry"
@@ -235,26 +226,15 @@ label_settings = SubResource("LabelSettings_takk7")
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="FactionPanel" type="Panel" parent="Control/SelectedCardInfo"]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -227.0
-offset_top = -95.0
-offset_right = -119.0
-offset_bottom = -80.0
-grow_horizontal = 0
-grow_vertical = 0
-
 [node name="FactionLabel" type="Label" parent="Control/SelectedCardInfo/FactionPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_bottom = 1.0
+offset_left = 7.0
+offset_top = -1.0
+offset_right = -1.0
+offset_bottom = -21.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "Faction"

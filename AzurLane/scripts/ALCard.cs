@@ -84,7 +84,9 @@ public partial class ALCard : Card
     public bool CanShowStackCount() => !IsEmptyField && CardStack > 1;
     public bool CanShowCardDetailsUI() => !IsEmptyField && !isDeck && !(isFlagship && GetIsFaceDown()) && !GetIsFaceDown();
     public bool CanShowPowerLabel() => IsCardUnit();
-    public bool IsCardUnit() => !IsEmptyField && !isResource && !isDeck; // Refers to a placed card
+    public bool IsCardUnit() =>
+        !IsEmptyField && !isResource && !isDeck
+        && (GetAttributes<ALCardDTO>().type == ALCardType.Ship || GetAttributes<ALCardDTO>().type == ALCardType.Flagship); // Refers to a placed card that is a ship or flagship
 
     public string GetFormattedSkills()
     // TODO : Add colors for duration and condition
@@ -93,8 +95,8 @@ public partial class ALCard : Card
         StringBuilder stringBuilder = new();
         foreach (var effect in effects)
         {
-            var formattedEffects = "";
-            formattedEffects += $"[{effect.triggerEvent}] - ";
+
+            string formattedEffects = $"■ [{effect.triggerEvent}] - ";
             if (effect.duration is not null) formattedEffects += $"[{effect.duration}] - ";
             if (effect.condition is CardEffectConditionDTO[] conditions && conditions.Length > 0)
             {

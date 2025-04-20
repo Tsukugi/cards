@@ -264,6 +264,11 @@ public partial class ALPlayer : Player
         }
         if (selectedGuard is ALHand guardingHand)
         {
+            if (!cardToGuard.IsCardUnit())
+            {
+                GD.PrintErr($"[PlayCardAsGuard] You can only play ships as units, selected: {attrs.name} {attrs.supportScope}");
+                return;
+            }
             if (attrs.supportScope == ALSupportScope.Battlefield)
             {
                 GD.PrintErr($"[PlayCardAsGuard] This card cannot be played as Guard from your hand, selected: {attrs.name} {attrs.supportScope}");

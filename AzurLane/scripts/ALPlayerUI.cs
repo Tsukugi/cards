@@ -3,8 +3,8 @@ using Godot;
 public partial class ALPlayerUI : Control
 {
     ALPlayer player;
-    Panel selectedCardInfo;
-    Label playStateLabel, phaseLabel, selectedCardNameLabel, selectedCardSkillsLabel, selectedCardSupportScopeLabel, selectedCardFactionCountryLabel, selectedCardShipTypeLabel, selectedCardFactionLabel;
+    Panel selectedCardInfo, factionPanel, effectsPanel, supportScopePanel;
+    Label playStateLabel, phaseLabel, selectedCardNameLabel, selectedCardEffectsLabel, selectedCardSupportScopeLabel, selectedCardFactionCountryLabel, selectedCardShipTypeLabel, selectedCardFactionLabel;
     TextureRect selectedCardImage;
     [Export]
     MenuButton matchMenuBtn;
@@ -17,11 +17,14 @@ public partial class ALPlayerUI : Control
         selectedCardInfo = GetNode<Panel>("SelectedCardInfo");
         selectedCardImage = GetNode<TextureRect>("SelectedCardInfo/SelectedCardImage");
         selectedCardNameLabel = GetNode<Label>("SelectedCardInfo/NamePanel/NameLabel");
-        selectedCardSkillsLabel = GetNode<Label>("SelectedCardInfo/SkillsPanel/SkillsLabel");
-        selectedCardSupportScopeLabel = GetNode<Label>("SelectedCardInfo/SupportScopePanel/SupportScopeLabel");
-        selectedCardFactionCountryLabel = GetNode<Label>("SelectedCardInfo/FactionCountryPanel/FactionCountryLabel");
-        selectedCardFactionLabel = GetNode<Label>("SelectedCardInfo/FactionPanel/FactionLabel");
-        selectedCardShipTypeLabel = GetNode<Label>("SelectedCardInfo/ShipTypePanel/ShipTypeLabel");
+        effectsPanel = GetNode<Panel>("SelectedCardInfo/EffectsPanel");
+        selectedCardEffectsLabel = effectsPanel.GetNode<Label>("ScrollContainer/EffectsLabel");
+        supportScopePanel = GetNode<Panel>("SelectedCardInfo/SupportScopePanel");
+        selectedCardSupportScopeLabel = supportScopePanel.GetNode<Label>("SupportScopeLabel");
+        factionPanel = GetNode<Panel>("SelectedCardInfo/FactionPanel");
+        selectedCardFactionCountryLabel = factionPanel.GetNode<Label>("FactionCountryLabel");
+        selectedCardFactionLabel = factionPanel.GetNode<Label>("FactionLabel");
+        selectedCardShipTypeLabel = factionPanel.GetNode<Label>("ShipTypeLabel");
         playStateLabel = GetNode<Label>("PlayState");
         matchMenuBtn = GetNode<MenuButton>("MatchMenuBtn");
         matchMenuBtn.GetPopup().IndexPressed += OnMatchMenuItemSelected;
@@ -47,11 +50,25 @@ public partial class ALPlayerUI : Control
                 ALCardDTO attributes = selectedCard.GetAttributes<ALCardDTO>();
                 selectedCardImage.Texture = (Texture2D)selectedCard.GetCardImageResource();
                 selectedCardNameLabel.Text = attributes.name;
-                selectedCardSkillsLabel.Text = selectedCard.GetFormattedSkills();
+                selectedCardEffectsLabel.Text = selectedCard.GetFormattedSkills();
+                effectsPanel.Visible = selectedCardEffectsLabel.Text.Length > 0;
                 selectedCardSupportScopeLabel.Text = attributes.supportScope;
                 selectedCardShipTypeLabel.Text = attributes.type;
                 selectedCardFactionCountryLabel.Text = attributes.factionCountry;
                 selectedCardFactionLabel.Text = attributes.faction;
+
+                if (attributes.type == ALCardType.Event)
+                {
+                    effectsPanel.Position = new Vector2(effectsPanel.Position.X, 315f);
+                    factionPanel.Position = new Vector2(116f, factionPanel.Position.Y);
+                    supportScopePanel.Visible = false;
+                }
+                else
+                {
+                    supportScopePanel.Visible = true;
+                    effectsPanel.Position = new Vector2(effectsPanel.Position.X, 387f);
+                    factionPanel.Position = new Vector2(182f, factionPanel.Position.Y);
+                }
             }
         }
         else

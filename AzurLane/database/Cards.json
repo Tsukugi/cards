@@ -12,7 +12,7 @@
 		"factionCountry": "EagleUnion",
 		"name": "Washington",
 		"power": 400,
-		"skills": [
+		"effects": [
 			{   
 				"triggerEvent": "EndOfTurn",
 				"condition": [
@@ -61,7 +61,7 @@
 		"factionCountry": "EagleUnion",
 		"name": "Sims",
 		"power": 400,
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "OnVisible",
 				"duration": "WhileVisible",
@@ -81,7 +81,7 @@
 		"factionCountry": "EagleUnion",
 		"name": "Hammann",
 		"power": 500,
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "IsBattleSupported",
 				"duration": "CurrentBattle",
@@ -126,7 +126,7 @@
 		"factionCountry": "EagleUnion",
 		"name": "Anchorage",
 		"power": 500,
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "StartsAttack",
 				"duration": "CurrentBattle",
@@ -147,7 +147,7 @@
 		"factionCountry": "EagleUnion",
 		"name": "Portland",
 		"power": 500,
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "IsAttacked",
 				"duration": "CurrentBattle",
@@ -179,7 +179,7 @@
 		"factionCountry": "EagleUnion",
 		"name": "Indianapolis",
 		"power": 400,
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "Retaliation",
 				"condition": [
@@ -204,7 +204,7 @@
 		"factionCountry": "EagleUnion",
 		"name": "Pennsylvania",
 		"power": 500,
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "WhenPlayed",
 				"condition": [
@@ -233,7 +233,7 @@
 		"factionCountry": "EagleUnion",
 		"name": "Arizona",
 		"power": 500,
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "WhenPlayed",
 				"condition": [
@@ -256,7 +256,7 @@
 		"factionCountry": "EagleUnion",
 		"name": "Bogue",
 		"power": 400,
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "WhenPlayed",
 				"condition": [
@@ -285,7 +285,7 @@
 		"faction": "AzurLane",
 		"factionCountry": "EagleUnion",
 		"name": "All staff in place",
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "ManuallyActivated",
 				"condition": [
@@ -314,7 +314,7 @@
 		"faction": "AzurLane",
 		"factionCountry": "EagleUnion",
 		"name": "Combat Power Supplements",
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "ManuallyActivated",
 				"condition": [
@@ -344,7 +344,7 @@
 		"faction": "AzurLane",
 		"factionCountry": "EagleUnion",
 		"name": "Return to Base",
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "Retaliation",
 				"effectId": "Retaliation"
@@ -364,7 +364,7 @@
 		"factionCountry": "RoyalNavy",
 		"name": "Hood",
 		"power": 400,
-		"skills": [
+		"effects": [
 			{   
 				"triggerEvent": "EndOfTurn",
 				"condition": [
@@ -388,7 +388,7 @@
 		"factionCountry": "RoyalNavy",
 		"name": "Echo",
 		"power": 400,
-		"skills": [
+		"effects": [
 			{  
 				"triggerEvent": "OnVisible",
 				"condition": [
@@ -426,7 +426,7 @@
 		"factionCountry": "RoyalNavy",
 		"name": "Sheffield",
 		"power": 400,
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "OnceDestroyed",
 				"effectId": "DrawCubeDown",
@@ -445,7 +445,7 @@
 		"factionCountry": "RoyalNavy",
 		"name": "Sheffield",
 		"power": 400,
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "OncePlayed",
 				"effectId": "DiscardCard",
@@ -469,7 +469,7 @@
 		"factionCountry": "RoyalNavy",
 		"name": "Belfast",
 		"power": 400,
-		"skills": [
+		"effects": [
 			{
 				"triggerEvent": "OncePlayed",
 				"effectId": "DiscardCard",
@@ -506,7 +506,7 @@
 		"factionCountry": "RoyalNavy",
 		"name": "Nelson",
 		"power": 500,
-		"skills": [
+		"effects": [
 			{	
 				"triggerEvent": "OncePlayed",
 				"effectId": "RestEnemy4Cube",
