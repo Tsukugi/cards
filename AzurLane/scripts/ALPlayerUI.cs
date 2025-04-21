@@ -1,10 +1,11 @@
+using System.Threading.Tasks;
 using Godot;
 
 public partial class ALPlayerUI : Control
 {
-    ALPlayer player;
-    Panel selectedCardInfo, factionPanel, effectsPanel, supportScopePanel;
-    Label playStateLabel, phaseLabel, selectedCardNameLabel, selectedCardEffectsLabel, selectedCardSupportScopeLabel, selectedCardFactionCountryLabel, selectedCardShipTypeLabel, selectedCardFactionLabel;
+    ALPlayer attachedPlayer;
+    ALSelectedCardUI selectedCardUI, triggerCardUI, attackerUI, attackedUI;
+    Label playStateLabel, phaseLabel;
     TextureRect selectedCardImage;
     [Export]
     MenuButton matchMenuBtn;
@@ -12,69 +13,45 @@ public partial class ALPlayerUI : Control
     public override void _Ready()
     {
         base._Ready();
-        player = this.TryFindParentNodeOfType<ALPlayer>();
         phaseLabel = GetNode<Label>("PhaseLabel");
-        selectedCardInfo = GetNode<Panel>("SelectedCardInfo");
-        selectedCardImage = GetNode<TextureRect>("SelectedCardInfo/SelectedCardImage");
-        selectedCardNameLabel = GetNode<Label>("SelectedCardInfo/NamePanel/NameLabel");
-        effectsPanel = GetNode<Panel>("SelectedCardInfo/EffectsPanel");
-        selectedCardEffectsLabel = effectsPanel.GetNode<Label>("ScrollContainer/EffectsLabel");
-        supportScopePanel = GetNode<Panel>("SelectedCardInfo/SupportScopePanel");
-        selectedCardSupportScopeLabel = supportScopePanel.GetNode<Label>("SupportScopeLabel");
-        factionPanel = GetNode<Panel>("SelectedCardInfo/FactionPanel");
-        selectedCardFactionCountryLabel = factionPanel.GetNode<Label>("FactionCountryLabel");
-        selectedCardFactionLabel = factionPanel.GetNode<Label>("FactionLabel");
-        selectedCardShipTypeLabel = factionPanel.GetNode<Label>("ShipTypeLabel");
         playStateLabel = GetNode<Label>("PlayState");
         matchMenuBtn = GetNode<MenuButton>("MatchMenuBtn");
         matchMenuBtn.GetPopup().IndexPressed += OnMatchMenuItemSelected;
-
-        //selectedCardInfo.Visible = player.GetIsControllerPlayer(); // Hide it if not the controlled player
-        Visible = player.GetIsControllerPlayer();
+        selectedCardUI = GetNode<ALSelectedCardUI>("SelectedCardUI");
+        triggerCardUI = GetNode<ALSelectedCardUI>("TriggerCardUI");
+        attackerUI = GetNode<ALSelectedCardUI>("AttackerUI");
+        attackedUI = GetNode<ALSelectedCardUI>("AttackedUI");
     }
 
     public override void _Process(double delta)
     {
         base._Process(delta);
-        if (!player.GetIsControllerPlayer()) return;
-        phaseLabel.Text = player.GetCurrentPhaseText();
-        phaseLabel.Modulate = player.GetMatchManager().GetPlayerPlayingTurn().GetPlayerColor();
-        playStateLabel.Text = $"{player.GetPlayState()} - {player.GetEnemyPlayerBoard<ALBoard>().TryFindParentNodeOfType<ALPlayer>().GetPlayState()}";
+        phaseLabel.Text = attachedPlayer.GetCurrentPhaseText();
+        phaseLabel.Modulate = attachedPlayer.GetMatchManager().GetPlayerPlayingTurn().GetPlayerColor();
+        playStateLabel.Text = $"{attachedPlayer.GetPlayState()} - {attachedPlayer.GetEnemyPlayerBoard<ALBoard>().TryFindParentNodeOfType<ALPlayer>().GetPlayState()}";
 
-        if (player.GetSelectedBoard().GetSelectedCard<ALCard>(player) is ALCard selectedCard)
+        if (attachedPlayer.GetSelectedBoard().GetSelectedCard<ALCard>(attachedPlayer) is ALCard selectedCard)
         {
             bool CanShowCardDetailsUI = selectedCard.CanShowCardDetailsUI();
-            selectedCardInfo.Visible = CanShowCardDetailsUI;
-            if (CanShowCardDetailsUI)
-            {
-                ALCardDTO attributes = selectedCard.GetAttributes<ALCardDTO>();
-                selectedCardImage.Texture = (Texture2D)selectedCard.GetCardImageResource();
-                selectedCardNameLabel.Text = attributes.name;
-                selectedCardEffectsLabel.Text = selectedCard.GetFormattedSkills();
-                effectsPanel.Visible = selectedCardEffectsLabel.Text.Length > 0;
-                selectedCardSupportScopeLabel.Text = attributes.supportScope;
-                selectedCardShipTypeLabel.Text = attributes.type;
-                selectedCardFactionCountryLabel.Text = attributes.factionCountry;
-                selectedCardFactionLabel.Text = attributes.faction;
+            selectedCardUI.UpdateValues(selectedCard);
 
-                if (attributes.type == ALCardType.Event)
-                {
-                    effectsPanel.Position = new Vector2(effectsPanel.Position.X, 315f);
-                    factionPanel.Position = new Vector2(116f, factionPanel.Position.Y);
-                    supportScopePanel.Visible = false;
-                }
-                else
-                {
-                    supportScopePanel.Visible = true;
-                    effectsPanel.Position = new Vector2(effectsPanel.Position.X, 387f);
-                    factionPanel.Position = new Vector2(182f, factionPanel.Position.Y);
-                }
-            }
+            selectedCardUI.Visible = CanShowCardDetailsUI;
         }
-        else
-        {
-            selectedCardInfo.Visible = false;
-        }
+        else { selectedCardUI.Visible = false; }
+    }
+
+    public async Task OnSettleBattleUI(ALCard attacker, ALCard attacked)
+    {
+        attackerUI.UpdateValues(attacker);
+        attackerUI.Visible = true;
+        attackedUI.UpdateValues(attacked);
+        attackedUI.Visible = true;
+        // GD.Print($"[OnSettleBattleUI] {attackedUI.Visible} {attackerUI.Visible}");
+        await this.Wait(2f);
+        attackerUI.UpdateValues(null);
+        attackerUI.Visible = false;
+        attackedUI.UpdateValues(null);
+        attackedUI.Visible = false;
     }
 
     public void OnMatchMenuItemSelected(long itemIndex)
@@ -91,4 +68,5 @@ public partial class ALPlayerUI : Control
                 break;
         }
     }
+    public void SetPlayer(ALPlayer _player) => attachedPlayer = _player;
 }

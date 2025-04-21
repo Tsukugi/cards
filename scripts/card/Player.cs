@@ -101,7 +101,7 @@ public partial class Player : Node3D
 
     protected void OnPlaceCardEndHandler(Card cardPlaced)
     {
-        hand.RemoveCardFromHand(cardPlaced);
+        hand.RemoveCardFromHand(this, cardPlaced);
         cardPlaced.TryToTriggerCardEffect(CardEffectTrigger.WhenPlayed);
         SetPlayState(EPlayState.Select);
         SelectBoard(hand);

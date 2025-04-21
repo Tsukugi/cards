@@ -12,10 +12,15 @@ public partial class ALGameMatchManager : Node
 
     // --- State ---
     ALCard attackerCard, attackedCard;
+    ALPlayerUI playerUI;
 
     public override void _Ready()
     {
         base._Ready();
+
+        playerUI = GetNode<ALPlayerUI>("Control");
+        playerUI.SetPlayer(userPlayer); // Assign the controlling player
+
         database.LoadData();
 
         // --- Players --- 
@@ -67,7 +72,7 @@ public partial class ALGameMatchManager : Node
     {
         player.SetPlayState(EPlayState.Wait);
         ALPlayer playingPlayer = GetPlayerPlayingTurn();
-        if (playingPlayer.IsAwaitingBattleGuard()) _ = playingPlayer.SettleBattle();
+        if (playingPlayer.IsAwaitingBattleGuard()) _ = playingPlayer.SettleBattle(playerUI);
     }
 
     void OnAttackStartHandler(Player guardingPlayer, Card card)
@@ -102,7 +107,7 @@ public partial class ALGameMatchManager : Node
         ALPlayer attackerPlayer = GetAttackerCard().GetOwnerPlayer<ALPlayer>();
         attackerPlayer.SetPlayState(EPlayState.Wait);
         attackedCard.TryToTriggerCardEffect(ALCardEffectTrigger.IsAttacked);
-        _ = attackerPlayer.SettleBattle();
+        _ = attackerPlayer.SettleBattle(playerUI);
         GD.Print($"[OnAttackGuardEndHandler]");
     }
 

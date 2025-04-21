@@ -76,7 +76,7 @@ public partial class ALCard : Card
             bool isShown = CanShowCardDetailsUI() && GetBoard().GetType() == typeof(ALHand);
             skillsLabel.Visible = isShown;
             skillsBackdrop.Visible = isShown;
-            if (isShown) skillsLabel.Text = GetFormattedSkills();
+            if (isShown) skillsLabel.Text = GetFormattedEffectMini();
         }
     }
 
@@ -87,8 +87,19 @@ public partial class ALCard : Card
     public bool IsCardUnit() =>
         !IsEmptyField && !isResource && !isDeck
         && (GetAttributes<ALCardDTO>().type == ALCardType.Ship || GetAttributes<ALCardDTO>().type == ALCardType.Flagship); // Refers to a placed card that is a ship or flagship
-
-    public string GetFormattedSkills()
+    public string GetFormattedEffectMini()
+    // TODO : Add colors for duration and condition
+    {
+        CardEffectDTO[] effects = GetAttributes<ALCardDTO>().effects;
+        StringBuilder stringBuilder = new();
+        foreach (var effect in effects)
+        {
+            string formattedEffects = $"■ ";
+            stringBuilder.AppendLine($"{formattedEffects}{effect.effectLabel}");
+        }
+        return stringBuilder.ToString();
+    }
+    public string GetFormattedEffect()
     // TODO : Add colors for duration and condition
     {
         CardEffectDTO[] effects = GetAttributes<ALCardDTO>().effects;

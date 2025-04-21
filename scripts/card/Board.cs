@@ -24,6 +24,7 @@ public partial class Board : Node3D
     bool isEnemyBoard = false;
     readonly Dictionary<string, Card> selectedCard = []; // <PlayerName selecting the card, Card>
 
+    [Export]
     protected Vector2I selectedCardPosition = Vector2I.Zero;
     [Export]
     public Vector2I BoardPositionInGrid = new();
@@ -92,21 +93,31 @@ public partial class Board : Node3D
 
     // --- Public API---
     public Vector2I GetSelectedCardPosition() => selectedCardPosition;
-    public void SelectCardField(Player player, Vector2I position)
+    public virtual void SelectCardField(Player player, Vector2I position)
     {
         string playerName = player.Name.ToString();
         selectedCardPosition = position;
 
         if (selectedCard.TryGetValue(playerName, out Card value)) value.SetIsSelected(false);
 
-        Card foundCard = GetCardsInTree().Find(card => card.PositionInBoard == position);
-        if (foundCard is not null)
+        List<Card> cardsInHand = GetCardsInTree();
+        if (cardsInHand.Count == 0)
         {
-            selectedCard[playerName] = foundCard;
-            // GD.Print($"[OnSelectCardPositionHandler] Selected {player.Name}.{Name} - {isSelectingThisCard}");
-            foundCard.SetIsSelected(true);
-            foundCard.UpdatePlayerSelectedColor(player);
+            GD.PrintErr($"[SelectCardField] Cannot select card, hand is empty");
+            return;
         }
+
+        Card foundCard = cardsInHand.Find(card => card.PositionInBoard == position);
+        if (foundCard is null)
+        {
+            GD.PrintErr($"[SelectCardField] {position} cannot be found");
+            SelectCardField(player, Vector2I.Zero);
+            return;
+        }
+        selectedCard[playerName] = foundCard;
+        // GD.Print($"[OnSelectCardPositionHandler] Selected {player.Name}.{Name} - {isSelectingThisCard}");
+        foundCard.SetIsSelected(true);
+        foundCard.UpdatePlayerSelectedColor(player);
     }
 
     public virtual void OnInputAxisChange(Player player, Vector2I axis) => GD.Print($"[OnInputAxisChange] {player.Name}.{axis}");

@@ -1,7 +1,17 @@
-[gd_scene load_steps=3 format=3 uid="uid://cqgabwrkbaxip"]
+[gd_scene load_steps=8 format=3 uid="uid://cqgabwrkbaxip"]
 
 [ext_resource type="Script" uid="uid://1cohtbsykhs7" path="res://AzurLane/scripts/ALGameMatchManager.cs" id="1_ph0l5"]
 [ext_resource type="PackedScene" uid="uid://s57i3tk6c7m0" path="res://AzurLane/AzurLanePlayer.tscn" id="2_ij60e"]
+[ext_resource type="Script" uid="uid://btm5886munwdh" path="res://AzurLane/scripts/ALPlayerUI.cs" id="3_fntoq"]
+[ext_resource type="Theme" uid="uid://da83adtsk1ikk" path="res://Material/UITheme.tres" id="4_swjf8"]
+[ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="5_dmdyv"]
+[ext_resource type="PackedScene" uid="uid://bo7v3ce1ltqf4" path="res://AzurLane/ALSelectedCardInfo.tscn" id="6_o4q8i"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_2sxgq"]
+font = ExtResource("5_dmdyv")
+font_size = 50
+outline_size = 30
+outline_color = Color(0.458467, 0.454503, 0.443725, 1)
 
 [node name="main" type="Node3D" node_paths=PackedStringArray("userPlayer", "enemyPlayer")]
 script = ExtResource("1_ph0l5")
@@ -48,6 +58,108 @@ EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow2")
 
 [node name="FrontRow3" parent="EnemyPlayer/Board/Units" index="2" node_paths=PackedStringArray("EdgeUp")]
 EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow")
+
+[node name="Control" type="Control" parent="." node_paths=PackedStringArray("matchMenuBtn")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_fntoq")
+matchMenuBtn = NodePath("MatchMenuBtn")
+
+[node name="MatchMenuBtn" type="MenuButton" parent="Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -98.0
+offset_top = 90.0
+offset_right = -28.0
+offset_bottom = 121.0
+grow_horizontal = 0
+theme = ExtResource("4_swjf8")
+theme_override_font_sizes/font_size = 20
+text = "Options"
+expand_icon = true
+item_count = 1
+popup/item_0/text = "Exit"
+popup/item_0/id = 0
+
+[node name="PhaseLabel" type="Label" parent="Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -636.0
+offset_top = 18.0
+offset_right = -29.0
+offset_bottom = 113.0
+grow_horizontal = 0
+text = "Phase"
+label_settings = SubResource("LabelSettings_2sxgq")
+horizontal_alignment = 2
+
+[node name="PlayState" type="Label" parent="Control"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -20.0
+offset_right = 20.0
+offset_bottom = 23.0
+grow_horizontal = 2
+theme = ExtResource("4_swjf8")
+text = "State"
+
+[node name="SelectedCardUI" parent="Control" instance=ExtResource("6_o4q8i")]
+layout_mode = 0
+
+[node name="AttackerUI" parent="Control" instance=ExtResource("6_o4q8i")]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -475.0
+offset_top = -323.0
+offset_right = 7.0
+offset_bottom = 323.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AttackedUI" parent="Control" instance=ExtResource("6_o4q8i")]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -18.0
+offset_top = -323.0
+offset_right = 464.0
+offset_bottom = 323.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TriggerCardUI" parent="Control" instance=ExtResource("6_o4q8i")]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -241.0
+offset_top = -323.0
+offset_right = 241.0
+offset_bottom = 323.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [editable path="UserPlayer"]
 [editable path="UserPlayer/Board"]

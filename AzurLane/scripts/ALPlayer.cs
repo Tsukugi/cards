@@ -199,7 +199,6 @@ public partial class ALPlayer : Player
             base.OnCardTriggerHandler(field);
             EALTurnPhase currentPhase = phaseManager.GetCurrentPhase();
             EALTurnPhase matchPhase = matchManager.GetMatchPhase(); // I want the synched match phase so both player can interact
-            GD.Print($"{currentPhase} {matchPhase}");
             if (field is ALPhaseButton)
             {
                 if (currentPhase == EALTurnPhase.Main) phaseManager.PlayNextPhase();
@@ -276,7 +275,7 @@ public partial class ALPlayer : Player
             }
             // Supporting cards are discarded when used
             AddToRetreatAreaOnTop(cardToGuard.GetAttributes<ALCardDTO>());
-            guardingHand.RemoveCardFromHand(cardToGuard);
+            guardingHand.RemoveCardFromHand(this, cardToGuard);
         }
         if (OnGuardProvided is not null) OnGuardProvided(this, cardToGuard);
     }
@@ -341,7 +340,7 @@ public partial class ALPlayer : Player
         if (OnAttackGuardStart is not null) OnAttackGuardStart(this, target.GetOwnerPlayer<ALPlayer>());
     }
 
-    public async Task SettleBattle()
+    public async Task SettleBattle(ALPlayerUI playerUI)
     {
         SetPlayState(EPlayState.Wait);
         ALCard attackerCard = matchManager.GetAttackerCard();
@@ -355,6 +354,8 @@ public partial class ALPlayer : Player
         GD.Print($"[SettleBattle] {attackerAttrs.name} Power: has base {attackerAttrs.power} with modifiers {attackerPower}");
         GD.Print($"[SettleBattle] {attackedAttrs.name} Power: has base {attackedAttrs.power} with modifiers {attackedPower}");
         GD.Print($"[SettleBattle] Is attack succesful: {isAttackSuccessful}");
+
+        await playerUI.OnSettleBattleUI(attackerCard, attackedCard);
 
         if (isAttackSuccessful)
         {

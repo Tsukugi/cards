@@ -60,10 +60,17 @@ public partial class PlayerHand : Board
         RepositionHandCards();
     }
 
-    public void RemoveCardFromHand(CardField cardToRemove)
+    public void RemoveCardFromHand(Player player, CardField cardToRemove)
     {
         GD.Print($"[RemoveCardFromHand] Removing {cardToRemove}");
         RemoveChild(cardToRemove);
+        RepositionHandCards();
+        SelectCardField(player, selectedCardPosition); // Try to select again on that position
+    }
+
+    public override void SelectCardField(Player player, Vector2I position)
+    {
+        base.SelectCardField(player, position);
         RepositionHandCards();
     }
 
@@ -81,7 +88,6 @@ public partial class PlayerHand : Board
 
         selectedCardPosition = newPosition;
         SelectCardField(player, selectedCardPosition);
-        RepositionHandCards();
         // GD.Print($"[PlayerHand.OnAxisChangeHandler] SelectCardField in board for position {newPosition}");
     }
 
