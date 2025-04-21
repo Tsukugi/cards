@@ -126,6 +126,25 @@ public partial class ALPlayer : Player
         if (OnTurnEnd is not null) OnTurnEnd();
     }
 
+    bool TryToSpendCubes(int cost)
+    {
+        List<ALCard> activeCubes = GetActiveCubesInBoard();
+
+        GD.Print($"[SpendCubes] Cost {cost} - Active cubes {activeCubes.Count}");
+
+        if (cost > activeCubes.Count)
+        {
+            GD.PrintErr("[SpendCubes] Player doesn't have enough cubes to play this card");
+            return false;
+        }
+
+        for (int i = 0; i < cost; i++)
+        {
+            activeCubes[activeCubes.Count - 1 - i].SetIsInActiveState(false); // Last match
+        }
+        return true;
+    }
+
     // Event handlers
     public void OnCostPlayCardStartHandler(Card cardToPlay)
     {
@@ -139,22 +158,14 @@ public partial class ALPlayer : Player
         ALCard card = cardToPlay.CastToALCard();
         ALCardDTO attributes = card.GetAttributes<ALCardDTO>();
 
-        List<ALCard> activeCubes = GetActiveCubesInBoard();
-
-        GD.Print($"[OnCostPlayCardStartHandler] Cost {attributes.cost} - Active cubes {activeCubes.Count}");
-
-        if (attributes.cost > activeCubes.Count)
+        if (attributes.type == ALCardType.Event)
         {
-            GD.PrintErr("[OnCostPlayCardStartHandler] Player doesn't have enough cubes to play this card");
+            TryToPlayEventCard(card, (ALHand)card.GetBoard(), CardEffectTrigger.WhenPlayed);
             return;
         }
 
-        for (int i = 0; i < attributes.cost; i++)
-        {
-            activeCubes[activeCubes.Count - 1 - i].SetIsInActiveState(false); // Last match
-        }
-
-        OnPlayCardStartHandler(card);
+        bool cubesSpent = TryToSpendCubes(attributes.cost);
+        if (cubesSpent) OnPlayCardStartHandler(card);
     }
 
     protected void OnCostPlaceCardCancelHandler(Card cardToRestore)
@@ -265,6 +276,11 @@ public partial class ALPlayer : Player
         {
             if (!cardToGuard.IsCardUnit())
             {
+                if (attrs.type == ALCardType.Event) // Events are a special card that has its own process
+                {
+                    TryToPlayEventCard(cardToGuard, guardingHand, ALCardEffectTrigger.Counter.ToString());
+                    return;
+                }
                 GD.PrintErr($"[PlayCardAsGuard] You can only play ships as units, selected: {attrs.name} {attrs.supportScope}");
                 return;
             }
@@ -278,6 +294,22 @@ public partial class ALPlayer : Player
             guardingHand.RemoveCardFromHand(this, cardToGuard);
         }
         if (OnGuardProvided is not null) OnGuardProvided(this, cardToGuard);
+    }
+
+    void TryToPlayEventCard(ALCard eventCard, ALHand hand, string trigger)
+    {
+        var attrs = eventCard.GetAttributes<ALCardDTO>();
+
+        ALEffect effect = eventCard.GetEffect<ALEffect>();
+        CardEffectDTO[] effects = effect.GetEffectsByTrigger(trigger);
+
+        bool canTrigger = Array.Find(effects, effect.CheckCanTriggerEffect) is not null;
+        if (!canTrigger) return;
+        bool cubesSpent = TryToSpendCubes(attrs.cost);
+        if (!cubesSpent) return;
+        eventCard.TryToTriggerCardEffect(trigger);
+        AddToRetreatAreaOnTop(eventCard.GetAttributes<ALCardDTO>());
+        hand.RemoveCardFromHand(this, eventCard);
     }
 
     void OnDurabilityDamageHandler(Card card)

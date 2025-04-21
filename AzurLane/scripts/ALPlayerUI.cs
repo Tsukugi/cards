@@ -46,12 +46,20 @@ public partial class ALPlayerUI : Control
         attackerUI.Visible = true;
         attackedUI.UpdateValues(attacked);
         attackedUI.Visible = true;
-        // GD.Print($"[OnSettleBattleUI] {attackedUI.Visible} {attackerUI.Visible}");
         await this.Wait(2f);
         attackerUI.UpdateValues(null);
         attackerUI.Visible = false;
         attackedUI.UpdateValues(null);
         attackedUI.Visible = false;
+    }
+
+    public async Task OnEffectTriggerUI(ALCard triggeredCard)
+    {
+        triggerCardUI.UpdateValues(triggeredCard);
+        triggerCardUI.Visible = true;
+        await this.Wait(2f);
+        triggerCardUI.UpdateValues(null);
+        triggerCardUI.Visible = false;
     }
 
     public void OnMatchMenuItemSelected(long itemIndex)

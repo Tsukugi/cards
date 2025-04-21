@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
 
 public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _matchManager) : Effect(_card, _ownerPlayer)
@@ -12,23 +13,38 @@ public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _m
         return conditionResult;
     }
 
-    public override void TryToApplyEffects(string triggerEvent)
+    public bool CheckCanTriggerEffect(CardEffectDTO effectDTO)
     {
-        base.TryToApplyEffects(triggerEvent);
+        List<CardEffectConditionDTO> conditionsFulfilled = [];
+        foreach (CardEffectConditionDTO conditionDTO in effectDTO.condition)
+        {
+
+            bool fulfillsCondition = CheckCondition(conditionDTO);
+            if (fulfillsCondition) conditionsFulfilled.Add(conditionDTO);
+        }
+        return conditionsFulfilled.Count == effectDTO.condition.Length;
+    }
+
+    public CardEffectDTO[] GetEffectsByTrigger(string triggerEvent)
+    {
         ALCardDTO attrs = card.GetAttributes<ALCardDTO>();
         // Filter only the ones with the matching trigger event
-        var affectedEffects = Array.FindAll(attrs.effects, skill => skill.triggerEvent == triggerEvent);
+        CardEffectDTO[] matchingEffects = Array.FindAll(attrs.effects, skill => skill.triggerEvent == triggerEvent);
+        return matchingEffects;
+    }
 
-        foreach (var effects in affectedEffects)
+    public override async Task TryToApplyEffects(string triggerEvent)
+    {
+        await base.TryToApplyEffects(triggerEvent);
+        foreach (CardEffectDTO effect in GetEffectsByTrigger(triggerEvent))
         {
-            List<CardEffectConditionDTO> conditionsFulfilled = [];
-            foreach (var conditionDTO in effects.condition)
-            {
+            bool canTrigger = CheckCanTriggerEffect(effect);
+            if (!canTrigger) return;
 
-                bool fulfillsCondition = CheckCondition(conditionDTO);
-                if (fulfillsCondition) conditionsFulfilled.Add(conditionDTO);
-            }
-            if (conditionsFulfilled.Count == effects.condition.Length) GD.Print($"[TryToApplyEffects] Apply effect {effects.effectId}: {effects.effectLabel}");
+            GD.Print($"[TryToApplyEffects] Apply effect {effect.effectId}: {effect.effectLabel}");
+            GD.PushWarning($"[TryToApplyEffects] Apply effect {effect.effectId}: {effect.effectLabel}");
+            await matchManager.GetPlayerUI().OnEffectTriggerUI(card.CastToALCard());
+
         }
     }
 

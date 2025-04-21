@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Godot;
 
 public class Effect(Card _card, Player _ownerPlayer)
@@ -12,8 +13,9 @@ public class Effect(Card _card, Player _ownerPlayer)
         return conditionResult;
     }
 
-    public virtual void TryToApplyEffects(string triggerEvent)
+    public virtual async Task TryToApplyEffects(string triggerEvent)
     {
         GD.Print($"[TryToApplyEffects] {triggerEvent}");
+        await Task.CompletedTask;
     }
 }

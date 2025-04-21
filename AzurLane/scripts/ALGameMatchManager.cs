@@ -154,6 +154,7 @@ public partial class ALGameMatchManager : Node
     }
 
     // ----- API -----
+    public ALPlayerUI GetPlayerUI() => playerUI;
     public ALPlayer GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
     public EALTurnPhase GetMatchPhase() => matchCurrentPhase;
     public ALDatabase GetDatabase() => database;

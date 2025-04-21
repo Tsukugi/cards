@@ -108,8 +108,11 @@ public partial class Card : CardField
     public virtual void TryToTriggerCardEffect(string triggerEvent)
     {
         GD.Print($"[TryToTriggerCard] {triggerEvent}");
-        effect.TryToApplyEffects(triggerEvent);
+        _ = effect.TryToApplyEffects(triggerEvent);
     }
+
+    public T GetEffect<T>() where T : Effect => effect as T;
+
     public int GetAttributeWithModifiers<T>(string attributeName) where T : CardDTO
     {
         T attrs = GetAttributes<T>();
