@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Reflection;
 using Godot;
 
 public partial class Card : CardField
@@ -9,7 +8,7 @@ public partial class Card : CardField
     protected Node3D cardDisplay;
     protected MeshInstance3D front = null, back = null, side = null, selectedIndicator = null;
     protected Board board;
-    protected Effect effect;
+    Effect effect;
     Player ownerPlayer;
 
     Resource cardImage, cardBackImage;
@@ -28,9 +27,8 @@ public partial class Card : CardField
     readonly List<AttributeModifier> activeModifiers = []; // <attributeName, value>
     public override void _Ready()
     {
-        ownerPlayer = this.TryFindParentNodeOfType<ALPlayer>();
+        ownerPlayer = this.TryFindParentNodeOfType<Player>();
         board = this.TryFindParentNodeOfType<Board>();
-        effect = new(this, ownerPlayer);
         cardDisplay = GetNode<Node3D>("CardDisplay");
         selectedIndicator = GetNodeOrNull<MeshInstance3D>("CardDisplay/SelectedIndicator");
         front = GetNodeOrNull<MeshInstance3D>("CardDisplay/Front");
@@ -107,7 +105,8 @@ public partial class Card : CardField
     }
     public virtual void TryToTriggerCardEffect(string triggerEvent)
     {
-        GD.Print($"[TryToTriggerCard] {triggerEvent}");
+        if (effect is null) { GD.PrintErr($"[TryToTriggerCardEffect] Cannot trigger effects with a card that doesn't have an Effect instance"); return; }
+        GD.Print($"[TryToTriggerCardEffect] {triggerEvent}");
         _ = effect.TryToApplyEffects(triggerEvent);
     }
 
@@ -146,7 +145,7 @@ public partial class Card : CardField
         if (attributes is null) GD.PushError($"[GetAttributes] No attributes are set");
         return attributes as T;
     }
-    public void UpdateAttributes<T>(T newCardDTO) where T : CardDTO
+    public virtual void UpdateAttributes<T>(T newCardDTO) where T : CardDTO
     {
         attributes = newCardDTO;
         if (attributes.imageSrc is not null)
@@ -161,8 +160,11 @@ public partial class Card : CardField
             cardBackImage = LoadCardImage(newCardDTO.backImageSrc);
             UpdateImageTexture(back, (CompressedTexture2D)cardBackImage);
         }
+        effect = new(this, ownerPlayer);
         //GD.Print($"[Card.UpdateAttributes] {attributes.name}");
     }
+
+    public void SetEffect(Effect newEffect) => effect = newEffect;
 
     public void DestroyCard()
     {

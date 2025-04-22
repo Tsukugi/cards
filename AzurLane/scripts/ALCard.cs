@@ -4,7 +4,6 @@ using Godot;
 public partial class ALCard : Card
 {
     public event OnProvidedCardEvent OnDurabilityDamage;
-    new ALEffect effect;
     Node3D UI, skillsBackdrop;
     Label3D powerLabel, stackCount, nameLabel, skillsLabel;
     [Export]
@@ -23,7 +22,6 @@ public partial class ALCard : Card
     public override void _Ready()
     {
         base._Ready();
-        effect = new(this, GetOwnerPlayer<ALPlayer>(), GetOwnerPlayer<ALPlayer>().GetMatchManager());
         UI = GetNodeOrNull<Node3D>("UI");
         powerLabel = GetNodeOrNull<Label3D>("UI/PowerLabel");
         stackCount = GetNodeOrNull<Label3D>("UI/StackCount");
@@ -149,6 +147,13 @@ public partial class ALCard : Card
     public void TakeDurabilityDamage()
     {
         if (OnDurabilityDamage is not null) OnDurabilityDamage(this);
+    }
+    public override void UpdateAttributes<T>(T newCardDTO)
+    {
+        var player = GetOwnerPlayer<ALPlayer>();
+        base.UpdateAttributes<T>(newCardDTO);
+        SetEffect(new ALEffect(this, player, player.GetMatchManager()));
+        //GD.Print($"[Card.UpdateAttributes] {attributes.name}");
     }
 }
 

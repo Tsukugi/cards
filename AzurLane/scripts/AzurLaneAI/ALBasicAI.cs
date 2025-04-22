@@ -34,7 +34,7 @@ public class ALBasicAI
     {
         await actions.WaitUntilPlayState(EPlayState.EnemyInteraction);
         player.TriggerAction(InputAction.Cancel);
-        await SkipAttackGuards();
+        await player.GetPlayerAsyncHandler().AwaitBefore(SkipAttackGuards, 0.5f);
     }
     public async Task StartTurn()
     {

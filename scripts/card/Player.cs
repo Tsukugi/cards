@@ -205,7 +205,6 @@ public partial class Player : Node3D
     public EPlayState GetPlayState() => playState;
     public bool GetIsControllerPlayer() => isControlledPlayer;
     public Color GetPlayerColor() => playerColor;
-    public bool AllowsInputFromPlayer(Board board) => GetSelectedBoard() == board;
     public Board GetSelectedBoard() => orderedBoards[selectedBoardIndex];
     public virtual T GetPlayerHand<T>() where T : PlayerHand => hand as T;
     public virtual T GetPlayerBoard<T>() where T : PlayerBoard => board as T;

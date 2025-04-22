@@ -112,7 +112,11 @@ public class ALAIActions
         GD.Print($"[GetPlayableCostCardsInHand]");
         var availableCubes = player.GetActiveCubesInBoard().Count;
         ALHand hand = player.GetPlayerHand<ALHand>();
-        return hand.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetAttributes<ALCardDTO>().cost <= availableCubes);
+        return hand.TryGetAllChildOfType<ALCard>().FindAll(card =>
+            {
+                var attrs = card.GetAttributes<ALCardDTO>();
+                return attrs.cost <= availableCubes && attrs.type == ALCardType.Ship;
+            });
     }
 
     public async Task WaitUntilPhase(EALTurnPhase phase, float timeout = -1)

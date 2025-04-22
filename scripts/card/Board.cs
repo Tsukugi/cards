@@ -98,16 +98,16 @@ public partial class Board : Node3D
         string playerName = player.Name.ToString();
         selectedCardPosition = position;
 
-        if (selectedCard.TryGetValue(playerName, out Card value)) value.SetIsSelected(false);
+        ClearSelectionForPlayer(player);
 
-        List<Card> cardsInHand = GetCardsInTree();
-        if (cardsInHand.Count == 0)
+        List<Card> allCards = GetCardsInTree();
+        if (allCards.Count == 0)
         {
-            GD.PrintErr($"[SelectCardField] Cannot select card, hand is empty");
+            GD.PrintErr($"[SelectCardField] Cannot select card, no cards assigned");
             return;
         }
 
-        Card foundCard = cardsInHand.Find(card => card.PositionInBoard == position);
+        Card foundCard = allCards.Find(card => card.PositionInBoard == position);
         if (foundCard is null)
         {
             GD.PrintErr($"[SelectCardField] {position} cannot be found");
@@ -115,9 +115,9 @@ public partial class Board : Node3D
             return;
         }
         selectedCard[playerName] = foundCard;
-        // GD.Print($"[OnSelectCardPositionHandler] Selected {player.Name}.{Name} - {isSelectingThisCard}");
-        foundCard.SetIsSelected(true);
+        GD.Print($"[SelectCardField] Selected {player.Name}.{Name} - {foundCard.Name}");
         foundCard.UpdatePlayerSelectedColor(player);
+        foundCard.SetIsSelected(true);
     }
 
     public virtual void OnInputAxisChange(Player player, Vector2I axis) => GD.Print($"[OnInputAxisChange] {player.Name}.{axis}");
@@ -151,7 +151,6 @@ public partial class Board : Node3D
         GD.Print($"[RetireCard] Retire {card.Name}");
         if (OnRetireCardEvent is not null) OnRetireCardEvent(card);
     }
-    public bool GetCanReceivePlayerInput(Player player) => player.AllowsInputFromPlayer(this);
     public T? GetSelectedCard<T>(Player player) where T : Card
     {
         string playerName = player.Name.ToString();
@@ -162,7 +161,8 @@ public partial class Board : Node3D
         string playerName = player.Name.ToString();
         if (selectedCard.TryGetValue(playerName, out Card value))
         {
-            GD.Print($"[ClearSelectionForPlayer] {playerName} {value} ");
+            GD.Print($"[ClearSelectionForPlayer] {playerName} {value.Name} ");
+            value.SetIsSelected(false);
             selectedCard.Remove(playerName);
         }
     }
