@@ -7,6 +7,7 @@ public class Effect(Card _card, Player _ownerPlayer)
     protected readonly List<CardEffectDTO> activeEffects = []; // EffectIds
     protected Card card = _card;
     protected Player ownerPlayer = _ownerPlayer;
+    protected AsyncHandler asyncHandler = new(_card);
 
     protected bool CheckCondition(CardEffectConditionDTO condition)
     {

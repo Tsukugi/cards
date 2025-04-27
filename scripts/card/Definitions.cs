@@ -6,4 +6,5 @@ public enum EPlayState
     Wait,
     EnemyInteraction,
     AwaitEnemyInteraction,
+    SelectEffectTarget,
 }

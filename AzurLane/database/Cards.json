@@ -170,6 +170,19 @@
 				"effectId": "GetPower",
 				"effectLabel": "While there is a \"Indianapolis\" Ship Card on your battlefield, this card gains +100 Power.",
 				"effectValue": ["100"]
+			},
+			{
+				"condition": [
+					{ 
+						"conditionId": "IsSpecificCardOnField",
+						"conditionCard": "SD01-010"
+					}
+				],
+				"triggerEvent": "OnCardPlayed",
+				"duration": "WhileVisible",
+				"effectId": "GetPower",
+				"effectLabel": "While there is a \"Indianapolis\" Ship Card on your battlefield, this card gains +100 Power.",
+				"effectValue": ["100"]
 			}
 		],
 		"type": "Ship",
@@ -277,10 +290,9 @@
 			},
 			{	
 				"triggerEvent": "WhenPlayed",
-				"effectId": "ReturnToHand",
-				"effectArgAmount": 2, 
-				"effectTarget": "EnemyShipWithCube",
-				"effectLabel": "You can bounce 1 ship card with a cost of 2 or less on your opponent's battlefield back to their hand."
+				"effectId": "ReturnEnemyToHand",
+				"effectLabel": "You can bounce 1 ship card with a cost of 2 or less on your opponent's battlefield back to their hand.",
+				"effectValue": ["1", "Cost", "EqualOrLess", 2]
 			}
 		],
 		"type": "Ship",

@@ -48,4 +48,5 @@ public static class CardEffectTrigger
     public static readonly string OncePerMatch = "OncePerMatch"; // Once for all match
     public static readonly string EnemyTurnStart = "EnemyTurnStart";
     public static readonly string OnVisible = "OnVisible"; // When the card is visible in board or hand
+    public static readonly string OnCardPlayed = "OnCardPlayed"; // When ANY card is placed in the board
 }

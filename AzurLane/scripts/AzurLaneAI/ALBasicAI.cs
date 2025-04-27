@@ -30,6 +30,16 @@ public class ALBasicAI
         await actions.PlayNextPhase();
     }
 
+    public async Task SummonAndAttackRandom()
+    {
+        await actions.WaitUntilPhase(EALTurnPhase.Main);
+        await actions.MainPhasePlayExpensiveCard();
+        await actions.PlayNextPhase();
+        await actions.WaitUntilPhase(EALTurnPhase.Battle);
+        await actions.BattlePhaseAttackRandom();
+        await actions.PlayNextPhase();
+    }
+
     public async Task SkipAttackGuards()
     {
         await actions.WaitUntilPlayState(EPlayState.EnemyInteraction);
@@ -41,6 +51,6 @@ public class ALBasicAI
         GD.Print($"[StartTurn] AI playing turn for player {player.Name}");
         _ = SkipAttackGuards();
         // TODO: Make a proper handler for proper AI
-        await SummonAndAttackFlagship();
+        await SummonAndAttackRandom();
     }
 }

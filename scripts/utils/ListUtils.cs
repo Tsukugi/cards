@@ -84,5 +84,8 @@ public static class ListUtils
     /// <param name="keyList">The list of keys to choose from.</param>
     /// <returns>A randomly selected key from the list. [0 -- list.Count -1] </returns>
     public static string GetRandKey(this List<string> keyList)
-        => keyList[new Random().Next(keyList.Count)];
+        => keyList[GetRandomInt(keyList.Count)];
+
+    public static T GetRandomFromList<T>(this List<T> list) => list[GetRandomInt(list.Count)];
+    public static int GetRandomInt(int max) => new Random().Next(max);
 }

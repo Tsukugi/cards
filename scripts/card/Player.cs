@@ -103,6 +103,7 @@ public partial class Player : Node3D
     {
         hand.RemoveCardFromHand(this, cardPlaced);
         cardPlaced.TryToTriggerCardEffect(CardEffectTrigger.WhenPlayed);
+        board.GetCardsInTree().ForEach(card => card.TryToTriggerCardEffect(CardEffectTrigger.OnCardPlayed));
         SetPlayState(EPlayState.Select);
         SelectBoard(hand);
     }

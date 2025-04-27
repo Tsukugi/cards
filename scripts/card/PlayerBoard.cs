@@ -93,7 +93,7 @@ public partial class PlayerBoard : Board
         var attributes = cardToPlace.GetAttributes<CardDTO>();
         GD.Print($"[PlaceCardInBoardFromHand] Placing {attributes.name}!");
         selectedCard.UpdateAttributes(attributes);
-        OnPlaceCardEnd(cardToPlace);
+        OnPlaceCardEnd(selectedCard);
         CardToPlace = null;
     }
 

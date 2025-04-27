@@ -42,24 +42,45 @@ public class ALAIActions
     }
 
     // Battle Phase
-    public async Task BattlePhaseAttackFlagship()
+    public delegate ALCard OnTargetSelect();
+    public async Task BattlePhaseAttack(OnTargetSelect targetSelect)
     {
-        GD.Print($"[BattlePhaseAttackFlagship]");
+        GD.Print($"[BattlePhaseAttack]");
         List<ALCard> activeUnits = player.GetActiveUnitsInBoard();
         if (activeUnits.Count == 0) return;
-        ALBoard enemyBoard = player.GetEnemyPlayerBoard<ALBoard>();
-        ALCard enemyFlagship = enemyBoard.GetFlagship();
 
         List<Func<Task>> operations = [];
-
         for (int i = 0; i < activeUnits.Count; i++)
         {
             var currentUnit = activeUnits[i];
-            GD.Print($"[BattlePhaseAttackFlagship] Register attack for {currentUnit.Name}");
-            operations.Add(() => AttackProcess(currentUnit, enemyFlagship));
+            GD.Print($"[BattlePhaseAttack] Register attack for {currentUnit.Name}");
+            operations.Add(async () =>
+            {
+                ALCard target = targetSelect();
+                GD.Print($"[BattlePhaseAttack] target {target.Name}");
+                await AttackProcess(currentUnit, target);
+            });
         }
-        GD.Print($"[BattlePhaseAttackFlagship] {operations.Count}");
+        GD.Print($"[BattlePhaseAttack] {operations.Count}");
         await AsyncHandler.RunAsyncFunctionsSequentially(operations);
+    }
+    public async Task BattlePhaseAttackFlagship()
+    {
+        GD.Print($"[BattlePhaseAttackFlagship]");
+        await BattlePhaseAttack(() =>
+        {
+            ALBoard enemyBoard = player.GetEnemyPlayerBoard<ALBoard>();
+            return enemyBoard.GetFlagship();
+        });
+    }
+    public async Task BattlePhaseAttackRandom()
+    {
+        GD.Print($"[BattlePhaseAttackRandom]");
+        await BattlePhaseAttack(() =>
+        {
+            List<ALCard> enemyUnits = player.GetEnemyPlayerBoard<ALBoard>().GetUnits(); // Find all placed cards
+            return enemyUnits.GetRandomFromList();
+        });
     }
     public async Task AttackProcess(ALCard attacker, ALCard target)
     {

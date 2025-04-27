@@ -6,8 +6,6 @@ using Godot;
 public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _matchManager) : Effect(_card, _ownerPlayer)
 {
     readonly ALGameMatchManager matchManager = _matchManager;
-
-
     public bool CheckCanTriggerEffect(CardEffectDTO effectDTO)
     {
         List<CardEffectConditionDTO> conditionsFulfilled = [];
@@ -64,7 +62,7 @@ public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _m
     public bool OnBackRow(CardEffectConditionDTO conditionDTO)
     {
         bool fulfillsCondition = card.CastToALCard().GetAttackFieldType() == EAttackFieldType.BackRow;
-        GD.Print($"[OnBackRow] {fulfillsCondition}");
+        GD.Print($"[OnBackRow] {fulfillsCondition} - {card.CastToALCard().GetAttackFieldType()}");
         return fulfillsCondition;
     }
 
@@ -91,20 +89,50 @@ public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _m
     }
     public async Task SelectAndGivePower(CardEffectDTO effectDTO)
     {
-        GD.Print($"[Effect - GetPower]");
-        card.AddModifier(new AttributeModifier()
+        GD.Print($"[Effect - SelectAndGivePower]");
+        var previousState = ownerPlayer.GetPlayState();
+        ownerPlayer.SetPlayState(EPlayState.SelectEffectTarget);
+
+        var board = ownerPlayer.GetPlayerBoard<ALBoard>();
+        void OnAfterSelectAndGivePower(Card selectedTarget)
         {
-            AttributeName = "Power",
-            Duration = ALCardEffectDuration.CurrentBattle,
-            Amount = effectDTO.effectValue[0].ToInt(),
-        });
+            GD.Print($"[Effect - OnAfterSelectAndGivePower]");
+            selectedTarget.AddModifier(new AttributeModifier()
+            {
+                AttributeName = "Power",
+                Duration = effectDTO.duration,
+                Amount = effectDTO.effectValue[0].ToInt(),
+            });
+            board.OnCardTrigger -= OnAfterSelectAndGivePower;
+            ownerPlayer.SetPlayState(previousState);
+        }
+        board.OnCardTrigger -= OnAfterSelectAndGivePower;
+        board.OnCardTrigger += OnAfterSelectAndGivePower;
+
+        await asyncHandler.AwaitForCheck(
+            null,
+            () => ownerPlayer.GetPlayState() == previousState,
+            -1,
+            50);
+
         await Task.CompletedTask;
     }
+
 
     public async Task AddEffect(CardEffectDTO effectDTO)
     {
         GD.Print($"[Effect - AddEffect] {effectDTO.effectValue[0]}");
         activeEffects.Add(effectDTO);
+        await Task.CompletedTask;
+    }
+
+    public async Task ReturnToHand(CardEffectDTO effectDTO)
+    {
+        GD.Print($"[Effect - ReturnToHand] {effectDTO.effectValue}");
+        var times = effectDTO.effectValue[0];
+        var attributeToCompare = effectDTO.effectValue[1];
+        var comparator = effectDTO.effectValue[2];
+        var value = effectDTO.effectValue[3];
         await Task.CompletedTask;
     }
 

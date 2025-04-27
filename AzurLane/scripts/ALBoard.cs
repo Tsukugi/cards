@@ -31,4 +31,6 @@ public partial class ALBoard : PlayerBoard
         if (flagshipCard is null) GD.PushWarning("[GetFlagship] This ALBoard doesn't have any flagship assigned");
         return flagshipCard;
     }
+    public List<ALCard> GetUnitFields() => GetNode<Node3D>("Units").TryGetAllChildOfType<ALCard>();
+    public List<ALCard> GetUnits() => GetUnitFields().FindAll(card => card.IsCardUnit());
 }
