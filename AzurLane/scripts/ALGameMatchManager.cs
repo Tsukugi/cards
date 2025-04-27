@@ -13,10 +13,13 @@ public partial class ALGameMatchManager : Node
     // --- State ---
     ALCard attackerCard, attackedCard;
     ALPlayerUI playerUI;
+    ALDebug debug;
 
     public override void _Ready()
     {
         base._Ready();
+
+        debug = new(this);
 
         playerUI = GetNode<ALPlayerUI>("Control");
         playerUI.SetPlayer(userPlayer); // Assign the controlling player
@@ -197,4 +200,6 @@ public partial class ALGameMatchManager : Node
         }
         return cardList;
     }
+
+    public ALDebug GetDebug() => debug;
 }

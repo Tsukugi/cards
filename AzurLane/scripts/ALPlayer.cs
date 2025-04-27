@@ -164,6 +164,8 @@ public partial class ALPlayer : Player
             return;
         }
 
+        bool debugIgnoreCosts = matchManager.GetDebug().GetIgnoreCosts();
+        if (debugIgnoreCosts) { OnPlayCardStartHandler(card); return; }
         bool cubesSpent = TryToSpendCubes(attributes.cost);
         if (cubesSpent) OnPlayCardStartHandler(card);
     }

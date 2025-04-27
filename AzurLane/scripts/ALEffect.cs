@@ -45,9 +45,8 @@ public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _m
 
     // --- Condition ---
 
-    public bool IsSpecificCardOnField(object?[]? args)
+    public bool IsSpecificCardOnField(CardEffectConditionDTO conditionDTO)
     {
-        CardEffectConditionDTO conditionDTO = (CardEffectConditionDTO)args[0];
         List<ALCard> units = ((ALPlayer)ownerPlayer).GetUnitsInBoard();
         ALCardDTO attrs = card.GetAttributes<ALCardDTO>();
 
@@ -57,10 +56,26 @@ public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _m
                 return unit.GetAttributes<ALCardDTO>().id == conditionDTO.conditionCard;
             });
 
-        return findResult is ALCard foundCard;
+        bool fulfillsCondition = findResult is ALCard foundCard;
+        GD.Print($"[IsSpecificCardOnField] {fulfillsCondition}");
+        return fulfillsCondition;
     }
 
-    public bool OnBackRow(object?[]? _) => card.CastToALCard().GetAttackFieldType() == EAttackFieldType.BackRow;
+    public bool OnBackRow(CardEffectConditionDTO conditionDTO)
+    {
+        bool fulfillsCondition = card.CastToALCard().GetAttackFieldType() == EAttackFieldType.BackRow;
+        GD.Print($"[OnBackRow] {fulfillsCondition}");
+        return fulfillsCondition;
+    }
+
+    public bool Counter(CardEffectConditionDTO conditionDTO)
+    {
+        bool isBattlePhase = matchManager.GetMatchPhase() == EALTurnPhase.Battle;
+        bool isDefenceStep = ownerPlayer.GetPlayState() == EPlayState.EnemyInteraction;
+        bool fulfillsCondition = isBattlePhase && isDefenceStep;
+        GD.Print($"[Counter] {fulfillsCondition}");
+        return fulfillsCondition;
+    }
 
     // --- Effect ---
     public async Task GetPower(CardEffectDTO effectDTO)
@@ -70,15 +85,27 @@ public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _m
         {
             AttributeName = "Power",
             Duration = ALCardEffectDuration.CurrentBattle,
-            Amount = effectDTO.value[0].ToInt(),
+            Amount = effectDTO.effectValue[0].ToInt(),
+        });
+        await Task.CompletedTask;
+    }
+    public async Task SelectAndGivePower(CardEffectDTO effectDTO)
+    {
+        GD.Print($"[Effect - GetPower]");
+        card.AddModifier(new AttributeModifier()
+        {
+            AttributeName = "Power",
+            Duration = ALCardEffectDuration.CurrentBattle,
+            Amount = effectDTO.effectValue[0].ToInt(),
         });
         await Task.CompletedTask;
     }
 
-    public async Task LimitBattleSupport(CardEffectDTO effectDTO)
+    public async Task AddEffect(CardEffectDTO effectDTO)
     {
-        GD.Print($"[Effect - LimitBattleSupport]");
+        GD.Print($"[Effect - AddEffect] {effectDTO.effectValue[0]}");
         activeEffects.Add(effectDTO);
         await Task.CompletedTask;
     }
+
 }

@@ -25,6 +25,14 @@ public class Effect(Card _card, Player _ownerPlayer)
         GD.Print($"[TryToApplyEffects] {triggerEvent}");
         await Task.CompletedTask;
     }
+    public List<CardEffectDTO> GetActiveEffects() => activeEffects;
 
-    public CardEffectDTO? FindActiveEffect(string effectId) => activeEffects.Find(effect => effect.effectId == effectId);
+    // -- Condition -- 
+
+    public bool EmptyHand(CardEffectConditionDTO conditionDTO)
+    {
+        bool fulfillsCondition = ownerPlayer.GetPlayerHand<PlayerHand>().GetCardsInTree().Count == 0;
+        GD.Print($"[Counter] {fulfillsCondition}");
+        return fulfillsCondition;
+    }
 }

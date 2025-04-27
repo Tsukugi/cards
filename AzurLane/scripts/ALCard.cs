@@ -157,8 +157,10 @@ public partial class ALCard : Card
     }
     public bool CanBattleSupportCard(ALCard target)
     {
-        var effect = GetEffect<Effect>().FindActiveEffect(ALCardEffectIds.LimitBattleSupport);
-        bool isLimitedToSupport = effect is CardEffectDTO matchingEffect && matchingEffect.value[0] == target.GetAttackFieldType().ToString();
+        // This checks for a limitation in some attack areas 
+        // Structure in the database is ["LimitBattleSupport", "BackRow"] 
+        CardEffectDTO? effect = GetEffect<Effect>().GetActiveEffects().Find(effect => effect.effectValue[0] == "LimitBattleSupport"); 
+        bool isLimitedToSupport = effect is CardEffectDTO matchingEffect && matchingEffect.effectValue[1] == target.GetAttackFieldType().ToString();
         GD.Print($"[CanBattleSupportCard] {isLimitedToSupport}");
         return !isLimitedToSupport;
     }

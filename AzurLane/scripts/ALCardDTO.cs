@@ -83,6 +83,6 @@ public static class ALCardEffectTrigger
 public static class ALCardEffectIds
 {
     public static readonly string GetPower = "GetPower";
-    public static readonly string LimitBattleSupport = "LimitBattleSupport";
+    public static readonly string AddEffect = "AddEffect";
 
 }

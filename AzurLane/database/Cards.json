@@ -65,9 +65,9 @@
 			{
 				"triggerEvent": "OnVisible",
 				"duration": "WhileVisible",
-				"effectId": "LimitBattleSupport",
+				"effectId": "AddEffect",
 				"effectLabel": "This card on the battlefield cannot support cards in the back row.",
-				"value": ["BackRow"]
+				"effectValue": ["LimitBattleSupport", "BackRow"]
 			}
 		],
 		"type": "Ship",
@@ -88,7 +88,7 @@
 				"duration": "CurrentBattle",
 				"effectId": "GetPower",
 				"effectLabel": "When this card is supported by a card on the battlefield, this card gains +100 Power for that battle.",
-				"value": ["100"]
+				"effectValue": ["100"]
 			}
 		],
 		"type": "Ship",
@@ -134,7 +134,7 @@
 				"duration": "CurrentBattle",
 				"effectId": "GetPower",
 				"effectLabel": "During a battle when this card attacks, this card gains +100 Power",
-				"value": ["100"]
+				"effectValue": ["100"]
 			}
 		],
 		"type": "Ship",
@@ -156,7 +156,7 @@
 				"duration": "CurrentBattle",
 				"effectId": "GetPower",
 				"effectLabel": "During a battle when this card is attacked, this card gains +100 Power",
-				"value": ["100"]
+				"effectValue": ["100"]
 			},
 			{
 				"condition": [
@@ -169,7 +169,7 @@
 				"duration": "WhileVisible",
 				"effectId": "GetPower",
 				"effectLabel": "While there is a \"Indianapolis\" Ship Card on your battlefield, this card gains +100 Power.",
-				"value": ["100"]
+				"effectValue": ["100"]
 			}
 		],
 		"type": "Ship",
@@ -216,14 +216,16 @@
 					{ "conditionId": "OnBackRow" }
 				],
 				"duration": "WhileOnBattlefield",
-				"effectId": "RangedAttack",
-				"effectLabel": "This card in the back row can attack the opponent's back row card."
+				"effectId": "AddEffect",
+				"effectLabel": "This card in the back row can attack the opponent's back row card.",
+				"effectValue": ["RangedAttack"]
 			},
 			{
 				"triggerEvent": "IsAttacked",
 				"duration": "CurrentBattle",
-				"effectId": "Get200Power",
-				"effectLabel": "During a battle when this card is attacked, this card gains +200 Power."
+				"effectId": "GetPower",
+				"effectLabel": "During a battle when this card is attacked, this card gains +200 Power.",
+				"effectValue": ["200"]
 			}
 		],
 		"type": "Ship",
@@ -245,8 +247,9 @@
 					{ "conditionId": "OnBackRow" }
 				],
 				"duration": "WhileOnBattlefield",
-				"effectId": "RangedAttack",
-				"effectLabel": "This card in the back row can attack the opponent's back row card."
+				"effectId": "AddEffect",
+				"effectLabel": "This card in the back row can attack the opponent's back row card.",
+				"effectValue": ["RangedAttack"]
 			}
 		],
 		"type": "Ship",
@@ -268,8 +271,9 @@
 					{ "conditionId": "OnBackRow" }
 				],
 				"duration": "WhileOnBattlefield",
-				"effectId": "RangedAttack",
-				"effectLabel": "This card in the back row can attack the opponent's back row card."
+				"effectId": "AddEffect",
+				"effectLabel": "This card in the back row can attack the opponent's back row card.",
+				"effectValue": ["RangedAttack"]
 			},
 			{	
 				"triggerEvent": "WhenPlayed",
@@ -297,8 +301,9 @@
 					{ "conditionId": "Counter" }
 				],
 				"duration": "CurrentBattle",
-				"effectId": "Get200Power",
-				"effectLabel": "(Can be activated during your defense step) During this battle, a card on your battlefield gains +200 power."
+				"effectId": "SelectAndGivePower",
+				"effectLabel": "(Can be activated during your defense step) During this battle, a card on your battlefield gains +200 power.",
+				"effectValue" : ["200"]
 			},
 			{
 				"triggerEvent": "ManuallyActivated",
@@ -307,7 +312,8 @@
 				],
 				"duration": "CurrentBattle",
 				"effectId": "PutCardTopOrBottomDeck",
-				"effectLabel": "After that, look at the top card of your deck and choose to put it at the top or bottom of the deck."
+				"effectLabel": "After that, look at the top card of your deck and choose to put it at the top or bottom of the deck.",
+				"effectValue" : ["1"]
 			}
 		],
 		"type": "Event",
@@ -326,8 +332,9 @@
 					{ "conditionId": "Counter" }
 				],
 				"duration": "CurrentBattle",
-				"effectId": "Get400Power",
-				"effectLabel": "(Can be activated during your Defense Step) During this battle, a card on your battlefield gains +400 Power."
+				"effectId": "SelectAndGivePower",
+				"effectLabel": "(Can be activated during your Defense Step) During this battle, a card on your battlefield gains +400 Power.",
+				"effectValue": ["400"]
 			},
 			{
 				"triggerEvent": "ManuallyActivated",
@@ -337,7 +344,8 @@
 				],
 				"duration": "CurrentBattle",
 				"effectId": "DrawCard",
-				"effectLabel": "Afterwards, when your hand has 0 cards, draw 1 card."
+				"effectLabel": "Afterwards, when your hand has 0 cards, draw 1 card.",
+				"effectValue" : ["1"]
 			}
 		],
 		"type": "Event",
@@ -405,7 +413,7 @@
 				"duration": "WhileVisible",
 				"effectId": "GetPower",
 				"effectLabel": "When the number of your Cube Cards is 5 or more, this card in all areas gains +100.",
-				"value": ["100"]
+				"effectValue": ["100"]
 			}
 		],
 		"type": "Ship",
