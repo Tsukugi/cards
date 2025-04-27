@@ -62,6 +62,7 @@ public static class ALCardEffectDuration
     public static readonly string MainPhase = "MainPhase"; // While in the main phase
     public static readonly string AttackPhase = "AttackPhase"; // While in the attack phase
     public static readonly string CurrentBattle = "CurrentBattle"; // While in a battle
+    public static readonly string UntilDestroyed = "UntilDestroyed"; // While in a battle
 }
 
 public static class ALCardEffectCondition
@@ -77,4 +78,11 @@ public static class ALCardEffectTrigger
     public static readonly string Retaliation = "Retaliation"; // (When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost)
     public static readonly string Counter = "Counter"; // (Can be activated during your Defense Step) 
     public static readonly string OnceDestroyed = "OnceDestroyed"; // When this card is send to the retreat zone
+}
+
+public static class ALCardEffectIds
+{
+    public static readonly string GetPower = "GetPower";
+    public static readonly string LimitBattleSupport = "LimitBattleSupport";
+
 }

@@ -155,6 +155,13 @@ public partial class ALCard : Card
         SetEffect(new ALEffect(this, player, player.GetMatchManager()));
         //GD.Print($"[Card.UpdateAttributes] {attributes.name}");
     }
+    public bool CanBattleSupportCard(ALCard target)
+    {
+        var effect = GetEffect<Effect>().FindActiveEffect(ALCardEffectIds.LimitBattleSupport);
+        bool isLimitedToSupport = effect is CardEffectDTO matchingEffect && matchingEffect.value[0] == target.GetAttackFieldType().ToString();
+        GD.Print($"[CanBattleSupportCard] {isLimitedToSupport}");
+        return !isLimitedToSupport;
+    }
 }
 
 public enum EAttackFieldType

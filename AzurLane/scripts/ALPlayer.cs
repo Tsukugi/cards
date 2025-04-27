@@ -270,6 +270,14 @@ public partial class ALPlayer : Player
                 return;
             }
             // Supporting cards are into resting when used
+
+            ALCard attackedCard = GetMatchManager().GetAttackedCard();
+            bool canSupport = cardToGuard.CanBattleSupportCard(attackedCard);
+            if (!canSupport)
+            {
+                GD.PrintErr($"[PlayCardAsGuard] {cardToGuard.Name} cannot support {attackedCard.Name}");
+                return;
+            }
             cardToGuard.SetIsInActiveState(false);
         }
         if (selectedGuard is ALHand guardingHand)

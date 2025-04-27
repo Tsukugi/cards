@@ -5,10 +5,4 @@ public class AttributeModifier
     public int Amount;
 
     public AttributeModifier() { }
-    public AttributeModifier(string attributeName, int amount, string duration)
-    {
-        AttributeName = attributeName;
-        Amount = amount;
-        Duration = duration;
-    }
 }

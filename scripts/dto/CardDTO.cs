@@ -13,7 +13,8 @@ public class CardEffectDTO
     public string triggerEvent = CardEffectTrigger.ManuallyActivated;
     public string duration = CardEffectDuration.WhileVisible;
     public string effectId;
-    public string effectLabel;
+    public string effectLabel; // Card description or flavor text
+    public string[] value = []; // Any value passed for the logic
 }
 
 public class CardEffectConditionDTO

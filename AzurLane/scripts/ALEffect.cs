@@ -7,11 +7,6 @@ public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _m
 {
     readonly ALGameMatchManager matchManager = _matchManager;
 
-    protected bool CheckCondition(CardEffectConditionDTO condition)
-    {
-        bool conditionResult = (bool)ClassUtils.CallMethod(this, condition.conditionId, [condition]);
-        return conditionResult;
-    }
 
     public bool CheckCanTriggerEffect(CardEffectDTO effectDTO)
     {
@@ -42,9 +37,9 @@ public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _m
             if (!canTrigger) return;
 
             GD.Print($"[TryToApplyEffects] Apply effect {effect.effectId}: {effect.effectLabel}");
-            GD.PushWarning($"[TryToApplyEffects] Apply effect {effect.effectId}: {effect.effectLabel}");
-            await matchManager.GetPlayerUI().OnEffectTriggerUI(card.CastToALCard());
 
+            await matchManager.GetPlayerUI().OnEffectTriggerUI(card.CastToALCard());
+            await ApplyEffect(effect);
         }
     }
 
@@ -65,4 +60,25 @@ public class ALEffect(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _m
         return findResult is ALCard foundCard;
     }
 
+    public bool OnBackRow(object?[]? _) => card.CastToALCard().GetAttackFieldType() == EAttackFieldType.BackRow;
+
+    // --- Effect ---
+    public async Task GetPower(CardEffectDTO effectDTO)
+    {
+        GD.Print($"[Effect - GetPower]");
+        card.AddModifier(new AttributeModifier()
+        {
+            AttributeName = "Power",
+            Duration = ALCardEffectDuration.CurrentBattle,
+            Amount = effectDTO.value[0].ToInt(),
+        });
+        await Task.CompletedTask;
+    }
+
+    public async Task LimitBattleSupport(CardEffectDTO effectDTO)
+    {
+        GD.Print($"[Effect - LimitBattleSupport]");
+        activeEffects.Add(effectDTO);
+        await Task.CompletedTask;
+    }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Godot;
 
 public static class ClassUtils
@@ -50,7 +51,39 @@ public static class ClassUtils
         MethodInfo method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
         if (method != null) return method.Invoke(target, parameters);
-        else GD.Print($"Method '{methodName}' not found.");
+        else GD.PrintErr($"Method '{methodName}' not found.");
         return default;
+    }
+
+    public static async Task<object?> CallMethodAsync(object target, string methodName, object?[]? parameters)
+    {
+        // Get the method info based on the method name
+        MethodInfo method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        if (method != null)
+        {
+            // Check if the method is asynchronous
+            if (method.ReturnType == typeof(Task))
+            {
+                // Invoke the method and await the result
+                await (Task)method.Invoke(target, parameters);
+                return null; // Since the method returns void, we return null
+            }
+            else if (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                // Invoke the method and await the result
+                return await (Task<object?>)method.Invoke(target, parameters);
+            }
+            else
+            {
+                // If the method is synchronous, invoke it normally
+                return method.Invoke(target, parameters);
+            }
+        }
+        else
+        {
+            GD.PrintErr($"Method '{methodName}' not found.");
+            return default;
+        }
     }
 }
