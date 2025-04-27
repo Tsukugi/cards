@@ -310,10 +310,10 @@ public partial class ALPlayer : Player
     {
         var attrs = eventCard.GetAttributes<ALCardDTO>();
 
-        ALEffect effect = eventCard.GetEffect<ALEffect>();
-        CardEffectDTO[] effects = effect.GetEffectsByTrigger(trigger);
+        ALEffectManager effectManager = eventCard.GetEffectManager<ALEffectManager>();
+        CardEffectDTO[] effects = effectManager.GetEffectsByTrigger(trigger);
 
-        bool canTrigger = Array.Find(effects, effect.CheckCanTriggerEffect) is not null;
+        bool canTrigger = Array.Find(effects, effectManager.CheckCanTriggerEffect) is not null;
         if (!canTrigger) return;
         bool cubesSpent = TryToSpendCubes(attrs.cost);
         if (!cubesSpent) return;
@@ -369,7 +369,10 @@ public partial class ALPlayer : Player
             return;
         }
         //  if Flagship, they can attack everyone
-        bool canBeAttacked = attacker.GetIsAFlagship() || target.CanBeAttacked(attacker.GetAttackFieldType());
+        bool canBeAttacked =
+        attacker.GetIsAFlagship()
+        || attacker.GetEffectManager<ALEffectManager>().HasActiveEffect(ALCardStatusEffects.RangedAttack)
+        || target.CanBeAttacked(attacker.GetAttackFieldType());
         if (!canBeAttacked)
         {
             GD.PrintErr($"[AttackCard] {attacker.Name} cannot attack {target.Name}");

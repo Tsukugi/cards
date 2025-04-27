@@ -8,7 +8,7 @@ public partial class Card : CardField
     protected Node3D cardDisplay;
     protected MeshInstance3D front = null, back = null, side = null, selectedIndicator = null;
     protected Board board;
-    Effect effect;
+    EffectManager effect;
     Player ownerPlayer;
 
     Resource cardImage, cardBackImage;
@@ -110,7 +110,7 @@ public partial class Card : CardField
         _ = effect.TryToApplyEffects(triggerEvent);
     }
 
-    public T GetEffect<T>() where T : Effect => effect as T;
+    public T GetEffectManager<T>() where T : EffectManager => effect as T;
 
     public int GetAttributeWithModifiers<T>(string attributeName) where T : CardDTO
     {
@@ -164,7 +164,11 @@ public partial class Card : CardField
         //GD.Print($"[Card.UpdateAttributes] {attributes.name}");
     }
 
-    public void SetEffect(Effect newEffect) => effect = newEffect;
+    public void SetEffectManager(EffectManager newEffect)
+    {
+        GD.Print($"[SetEffectManager] {GetAttributes<CardDTO>().name}");
+        effect = newEffect;
+    }
 
     public void DestroyCard()
     {

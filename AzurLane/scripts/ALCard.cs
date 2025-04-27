@@ -119,7 +119,15 @@ public partial class ALCard : Card
                 }
                 formattedEffects += "] - ";
             }
-            if (effect.effectId is not null) formattedEffects += $"[{effect.effectId}] - ";
+            if (effect.effectId is not null)
+            {
+                formattedEffects += $"[{effect.effectId}";
+                foreach (var value in effect.effectValue)
+                {
+                    formattedEffects += $"({value})";
+                }
+                formattedEffects += $"] - ";
+            }
             stringBuilder.AppendLine($"{formattedEffects}{effect.effectLabel}");
         }
         return stringBuilder.ToString();
@@ -152,15 +160,17 @@ public partial class ALCard : Card
     {
         var player = GetOwnerPlayer<ALPlayer>();
         base.UpdateAttributes<T>(newCardDTO);
-        SetEffect(new ALEffect(this, player, player.GetMatchManager()));
+        SetEffectManager(new ALEffectManager(this, player, player.GetMatchManager()));
         //GD.Print($"[Card.UpdateAttributes] {attributes.name}");
     }
     public bool CanBattleSupportCard(ALCard target)
     {
         // This checks for a limitation in some attack areas 
         // Structure in the database is ["LimitBattleSupport", "BackRow"] 
-        CardEffectDTO? effect = GetEffect<Effect>().GetActiveEffects().Find(effect => effect.effectValue[0] == "LimitBattleSupport"); 
-        bool isLimitedToSupport = effect is CardEffectDTO matchingEffect && matchingEffect.effectValue[1] == target.GetAttackFieldType().ToString();
+        var statusEffect = GetEffectManager<ALEffectManager>().TryGetStatusEffect(ALCardStatusEffects.LimitBattleSupport);
+        bool isLimitedToSupport =
+            statusEffect is CardEffectDTO matchingEffect
+            && matchingEffect.effectValue[1] == target.GetAttackFieldType().ToString();
         GD.Print($"[CanBattleSupportCard] {isLimitedToSupport}");
         return !isLimitedToSupport;
     }

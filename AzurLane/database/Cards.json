@@ -65,7 +65,7 @@
 			{
 				"triggerEvent": "OnVisible",
 				"duration": "WhileVisible",
-				"effectId": "AddEffect",
+				"effectId": "AddStatusEffect",
 				"effectLabel": "This card on the battlefield cannot support cards in the back row.",
 				"effectValue": ["LimitBattleSupport", "BackRow"]
 			}
@@ -229,7 +229,7 @@
 					{ "conditionId": "OnBackRow" }
 				],
 				"duration": "WhileOnBattlefield",
-				"effectId": "AddEffect",
+				"effectId": "AddStatusEffect",
 				"effectLabel": "This card in the back row can attack the opponent's back row card.",
 				"effectValue": ["RangedAttack"]
 			},
@@ -260,7 +260,7 @@
 					{ "conditionId": "OnBackRow" }
 				],
 				"duration": "WhileOnBattlefield",
-				"effectId": "AddEffect",
+				"effectId": "AddStatusEffect",
 				"effectLabel": "This card in the back row can attack the opponent's back row card.",
 				"effectValue": ["RangedAttack"]
 			}
@@ -284,7 +284,7 @@
 					{ "conditionId": "OnBackRow" }
 				],
 				"duration": "WhileOnBattlefield",
-				"effectId": "AddEffect",
+				"effectId": "AddStatusEffect",
 				"effectLabel": "This card in the back row can attack the opponent's back row card.",
 				"effectValue": ["RangedAttack"]
 			},
@@ -375,8 +375,9 @@
 				"effectId": "Retaliation"
 			},
 			{
-				"effectId": "ReturnEnemyToHand3CubeOrLess",
-				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost) Return 1 ship card with a cost of 3 or less on the opponent's battlefield to their hand."
+				"effectId": "ReturnEnemyToHand",
+				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost) Return 1 ship card with a cost of 3 or less on the opponent's battlefield to their hand.",	
+				"effectValue": ["1", "Cost", "EqualOrLess", 3]
 			}
 		],
 		"type": "Event",

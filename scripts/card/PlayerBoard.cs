@@ -93,7 +93,9 @@ public partial class PlayerBoard : Board
         var attributes = cardToPlace.GetAttributes<CardDTO>();
         GD.Print($"[PlaceCardInBoardFromHand] Placing {attributes.name}!");
         selectedCard.UpdateAttributes(attributes);
-        OnPlaceCardEnd(selectedCard);
+        selectedCard.TryToTriggerCardEffect(CardEffectTrigger.WhenPlayed);
+        GetCardsInTree().ForEach(card => card.TryToTriggerCardEffect(CardEffectTrigger.OnCardPlayed));
+        OnPlaceCardEnd(cardToPlace);
         CardToPlace = null;
     }
 
