@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3 uid="uid://73j3sgoukk7u"]
+
+[ext_resource type="Shader" uid="uid://bu0ersli8uk3n" path="res://AzurLane/shader/AzurLaneCard.gdshader" id="1_pbtd4"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pbtd4"]
+render_priority = 0
+shader = ExtResource("1_pbtd4")
+shader_parameter/color = Color(0.744103, 0.704522, 0.194025, 1)
+shader_parameter/fresnel_power = 1.0
+shader_parameter/edge_intensity = 0.5
+shader_parameter/fill_amount = 0.0
+shader_parameter/pulsing_strength = 0.2
+shader_parameter/pulsing_speed = 3.0
+shader_parameter/scanline_period = 0.5
+shader_parameter/scanline_width = 0.1
+shader_parameter/scanline_intensity = 0.35
+shader_parameter/pattern_scroll_speed = 0.025
+shader_parameter/pattern_uv_offset = Vector2(6, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_o65uv"]
+material = SubResource("ShaderMaterial_pbtd4")
+
+[node name="Node3D" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.521531, 0, -0.853232, 0, 1, 0, 0.853232, 0, 0.521531, 0, 0, 0)
+mesh = SubResource("BoxMesh_o65uv")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 1.79227, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.668001, 0.74416, 0, -0.74416, 0.668001, 0, 2.59815, 2.31378)

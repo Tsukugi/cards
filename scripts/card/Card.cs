@@ -78,9 +78,9 @@ public partial class Card : CardField
     protected static void UpdateColor(MeshInstance3D target, Color color)
     {
         var material = target.GetActiveMaterial(0).Duplicate(); // I wanna break the reference on the prefab
-        if (material is StandardMaterial3D material3D)
+        if (material is ShaderMaterial material3D)
         {
-            material3D.AlbedoColor = color;
+            material3D.SetShaderParameter("color", color);  
             target.SetSurfaceOverrideMaterial(0, material3D);
         }
     }

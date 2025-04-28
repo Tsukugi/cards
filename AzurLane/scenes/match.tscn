@@ -35,7 +35,7 @@ directional_shadow_mode = 0
 [node name="UserPlayer" parent="." instance=ExtResource("2_ij60e")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 12.5)
 isControlledPlayer = true
-playerColor = Color(0.470659, 0.537437, 0.942778, 1)
+playerColor = Color(0.305956, 0.345494, 0.829654, 1)
 
 [node name="FrontRow" parent="UserPlayer/Board/Units" index="0" node_paths=PackedStringArray("EdgeUp")]
 EdgeUp = NodePath("../../../../EnemyPlayer/Board/Units/FrontRow3")
@@ -48,7 +48,7 @@ EdgeUp = NodePath("../../../../EnemyPlayer/Board/Units/FrontRow")
 
 [node name="EnemyPlayer" parent="." instance=ExtResource("2_ij60e")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, -12.5)
-playerColor = Color(0.933033, 0.297805, 0.615329, 1)
+playerColor = Color(0.837848, 0.180546, 0.530967, 1)
 
 [node name="FrontRow" parent="EnemyPlayer/Board/Units" index="0" node_paths=PackedStringArray("EdgeUp")]
 EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow3")

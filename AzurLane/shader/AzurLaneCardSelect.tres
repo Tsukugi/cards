@@ -1,0 +1,18 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://4svxf0fbins"]
+
+[ext_resource type="Shader" uid="uid://bu0ersli8uk3n" path="res://AzurLane/shader/AzurLaneCard.gdshader" id="1_ho36h"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_ho36h")
+shader_parameter/color = Color(0.212841, 0.439923, 1, 1)
+shader_parameter/fresnel_power = 75.0
+shader_parameter/edge_intensity = 2.0
+shader_parameter/fill_amount = 0.25
+shader_parameter/pulsing_strength = 0.1
+shader_parameter/pulsing_speed = 5.0
+shader_parameter/scanline_period = 1.0
+shader_parameter/scanline_width = 0.1
+shader_parameter/scanline_intensity = 0.35
+shader_parameter/pattern_scroll_speed = 0.025
+shader_parameter/pattern_uv_offset = Vector2(6, 3)

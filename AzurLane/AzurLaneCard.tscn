@@ -4,6 +4,7 @@
 [ext_resource type="BoxMesh" uid="uid://dn563cjoh3wan" path="res://Material/cardBack.tres" id="2_2htw4"]
 [ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="2_y1cnb"]
 [ext_resource type="BoxMesh" uid="uid://m6c665niqt0s" path="res://Material/cardFront.tres" id="3_l2p5i"]
+[ext_resource type="Material" uid="uid://4svxf0fbins" path="res://AzurLane/shader/AzurLaneCardSelect.tres" id="5_47pfy"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y1cnb"]
 transparency = 1
@@ -20,16 +21,10 @@ metallic = 0.68
 [sub_resource type="BoxMesh" id="BoxMesh_hunl0"]
 material = SubResource("StandardMaterial3D_hunl0")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvt6y"]
-transparency = 1
-albedo_color = Color(0.666667, 0.819608, 1, 0.611765)
-metallic = 0.63
-emission_enabled = true
-emission = Color(0.376471, 1, 1, 1)
-emission_operator = 1
-
-[sub_resource type="BoxMesh" id="BoxMesh_liovy"]
-material = SubResource("StandardMaterial3D_vvt6y")
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_y1cnb"]
+lightmap_size_hint = Vector2i(17, 29)
+material = ExtResource("5_47pfy")
+height = 5.0
 
 [node name="Card" type="Node3D"]
 script = ExtResource("1_hunl0")
@@ -106,6 +101,6 @@ transform = Transform3D(4.17244, 0, 0, 0, 0.0488292, 0, 0, 0, 6.15213, 0, 0, 0)
 mesh = SubResource("BoxMesh_hunl0")
 
 [node name="SelectedIndicator" type="MeshInstance3D" parent="CardDisplay"]
-transform = Transform3D(4.519, 0, 0, 0, 0.0350453, 0, 0, 0, 6.59531, 0, 0, 0)
-mesh = SubResource("BoxMesh_liovy")
+transform = Transform3D(5.189, 0, 0, 0, -6.55671e-08, -0.2, 0, 1.5, -8.74228e-09, 0, 0, 0)
+mesh = SubResource("CapsuleMesh_y1cnb")
 skeleton = NodePath("../..")
