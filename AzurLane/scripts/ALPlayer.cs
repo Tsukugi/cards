@@ -404,15 +404,17 @@ public partial class ALPlayer : Player
 
         if (isAttackSuccessful)
         {
-            if (matchManager.GetAttackedCard().GetIsAFlagship())
+
+            if (attackedCard.GetIsAFlagship())
             {
                 GD.Print($"[SettleBattle] {attackedAttrs.name} Takes durability damage!");
-                matchManager.GetAttackedCard().TakeDurabilityDamage();
+                attackedCard.TakeDurabilityDamage();
             }
             else
             {
                 GD.Print($"[SettleBattle] {attackedAttrs.name} destroyed!");
-                matchManager.GetAttackedCard().DestroyCard();
+                AddToRetreatAreaOnTop(attackedAttrs);
+                attackedCard.DestroyCard();
             }
         }
         else

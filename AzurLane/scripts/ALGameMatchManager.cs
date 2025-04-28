@@ -81,7 +81,7 @@ public partial class ALGameMatchManager : Node
     void OnAttackStartHandler(Player guardingPlayer, Card card)
     {
         attackerCard = card.CastToALCard();
-        attackerCard.TryToTriggerCardEffect(ALCardEffectTrigger.StartsAttack);
+        GetAttackerCard().TryToTriggerCardEffect(ALCardEffectTrigger.StartsAttack);
         GD.Print($"[OnAttackStartHandler] {GetAttackerCard().Name} starts an attack!");
     }
 
@@ -109,7 +109,7 @@ public partial class ALGameMatchManager : Node
         guardingPlayer.SetPlayState(EPlayState.Wait);
         ALPlayer attackerPlayer = GetAttackerCard().GetOwnerPlayer<ALPlayer>();
         attackerPlayer.SetPlayState(EPlayState.Wait);
-        attackedCard.TryToTriggerCardEffect(ALCardEffectTrigger.IsAttacked);
+        GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsAttacked);
         _ = attackerPlayer.SettleBattle(playerUI);
         GD.Print($"[OnAttackGuardEndHandler]");
     }
@@ -122,14 +122,14 @@ public partial class ALGameMatchManager : Node
             Duration = ALCardEffectDuration.CurrentBattle,
             Amount = card.GetAttributes<ALCardDTO>().supportValue,
         });
-        attackedCard.TryToTriggerCardEffect(ALCardEffectTrigger.IsBattleSupported);
+        GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsBattleSupported);
         GD.Print($"[OnGuardProvidedHandler] Add Guard Modifier for {GetAttackedCard().GetAttributes<ALCardDTO>().name}");
     }
 
     void OnAttackEndHandler(Player guardingPlayer)
     {
-        attackerCard.TryToExpireModifier(ALCardEffectDuration.CurrentBattle);
-        attackedCard.TryToExpireModifier(ALCardEffectDuration.CurrentBattle);
+        GetAttackerCard().TryToExpireModifier(ALCardEffectDuration.CurrentBattle);
+        attackedCard?.TryToExpireModifier(ALCardEffectDuration.CurrentBattle); // May be destroyed at this point
         attackerCard = null;
         attackedCard = null;
         GD.Print($"[OnAttackEndHandler]");
