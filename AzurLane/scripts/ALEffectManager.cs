@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Godot;
 
-public class ALEffectManager(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchManager _matchManager) : EffectManager(_card, _ownerPlayer)
+public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffects, ALPlayer _ownerPlayer, ALGameMatchManager _matchManager) : EffectManager(_card, _activeStatusEffects, _ownerPlayer)
 {
     readonly ALGameMatchManager matchManager = _matchManager;
     public bool CheckCanTriggerEffect(CardEffectDTO effectDTO)
@@ -121,8 +121,8 @@ public class ALEffectManager(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchMan
 
     public async Task AddStatusEffect(CardEffectDTO effectDTO)
     {
-        activeEffects.Add(effectDTO);
-        GD.Print($"[Effect - AddEffect] {effectDTO.effectValue[0]} to {card.GetAttributes<ALCardDTO>().name}, ActiveEffects: {activeEffects.Count}");
+        activeStatusEffects.Add(effectDTO);
+        GD.Print($"[Effect - AddEffect] {effectDTO.effectValue[0]} to {card.GetAttributes<ALCardDTO>().name}, ActiveEffects: {activeStatusEffects.Count}");
         await Task.CompletedTask;
     }
 

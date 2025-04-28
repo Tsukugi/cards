@@ -46,6 +46,9 @@ EdgeUp = NodePath("../../../../EnemyPlayer/Board/Units/FrontRow2")
 [node name="FrontRow3" parent="UserPlayer/Board/Units" index="2" node_paths=PackedStringArray("EdgeUp")]
 EdgeUp = NodePath("../../../../EnemyPlayer/Board/Units/FrontRow")
 
+[node name="Count" parent="UserPlayer/Board/CostArea" index="10"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -8.25968, 0.2, 4.73929)
+
 [node name="EnemyPlayer" parent="." instance=ExtResource("2_ij60e")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, -12.5)
 playerColor = Color(0.837848, 0.180546, 0.530967, 1)

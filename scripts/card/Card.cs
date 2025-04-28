@@ -25,6 +25,7 @@ public partial class Card : CardField
     bool isSideWays = false;
 
     CardDTO attributes = new();
+    protected readonly List<CardEffectDTO> activeStatusEffects = []; // StatusEffectId is effectValue[0]
     readonly List<AttributeModifier> activeModifiers = []; // <attributeName, value>
     public override void _Ready()
     {
@@ -108,7 +109,7 @@ public partial class Card : CardField
     public virtual void TryToTriggerCardEffect(string triggerEvent)
     {
         if (effect is null) { GD.PrintErr($"[TryToTriggerCardEffect] Cannot trigger effects with a card that doesn't have an Effect instance"); return; }
-        GD.Print($"[TryToTriggerCardEffect] {triggerEvent}");
+        // GD.Print($"[TryToTriggerCardEffect] {triggerEvent}");
         _ = effect.TryToApplyEffects(triggerEvent);
     }
 
@@ -163,7 +164,7 @@ public partial class Card : CardField
             cardBackImage = LoadCardImage(newCardDTO.backImageSrc);
             UpdateImageTexture(back, (CompressedTexture2D)cardBackImage);
         }
-        effect = new(this, ownerPlayer);
+        effect = new(this, activeStatusEffects, ownerPlayer);
         //GD.Print($"[Card.UpdateAttributes] {attributes.name}");
     }
 

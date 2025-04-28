@@ -161,7 +161,7 @@ public partial class ALCard : Card
     {
         var player = GetOwnerPlayer<ALPlayer>();
         base.UpdateAttributes<T>(newCardDTO);
-        SetEffectManager(new ALEffectManager(this, player, player.GetMatchManager()));
+        SetEffectManager(new ALEffectManager(this, activeStatusEffects, player, player.GetMatchManager()));
         //GD.Print($"[Card.UpdateAttributes] {attributes.name}");
     }
     public bool CanBattleSupportCard(ALCard target)

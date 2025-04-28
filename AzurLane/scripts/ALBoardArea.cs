@@ -26,7 +26,6 @@ public partial class ALBoardArea : Node3D
 
     void OnCardActiveStateUpdateHandler(CardField card)
     {
-        GD.Print($"[OnCardActiveStateUpdateHandler] {card.Name} {card.GetIsEmptyField()}");
         UpdateCardCount();
     }
 
@@ -34,7 +33,6 @@ public partial class ALBoardArea : Node3D
     {
         List<ALCard> validCards = cards.FindAll(card => !card.GetIsEmptyField());
         List<ALCard> activeCards = validCards.FindAll(card => card.GetIsInActiveState());
-        GD.Print($"[UpdateCardCount] {validCards.Count} {activeCards.Count}");
         count.Text = $"{activeCards.Count}/{validCards.Count}";
     }
 }

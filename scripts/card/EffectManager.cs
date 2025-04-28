@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Godot;
 
-public class EffectManager(Card _card, Player _ownerPlayer)
+public class EffectManager(Card _card, List<CardEffectDTO> _activeStatusEffects, Player _ownerPlayer)
 {
-    protected List<CardEffectDTO> activeEffects = []; // StatusEffectId is effectValue[0]
     protected Card card = _card;
+    protected List<CardEffectDTO> activeStatusEffects = _activeStatusEffects;
     protected Player ownerPlayer = _ownerPlayer;
     protected AsyncHandler asyncHandler = new(_card);
 
@@ -29,10 +29,10 @@ public class EffectManager(Card _card, Player _ownerPlayer)
     public bool HasActiveEffect(string name)
     {
         bool itHasEffect = TryGetStatusEffect(name) is not null;
-        GD.Print($"[HasActiveEffect] {card.GetAttributes<CardDTO>().name}'s effects: {activeEffects.Count} - Does it have {name}: {itHasEffect}");
+        GD.Print($"[HasActiveEffect] {card.GetAttributes<CardDTO>().name}'s effects: {activeStatusEffects.Count} - Does it have {name}: {itHasEffect}");
         return itHasEffect;
     }
-    public CardEffectDTO? TryGetStatusEffect(string name) => activeEffects.Find(effect => effect.effectValue[0] == name);
+    public CardEffectDTO? TryGetStatusEffect(string name) => activeStatusEffects.Find(effect => effect.effectValue[0] == name);
 
     // -- Condition -- 
 
