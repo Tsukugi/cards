@@ -1,17 +1,15 @@
 [gd_scene load_steps=7 format=3 uid="uid://bk5j3gynapp7m"]
 
-[ext_resource type="Texture2D" uid="uid://clctwp27haqqa" path="res://AzurLane/res/Cube01.png" id="1_8wdek"]
+[ext_resource type="Texture2D" uid="uid://cpjq71d5kn5gx" path="res://AzurLane/res/PhaseCube.png" id="1_8wdek"]
 [ext_resource type="Script" uid="uid://rmnygjp4awv0" path="res://AzurLane/scripts/ALPhaseButton.cs" id="2_56ini"]
 [ext_resource type="Material" uid="uid://4svxf0fbins" path="res://AzurLane/shader/AzurLaneCardSelect.tres" id="3_eemtf"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b4tj3"]
-albedo_color = Color(0.584314, 0.741176, 1, 1)
 albedo_texture = ExtResource("1_8wdek")
-metallic = 0.68
-metallic_specular = 0.18
-emission_enabled = true
-emission = Color(0.439969, 0.55055, 0.857331, 1)
-emission_energy_multiplier = 0.43
+albedo_texture_force_srgb = true
+emission = Color(0.74978, 0.74978, 0.74978, 1)
+emission_energy_multiplier = 3.53
+emission_operator = 1
 uv1_scale = Vector3(3, 2, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_wge7q"]
@@ -25,7 +23,7 @@ material = ExtResource("3_eemtf")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 mesh = SubResource("BoxMesh_wge7q")
 script = ExtResource("2_56ini")
-speed = 50.0
+speed = 75.0
 PositionInBoard = Vector2i(3, 0)
 IsPlaceable = false
 IsPlayerPlaceable = false
