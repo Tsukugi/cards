@@ -8,7 +8,7 @@ public partial class ALPlayerUI : Control
     Label playStateLabel, phaseLabel;
     TextureRect selectedCardImage;
     [Export]
-    MenuButton matchMenuBtn;
+    MenuButton matchMenuBtn, debugMenuBtn;
 
     public override void _Ready()
     {
@@ -16,7 +16,9 @@ public partial class ALPlayerUI : Control
         phaseLabel = GetNode<Label>("PhaseLabel");
         playStateLabel = GetNode<Label>("PlayState");
         matchMenuBtn = GetNode<MenuButton>("MatchMenuBtn");
+        debugMenuBtn = GetNode<MenuButton>("DebugMenuBtn");
         matchMenuBtn.GetPopup().IndexPressed += OnMatchMenuItemSelected;
+        debugMenuBtn.GetPopup().IndexPressed += OnDebugMenuItemSelected;
         selectedCardUI = GetNode<ALSelectedCardUI>("SelectedCardUI");
         triggerCardUI = GetNode<ALSelectedCardUI>("TriggerCardUI");
         attackerUI = GetNode<ALSelectedCardUI>("AttackerUI");
@@ -69,6 +71,26 @@ public partial class ALPlayerUI : Control
         {
             case 0:
                 this.ChangeScene($"{ALMain.ALSceneRootPath}/main.tscn");
+                break;
+            // Add more cases as needed
+            default:
+                GD.PrintErr("Unknown item selected");
+                break;
+        }
+    }
+    public void OnDebugMenuItemSelected(long itemIndex)
+    {
+        GD.Print($"[OnDebugMenuItemSelected] index: {itemIndex}");
+        switch (itemIndex)
+        {
+            case 0:
+                attachedPlayer.GetMatchManager().GetDebug().ToggleIgnoreCosts();
+                break;
+            case 1:
+                attachedPlayer.GetMatchManager().GetDebug().DrawCard();
+                break;
+            case 2:
+                attachedPlayer.GetMatchManager().GetDebug().DrawCubeCard();
                 break;
             // Add more cases as needed
             default:

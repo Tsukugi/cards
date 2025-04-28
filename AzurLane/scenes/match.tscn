@@ -78,6 +78,28 @@ grow_vertical = 2
 script = ExtResource("3_fntoq")
 matchMenuBtn = NodePath("MatchMenuBtn")
 
+[node name="DebugMenuBtn" type="MenuButton" parent="Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -218.0
+offset_top = 90.0
+offset_right = -128.0
+offset_bottom = 123.0
+grow_horizontal = 0
+theme = ExtResource("4_swjf8")
+theme_override_font_sizes/font_size = 20
+text = "Debug"
+expand_icon = true
+item_count = 3
+popup/item_0/text = "Toggle Disable Cube Costs"
+popup/item_0/id = 0
+popup/item_1/text = "Draw Card"
+popup/item_1/id = 1
+popup/item_2/text = "Draw Cube Card"
+popup/item_2/id = 2
+
 [node name="MatchMenuBtn" type="MenuButton" parent="Control"]
 layout_mode = 1
 anchors_preset = 1

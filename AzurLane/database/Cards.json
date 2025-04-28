@@ -308,20 +308,14 @@
 		"name": "All staff in place",
 		"effects": [
 			{
-				"triggerEvent": "ManuallyActivated",
-				"condition": [
-					{ "conditionId": "Counter" }
-				],
+				"triggerEvent": "Counter",
 				"duration": "CurrentBattle",
 				"effectId": "SelectAndGivePower",
 				"effectLabel": "(Can be activated during your defense step) During this battle, a card on your battlefield gains +200 power.",
 				"effectValue" : ["200"]
 			},
 			{
-				"triggerEvent": "ManuallyActivated",
-				"condition": [
-					{ "conditionId": "Counter" }
-				],
+				"triggerEvent": "Counter",
 				"duration": "CurrentBattle",
 				"effectId": "PutCardTopOrBottomDeck",
 				"effectLabel": "After that, look at the top card of your deck and choose to put it at the top or bottom of the deck.",
@@ -339,19 +333,15 @@
 		"name": "Combat Power Supplements",
 		"effects": [
 			{
-				"triggerEvent": "ManuallyActivated",
-				"condition": [
-					{ "conditionId": "Counter" }
-				],
+				"triggerEvent": "Counter",
 				"duration": "CurrentBattle",
 				"effectId": "SelectAndGivePower",
 				"effectLabel": "(Can be activated during your Defense Step) During this battle, a card on your battlefield gains +400 Power.",
 				"effectValue": ["400"]
 			},
 			{
-				"triggerEvent": "ManuallyActivated",
+				"triggerEvent": "Counter",
 				"condition": [
-					{ "conditionId": "Counter" },
 					{ "conditionId": "EmptyHand" }
 				],
 				"duration": "CurrentBattle",

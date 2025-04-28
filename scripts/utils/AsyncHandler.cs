@@ -35,7 +35,7 @@ public class AsyncHandler(Node node)
         SetIsLoading(false);
         await awaitedAction();
     }
-    public async Task AwaitForCheck(Action awaitedAction, SimpleCheck check, float timeoutInSeconds = 10f, int intervalCheckMs = 25)
+    public async Task AwaitForCheck(Action? awaitedAction, SimpleCheck check, float timeoutInSeconds = 10f, int intervalCheckMs = 25)
     {
         SetIsLoading(true);
         float elapsedTime = 0;
@@ -53,7 +53,7 @@ public class AsyncHandler(Node node)
             // GD.Print($"[AwaitForCheck] Elapsed time: {elapsedTime / 1000}");
         }
         SetIsLoading(false);
-        awaitedAction();
+        if (awaitedAction is not null) awaitedAction();
     }
 
     public void Debounce(Action debouncedAction, float waitTime = 1f)

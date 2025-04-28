@@ -90,12 +90,14 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     public async Task SelectAndGivePower(CardEffectDTO effectDTO)
     {
         GD.Print($"[Effect - SelectAndGivePower]");
+        bool isFinished = false;
         var previousState = ownerPlayer.GetPlayState();
         ownerPlayer.SetPlayState(EPlayState.SelectEffectTarget);
 
         var board = ownerPlayer.GetPlayerBoard<ALBoard>();
         void OnAfterSelectAndGivePower(Card selectedTarget)
         {
+            var board = ownerPlayer.GetPlayerBoard<ALBoard>();
             GD.Print($"[Effect - OnAfterSelectAndGivePower]");
             selectedTarget.AddModifier(new AttributeModifier()
             {
@@ -105,17 +107,15 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             });
             board.OnCardTrigger -= OnAfterSelectAndGivePower;
             ownerPlayer.SetPlayState(previousState);
+            isFinished = true;
         }
         board.OnCardTrigger -= OnAfterSelectAndGivePower;
         board.OnCardTrigger += OnAfterSelectAndGivePower;
 
         await asyncHandler.AwaitForCheck(
             null,
-            () => ownerPlayer.GetPlayState() == previousState,
-            -1,
-            50);
-
-        await Task.CompletedTask;
+            () => isFinished && ownerPlayer.GetPlayState() == previousState, // Playstate has delay, that's why i need to check for it too
+            -1);
     }
 
 

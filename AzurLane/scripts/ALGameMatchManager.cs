@@ -128,8 +128,8 @@ public partial class ALGameMatchManager : Node
 
     void OnAttackEndHandler(Player guardingPlayer)
     {
-        GetAttackerCard().TryToExpireModifier(ALCardEffectDuration.CurrentBattle);
-        attackedCard?.TryToExpireModifier(ALCardEffectDuration.CurrentBattle); // May be destroyed at this point
+        GetAttackerCard().TryToExpireEffectOrModifier(ALCardEffectDuration.CurrentBattle);
+        attackedCard?.TryToExpireEffectOrModifier(ALCardEffectDuration.CurrentBattle); // May be destroyed at this point
         attackerCard = null;
         attackedCard = null;
         GD.Print($"[OnAttackEndHandler]");
@@ -159,6 +159,7 @@ public partial class ALGameMatchManager : Node
     // ----- API -----
     public ALPlayerUI GetPlayerUI() => playerUI;
     public ALPlayer GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
+    public ALPlayer GetControlledPlayer() => orderedPlayers.Find(player => player.GetIsControllerPlayer());
     public EALTurnPhase GetMatchPhase() => matchCurrentPhase;
     public ALDatabase GetDatabase() => database;
     public bool IsAttackInProgress() => attackedCard is not null && attackerCard is not null;

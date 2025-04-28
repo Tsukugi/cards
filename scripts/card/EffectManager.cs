@@ -7,7 +7,7 @@ public class EffectManager(Card _card, List<CardEffectDTO> _activeStatusEffects,
     protected Card card = _card;
     protected List<CardEffectDTO> activeStatusEffects = _activeStatusEffects;
     protected Player ownerPlayer = _ownerPlayer;
-    protected AsyncHandler asyncHandler = new(_card);
+    protected AsyncHandler asyncHandler = _ownerPlayer.GetAsyncHandler();
 
     protected bool CheckCondition(CardEffectConditionDTO condition)
     {
@@ -17,13 +17,14 @@ public class EffectManager(Card _card, List<CardEffectDTO> _activeStatusEffects,
 
     protected async Task ApplyEffect(CardEffectDTO effect)
     {
-        GD.Print($"[ApplyEffect] {effect.effectId}");
+        GD.PrintErr($"[ApplyEffect] Start Effect: {effect.effectId}");
         await ClassUtils.CallMethodAsync(this, effect.effectId, [effect]);
+        GD.PrintErr($"[ApplyEffect] End Effect: {effect.effectId}");
     }
 
     public virtual async Task TryToApplyEffects(string triggerEvent)
     {
-        // GD.Print($"[TryToApplyEffects] {triggerEvent}");
+        GD.Print($"[TryToApplyEffects] {triggerEvent}");
         await Task.CompletedTask;
     }
     public bool HasActiveEffect(string name)

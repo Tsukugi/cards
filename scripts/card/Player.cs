@@ -185,7 +185,6 @@ public partial class Player : Node3D
     protected virtual void OnCardTriggerHandler(Card card)
     {
         GD.Print($"[OnCardTriggerHandler] {card.Name}");
-        card.TryToTriggerCardEffect(CardEffectTrigger.ManuallyActivated);
     }
     public void SelectAndTriggerCard(Card card)
     {
@@ -209,4 +208,5 @@ public partial class Player : Node3D
     public virtual T GetPlayerBoard<T>() where T : PlayerBoard => board as T;
     public virtual T GetEnemyPlayerHand<T>() where T : PlayerHand => enemyHand as T;
     public virtual T GetEnemyPlayerBoard<T>() where T : PlayerBoard => enemyBoard as T;
+    public AsyncHandler GetAsyncHandler() => boardInputAsync;
 }

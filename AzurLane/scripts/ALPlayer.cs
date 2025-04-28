@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 
@@ -133,7 +134,14 @@ public partial class ALPlayer : Player
 
         GD.Print($"[SpendCubes] Cost {cost} - Active cubes {activeCubes.Count}");
 
-        if (cost > activeCubes.Count)
+        bool debugIgnoreCosts = matchManager.GetDebug().GetIgnoreCosts();
+        if (debugIgnoreCosts)
+        {
+            GD.PrintErr($"[SpendCubes] Debug --- Skipping cost {cost}");
+            return true;
+        }
+
+        if (activeCubes.Count < cost)
         {
             GD.PrintErr("[SpendCubes] Player doesn't have enough cubes to play this card");
             return false;
@@ -165,8 +173,6 @@ public partial class ALPlayer : Player
             return;
         }
 
-        bool debugIgnoreCosts = matchManager.GetDebug().GetIgnoreCosts();
-        if (debugIgnoreCosts) { OnPlayCardStartHandler(card); return; }
         bool cubesSpent = TryToSpendCubes(attributes.cost);
         if (cubesSpent) OnPlayCardStartHandler(card);
     }
@@ -313,10 +319,12 @@ public partial class ALPlayer : Player
         ALEffectManager effectManager = eventCard.GetEffectManager<ALEffectManager>();
         CardEffectDTO[] effects = effectManager.GetEffectsByTrigger(trigger);
 
-        bool canTrigger = Array.Find(effects, effectManager.CheckCanTriggerEffect) is not null;
-        if (!canTrigger) return;
+        bool canTrigger = effects.Length == 0 || Array.Find(effects, effectManager.CheckCanTriggerEffect) is not null;
+        if (!canTrigger) { GD.PrintErr($"[TryToPlayEventCard] Effect condittions not fullfilled {effects.Length}"); return; }
         bool cubesSpent = TryToSpendCubes(attrs.cost);
-        if (!cubesSpent) return;
+        if (!cubesSpent) { GD.PrintErr($"[TryToPlayEventCard] Not enough cubes {attrs.cost}"); return; }
+        GD.Print("[TryToPlayEventCard] After effect");
+        eventCard.SetIsEmptyField(true);
         eventCard.TryToTriggerCardEffect(trigger);
         AddToRetreatAreaOnTop(eventCard.GetAttributes<ALCardDTO>());
         hand.RemoveCardFromHand(this, eventCard);
@@ -477,8 +485,8 @@ public partial class ALPlayer : Player
     }
     void TryToExpireCardsModifierDuration(string duration)
     {
-        GetPlayerBoard<ALBoard>().GetCardsInTree().ForEach(card => card.TryToExpireModifier(duration));
-        GetPlayerHand<ALHand>().GetCardsInTree().ForEach(card => card.TryToExpireModifier(duration));
+        GetPlayerBoard<ALBoard>().GetCardsInTree().ForEach(card => card.TryToExpireEffectOrModifier(duration));
+        GetPlayerHand<ALHand>().GetCardsInTree().ForEach(card => card.TryToExpireEffectOrModifier(duration));
     }
 
     // Public Player Actions for AI 

@@ -132,6 +132,7 @@ public partial class Board : Node3D
                     switch (playState)
                     {
                         case EPlayState.EnemyInteraction: TriggerCard(player); break;
+                        case EPlayState.SelectEffectTarget: TriggerCard(player); break;
                     }
                     break;
                 }
