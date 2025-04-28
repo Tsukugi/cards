@@ -59,6 +59,12 @@ EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow2")
 [node name="FrontRow3" parent="EnemyPlayer/Board/Units" index="2" node_paths=PackedStringArray("EdgeUp")]
 EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow")
 
+[node name="Count" parent="EnemyPlayer/Board/FlagshipDurability" index="10"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -12.2177, 0.601988, -11.3278)
+
+[node name="Count" parent="EnemyPlayer/Board/CostArea" index="10"]
+transform = Transform3D(-1, 8.74228e-08, 3.82137e-15, 0, -4.37114e-08, 1, 8.74228e-08, 1, 4.37114e-08, -7.84487, 0.2, 4.92469)
+
 [node name="Control" type="Control" parent="." node_paths=PackedStringArray("matchMenuBtn")]
 layout_mode = 3
 anchors_preset = 15
@@ -114,6 +120,7 @@ theme = ExtResource("4_swjf8")
 text = "State"
 
 [node name="SelectedCardUI" parent="Control" instance=ExtResource("6_o4q8i")]
+visible = false
 layout_mode = 0
 
 [node name="AttackerUI" parent="Control" instance=ExtResource("6_o4q8i")]
@@ -124,10 +131,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -475.0
-offset_top = -323.0
-offset_right = 7.0
-offset_bottom = 323.0
+offset_left = -421.0
+offset_top = -442.0
+offset_right = 61.0
+offset_bottom = 204.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -139,10 +146,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -18.0
-offset_top = -323.0
-offset_right = 464.0
-offset_bottom = 323.0
+offset_left = 36.0
+offset_top = -442.0
+offset_right = 518.0
+offset_bottom = 204.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -154,10 +161,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -241.0
-offset_top = -323.0
-offset_right = 241.0
-offset_bottom = 323.0
+offset_left = -187.0
+offset_top = -442.0
+offset_right = 295.0
+offset_bottom = 204.0
 grow_horizontal = 2
 grow_vertical = 2
 

@@ -23,11 +23,12 @@ public partial class ALPlayer : Player
     ALBasicAI ai;
 
     // --- Nodes --- 
-    Node3D costArea, durabilityArea, unitsArea;
+    Node3D unitsArea;
     [Export]
     ALCard deckField, cubeDeckField, flagshipField, retreatField;
     [Export]
     ALPhaseButton phaseButtonField;
+    ALBoardArea costArea, durabilityArea;
 
     // --- Phase ---
     AsyncHandler playerAsyncHandler;
@@ -43,9 +44,9 @@ public partial class ALPlayer : Player
         phaseManager = new(this);
 
         ALBoard board = GetPlayerBoard<ALBoard>();
-        costArea = board.GetNode<Node3D>("CostArea");
+        costArea = board.GetNode<ALBoardArea>("CostArea");
         unitsArea = board.GetNode<Node3D>("Units");
-        durabilityArea = board.GetNode<Node3D>("FlagshipDurability");
+        durabilityArea = board.GetNode<ALBoardArea>("FlagshipDurability");
 
         Callable.From(StartGameForPlayer).CallDeferred();
     }
@@ -182,7 +183,6 @@ public partial class ALPlayer : Player
         {
             cubes[cubes.Count - 1 - i].SetIsInActiveState(true); // Last match
         }
-
         OnPlaceCardCancelHandler(card);
     }
 
@@ -196,7 +196,7 @@ public partial class ALPlayer : Player
             GD.PrintErr($"[OnALPlaceCardStartHandler] You cannot place cards in a flagship field");
             return;
         }
-        if (!fieldBeingPlaced.IsEmptyField)
+        if (!fieldBeingPlaced.GetIsEmptyField())
         {
             ALCardDTO existingCard = fieldBeingPlaced.GetAttributes<ALCardDTO>();
             GD.Print($"[OnALPlaceCardStartHandler] Sending {existingCard} to retreat area");
@@ -453,7 +453,7 @@ public partial class ALPlayer : Player
     {
         GD.Print($"[UpdateDeckStackSize] {deck.CardStack} -> {size}");
         deck.CardStack = size;
-        if (deck.CardStack == 0) deck.IsEmptyField = true;
+        if (deck.CardStack == 0) deck.SetIsEmptyField(true);
     }
 
     void AddToRetreatAreaOnTop(ALCardDTO cardToAdd)
@@ -490,8 +490,8 @@ public partial class ALPlayer : Player
     public List<ALCard> GetUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>();
     public List<ALCard> GetActiveUnitsInBoard() => GetUnitsInBoard().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
-    public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
-    public List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.IsEmptyField);
+    public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.GetIsEmptyField());
+    public List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.GetIsEmptyField());
 
     public bool IsAwaitingBattleGuard() =>
         phaseManager.GetCurrentPhase() == EALTurnPhase.Battle
@@ -501,8 +501,8 @@ public partial class ALPlayer : Player
     public ALCard FindAvailableEmptyFieldInRow(bool frontRow = false)
     {
         List<ALCard> fields = GetUnitsInBoard();
-        if (frontRow) return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.FrontRow && field.IsEmptyField);
-        else return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.BackRow && field.IsEmptyField);
+        if (frontRow) return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.FrontRow && field.GetIsEmptyField());
+        else return fields.Find(field => field.GetAttackFieldType() == EAttackFieldType.BackRow && field.GetIsEmptyField());
     }
 
     public string GetCurrentPhaseText() => phaseManager.GetPhaseByIndex((int)matchManager.GetMatchPhase());

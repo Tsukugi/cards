@@ -84,7 +84,7 @@ public partial class PlayerBoard : Board
         }
     }
 
-    public static Card FindLastEmptyFieldInRow(List<Card> row) => row.Find(card => card.IsEmptyField == true);
+    public static Card FindLastEmptyFieldInRow(List<Card> row) => row.Find(card => card.GetIsEmptyField());
     public virtual void PlaceCardInBoardFromHand<T>(Player player, T cardToPlace) where T : Card
     {
         T? selectedCard = GetSelectedCard<T>(player);

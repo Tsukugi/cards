@@ -20,7 +20,6 @@ size = Vector3(2, 2, 2)
 material = ExtResource("3_eemtf")
 
 [node name="PhaseButton" type="MeshInstance3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 mesh = SubResource("BoxMesh_wge7q")
 script = ExtResource("2_56ini")
 speed = 75.0

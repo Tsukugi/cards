@@ -2,6 +2,8 @@ using Godot;
 
 public partial class CardField : Node3D
 {
+    public delegate void OnProvidedCardFieldEvent(CardField card);
+    public event OnProvidedCardFieldEvent OnFieldIsEmptyUpdate;
     [Export]
     // Gameplay: A board/hand can know which card is selected via this flag.
     protected bool isSelected = false;
@@ -31,9 +33,14 @@ public partial class CardField : Node3D
     // Gameplay: Decks, Graveyard or fields that are automatically filled and shouldn't be replaced by player
     public bool IsPlayerPlaceable = true;
     [Export]
-    // If true, the card's display won't be visible. 
-    // Gameplay: An empty board's field has this as true. / A card is being placed from the hand, and I want to show an empty hand space.
-    public bool IsEmptyField = false;
+    private bool isEmptyField = false;
+
+    public bool GetIsEmptyField() => isEmptyField;
+    public void SetIsEmptyField(bool value)
+    {
+        isEmptyField = value;
+        if (OnFieldIsEmptyUpdate is not null) OnFieldIsEmptyUpdate(this);
+    }
 
     public void SetIsSelected(bool value)
     {

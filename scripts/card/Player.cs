@@ -89,7 +89,7 @@ public partial class Player : Node3D
 
     protected void OnPlaceCardCancelHandler(Card cardPlaced)
     {
-        cardPlaced.IsEmptyField = false;
+        cardPlaced.SetIsEmptyField(false);
         SetPlayState(EPlayState.Select);
         SelectBoard(hand);
     }
@@ -110,7 +110,7 @@ public partial class Player : Node3D
     {
         GD.Print($"[OnPlayCardStartHandler] Card to play {cardToPlay} {cardToPlay.GetAttributes<CardDTO>().name}");
         board.CardToPlace = cardToPlay;
-        cardToPlay.IsEmptyField = true;
+        cardToPlay.SetIsEmptyField(true);
         SetPlayState(EPlayState.PlaceCard);
         SelectBoard(board);
     }

@@ -9,6 +9,8 @@
 [sub_resource type="Environment" id="Environment_6ma6x"]
 background_mode = 2
 sky = SubResource("Sky_p865k")
+glow_enabled = true
+glow_bloom = 0.1
 
 [node name="AzurLanePlayer" type="Node3D" node_paths=PackedStringArray("deckField", "cubeDeckField", "flagshipField", "retreatField", "phaseButtonField")]
 script = ExtResource("1_vpce2")

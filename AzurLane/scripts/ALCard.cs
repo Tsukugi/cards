@@ -3,6 +3,7 @@ using Godot;
 
 public partial class ALCard : Card
 {
+    public event OnProvidedCardEvent OnCardActiveStateUpdate;
     public event OnProvidedCardEvent OnDurabilityDamage;
     Node3D UI, skillsBackdrop;
     Label3D powerLabel, stackCount, nameLabel, skillsLabel;
@@ -79,11 +80,11 @@ public partial class ALCard : Card
     }
 
     // --- API ---
-    public bool CanShowStackCount() => !IsEmptyField && CardStack > 1;
-    public bool CanShowCardDetailsUI() => !IsEmptyField && !isDeck && !(isFlagship && GetIsFaceDown()) && !GetIsFaceDown();
+    public bool CanShowStackCount() => !GetIsEmptyField() && CardStack > 1;
+    public bool CanShowCardDetailsUI() => !GetIsEmptyField() && !isDeck && !(isFlagship && GetIsFaceDown()) && !GetIsFaceDown();
     public bool CanShowPowerLabel() => IsCardUnit();
     public bool IsCardUnit() =>
-        !IsEmptyField && !isResource && !isDeck
+        !GetIsEmptyField() && !isResource && !isDeck
         && (GetAttributes<ALCardDTO>().type == ALCardType.Ship || GetAttributes<ALCardDTO>().type == ALCardType.Flagship); // Refers to a placed card that is a ship or flagship
     public string GetFormattedEffectMini()
     // TODO : Add colors for duration and condition
@@ -138,7 +139,7 @@ public partial class ALCard : Card
         SetIsSideWays(!isActive);
     }
 
-    public bool GetIsInActiveState() => !IsEmptyField && isInActiveState;
+    public bool GetIsInActiveState() => !GetIsEmptyField() && isInActiveState;
     public bool CanBeAttacked(EAttackFieldType attackerType)
     {
         switch (attackerType)

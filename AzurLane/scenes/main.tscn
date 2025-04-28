@@ -1,7 +1,19 @@
-[gd_scene load_steps=3 format=3 uid="uid://dwehtg5qp6rru"]
+[gd_scene load_steps=5 format=3 uid="uid://dwehtg5qp6rru"]
 
 [ext_resource type="Script" uid="uid://3sefuh1epk1p" path="res://AzurLane/scripts/MainScene/ALMain.cs" id="1_pa05j"]
+[ext_resource type="Shader" uid="uid://dr7xse5usy45k" path="res://shaders/hex.gdshader" id="2_evx30"]
 [ext_resource type="Theme" uid="uid://da83adtsk1ikk" path="res://Material/UITheme.tres" id="2_skdpf"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p83fu"]
+shader = ExtResource("2_evx30")
+shader_parameter/base_col = Color(0.183819, 0.212248, 0.413669, 1)
+shader_parameter/border_thickness = 0.044
+shader_parameter/isoline_offset = 0.0
+shader_parameter/isoline_offset2 = 0.0
+shader_parameter/pattern_scale = 8.018
+shader_parameter/animation_speed = 1.0
+shader_parameter/time_multiplier = 1.0
+shader_parameter/pixel_size = 512.0
 
 [node name="Main" type="Control" node_paths=PackedStringArray("startBtn", "optionsBtn", "exitBtn")]
 layout_mode = 3
@@ -16,6 +28,7 @@ optionsBtn = NodePath("Panel/Vert/Options")
 exitBtn = NodePath("Panel/Vert/Exit")
 
 [node name="Panel" type="Panel" parent="."]
+material = SubResource("ShaderMaterial_p83fu")
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5

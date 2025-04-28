@@ -1,8 +1,13 @@
-[gd_scene load_steps=8 format=3 uid="uid://bo7v3ce1ltqf4"]
+[gd_scene load_steps=10 format=3 uid="uid://bo7v3ce1ltqf4"]
 
 [ext_resource type="Script" uid="uid://d0oqxn7lieahc" path="res://AzurLane/scripts/ALSelectedCardUI.cs" id="1_b2va0"]
+[ext_resource type="Shader" uid="uid://6vual11gqb6h" path="res://shaders/roundedCorners.gdshader" id="1_gjpc5"]
 [ext_resource type="Texture2D" uid="uid://5g3o4xkut2ou" path="res://AzurLane/res/SD01-001B.png" id="1_kidmi"]
 [ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="2_b2va0"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_b2va0"]
+shader = ExtResource("1_gjpc5")
+shader_parameter/corner_scale = 0.153
 
 [sub_resource type="LabelSettings" id="LabelSettings_vpce2"]
 font = ExtResource("2_b2va0")
@@ -26,8 +31,10 @@ outline_size = 20
 outline_color = Color(0.423651, 0.423651, 0.423651, 1)
 
 [node name="SelectedCardInfo" type="Panel"]
+material = SubResource("ShaderMaterial_b2va0")
 offset_right = 482.0
 offset_bottom = 646.0
+scale = Vector2(0.8, 0.8)
 script = ExtResource("1_b2va0")
 
 [node name="SelectedCardImage" type="TextureRect" parent="."]

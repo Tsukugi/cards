@@ -5,6 +5,7 @@ public partial class Card : CardField
 {
     readonly string resourcePath = "res://AzurLane/res/";
     public delegate void OnProvidedCardEvent(Card card);
+    public event OnProvidedCardFieldEvent OnCardIsSidewaysUpdate;
     protected Node3D cardDisplay;
     protected MeshInstance3D front = null, back = null, side = null, selectedIndicator = null;
     protected Board board;
@@ -56,9 +57,10 @@ public partial class Card : CardField
 
     protected virtual void OnCardUpdateHandler()
     {
-        if (front is not null) front.Visible = !IsEmptyField;
-        if (back is not null) back.Visible = !IsEmptyField;
-        if (side is not null) side.Visible = !IsEmptyField;
+        bool isEmptyField = GetIsEmptyField();
+        if (front is not null) front.Visible = !isEmptyField;
+        if (back is not null) back.Visible = !isEmptyField;
+        if (side is not null) side.Visible = !isEmptyField;
     }
 
     Resource LoadCardImage(string path)
@@ -80,7 +82,7 @@ public partial class Card : CardField
         var material = target.GetActiveMaterial(0).Duplicate(); // I wanna break the reference on the prefab
         if (material is ShaderMaterial material3D)
         {
-            material3D.SetShaderParameter("color", color);  
+            material3D.SetShaderParameter("color", color);
             target.SetSurfaceOverrideMaterial(0, material3D);
         }
     }
@@ -138,6 +140,7 @@ public partial class Card : CardField
         isSideWays = value;
         if (isSideWays) cardDisplay.RotationDegrees = cardDisplay.RotationDegrees.WithY(90);
         else cardDisplay.RotationDegrees = cardDisplay.RotationDegrees.WithY(0);
+        if (OnCardIsSidewaysUpdate is not null) OnCardIsSidewaysUpdate(this);
     }
 
     public T GetAttributes<T>() where T : CardDTO
@@ -150,13 +153,13 @@ public partial class Card : CardField
         attributes = newCardDTO;
         if (attributes.imageSrc is not null)
         {
-            IsEmptyField = false;
+            SetIsEmptyField(false);
             cardImage = LoadCardImage(newCardDTO.imageSrc);
             UpdateImageTexture(front, (CompressedTexture2D)cardImage);
         }
         if (attributes.backImageSrc is not null)
         {
-            IsEmptyField = false;
+            SetIsEmptyField(false);
             cardBackImage = LoadCardImage(newCardDTO.backImageSrc);
             UpdateImageTexture(back, (CompressedTexture2D)cardBackImage);
         }
@@ -172,7 +175,7 @@ public partial class Card : CardField
 
     public void DestroyCard()
     {
-        IsEmptyField = true;
+        SetIsEmptyField(true);
     }
 
     public void UpdatePlayerSelectedColor(Player player)

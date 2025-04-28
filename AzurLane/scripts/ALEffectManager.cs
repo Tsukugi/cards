@@ -50,7 +50,7 @@ public class ALEffectManager(ALCard _card, ALPlayer _ownerPlayer, ALGameMatchMan
 
         ALCard? findResult = units.Find(unit =>
             {
-                if (unit.IsEmptyField) return false;
+                if (unit.GetIsEmptyField()) return false;
                 return unit.GetAttributes<ALCardDTO>().id == conditionDTO.conditionCard;
             });
 

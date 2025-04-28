@@ -30,19 +30,19 @@ namespace ALTCG.Tests
         }
         public Task TestCanShowCardDetailsUI(Test test)
         {
-            IsEmptyField = true;
+            SetIsEmptyField(true);
             SetIsFaceDown(true);
             test.Assert(CanShowCardDetailsUI(), false);
-            IsEmptyField = false;
+            SetIsEmptyField(false);
             SetIsFaceDown(false);
             test.Assert(CanShowCardDetailsUI(), true);
             return Task.CompletedTask;
         }
         public Task TestCanShowPowerLabel(Test test)
         {
-            IsEmptyField = true;
+            SetIsEmptyField(true);
             test.Assert(CanShowPowerLabel(), false);
-            IsEmptyField = false;
+            SetIsEmptyField(false);
             test.Assert(CanShowPowerLabel(), true);
             return Task.CompletedTask;
         }

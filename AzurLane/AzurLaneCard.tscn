@@ -102,5 +102,6 @@ mesh = SubResource("BoxMesh_hunl0")
 
 [node name="SelectedIndicator" type="MeshInstance3D" parent="CardDisplay"]
 transform = Transform3D(5.189, 0, 0, 0, -6.55671e-08, -0.2, 0, 1.5, -8.74228e-09, 0, 0, 0)
+visible = false
 mesh = SubResource("CapsuleMesh_y1cnb")
 skeleton = NodePath("../..")
