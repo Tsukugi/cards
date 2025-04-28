@@ -114,7 +114,11 @@ public partial class ALCard : Card
                 for (int i = 0; i < conditions.Length; i++)
                 {
                     formattedEffects += $"{conditions[i].conditionId}";
-                    if (conditions[i].conditionAmount is string amount) formattedEffects += $" ({amount})";
+
+                    foreach (string amount in conditions[i].conditionArgs)
+                    {
+                        formattedEffects += $" ({amount})";
+                    }
                     if (conditions[i].conditionCard is string card) formattedEffects += $" ({card})";
                     if (i != conditions.Length - 1) formattedEffects += " - ";
                 }

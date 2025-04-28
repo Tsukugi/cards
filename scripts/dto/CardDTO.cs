@@ -21,7 +21,7 @@ public class CardEffectConditionDTO
 {
     public string conditionId;
     public string conditionCard;
-    public string conditionAmount;
+    public string[] conditionArgs = [];
 }
 public static class CardRarity
 {

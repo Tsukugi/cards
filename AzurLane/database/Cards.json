@@ -16,7 +16,10 @@
 			{   
 				"triggerEvent": "EndOfTurn",
 				"condition": [
-					{ "conditionId": "Durability", "conditionAmount": 1 }
+					{ 
+						"conditionId": "Durability",
+						"conditionArgs": [ "EqualOrLess", "1"]
+					}
 				],
 				"duration": "WhileVisible",
 				"effectId": "Awakening",
@@ -199,11 +202,11 @@
 		"power": 400,
 		"effects": [
 			{
-				"triggerEvent": "Retaliation",
+				"triggerEvent": "OnDamageReceived",
 				"condition": [
 					{ 
 						"conditionId": "HasCubes",
-						"conditionAmount": 3
+						"conditionArgs": [ "EqualOrMore", "3"]
 					}
 				],
 				"effectId": "Retaliation",
@@ -362,11 +365,12 @@
 		"effects": [
 			{
 				"triggerEvent": "Retaliation",
-				"effectId": "Retaliation"
+				"effectId": "Retaliation",
+				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost)"
 			},
 			{
 				"effectId": "ReturnEnemyToHand",
-				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost) Return 1 ship card with a cost of 3 or less on the opponent's battlefield to their hand.",	
+				"effectLabel": "Return 1 ship card with a cost of 3 or less on the opponent's battlefield to their hand.",	
 				"effectValue": ["1", "Cost", "EqualOrLess", 3]
 			}
 		],
@@ -384,7 +388,10 @@
 			{   
 				"triggerEvent": "EndOfTurn",
 				"condition": [
-					{ "conditionId": "Durability", "conditionAmount": 1 }
+					{ 
+						"conditionId": "Durability", 
+						"conditionArgs": [ "EqualOrLess", "1"]
+					 }
 				],
 				"effectId": "Awakening",
 				"effectLabel": "■【At the end of your turn】Activate 1 of your own Cube Cards. [Awakening] When the durability of your flagship is 1 or less, turn this card face down."
@@ -410,7 +417,7 @@
 				"condition": [
 					{ 
 						"conditionId": "HasCubes",
-						"conditionAmount": 5
+						"conditionArgs": [ "EqualOrMore", "5"]
 					}
 				],
 				"duration": "WhileVisible",

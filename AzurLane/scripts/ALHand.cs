@@ -4,7 +4,7 @@ using Godot;
 public partial class ALHand : PlayerHand
 {
     protected new PackedScene cardTemplate = GD.Load<PackedScene>("AzurLane/AzurLaneCard.tscn");
-    public void AddCardToHand(ALCardDTO attributes)
+    public ALCard AddCardToHand(ALCardDTO attributes)
     {
         ALCard newCard = cardTemplate.Instantiate<ALCard>();
 
@@ -16,6 +16,7 @@ public partial class ALHand : PlayerHand
         newCard.UpdateAttributes(attributes);
         newCard.TryToTriggerCardEffect(CardEffectTrigger.OnVisible);
         RepositionHandCards();
+        return newCard;
     }
     protected new List<ALCard> GetCardsInHand()
     {

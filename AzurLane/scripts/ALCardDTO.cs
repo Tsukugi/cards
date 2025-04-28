@@ -72,12 +72,13 @@ public static class ALCardEffectCondition
 
 public static class ALCardEffectTrigger
 {
-    public static readonly string StartsAttack = "StartsAttack";
-    public static readonly string IsAttacked = "IsAttacked";
+    public static readonly string StartsAttack = "StartsAttack"; // When one card declares an attack
+    public static readonly string IsAttacked = "IsAttacked"; // When an enemy declares an attack on your unit
     public static readonly string IsBattleSupported = "IsBattleSupported"; // Another ship supports this card
     public static readonly string Retaliation = "Retaliation"; // (When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost)
     public static readonly string Counter = "Counter"; // (Can be activated during your Defense Step) 
     public static readonly string OnceDestroyed = "OnceDestroyed"; // When this card is send to the retreat zone
+    public static readonly string EndOfTurn = "EndOfTurn"; // When a player is on end phase
 }
 
 public static class ALCardEffectIds

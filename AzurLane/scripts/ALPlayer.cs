@@ -333,16 +333,17 @@ public partial class ALPlayer : Player
     void OnDurabilityDamageHandler(Card card)
     {
         List<ALCard> durabilityCards = GetDurabilityCards();
-        ALCard durabilityCard = durabilityCards.FindLast(durabilityCard => durabilityCard.GetIsFaceDown());
-        if (durabilityCard is null)
+        ALCard durabilityCardInBoard = durabilityCards.FindLast(durabilityCard => durabilityCard.GetIsFaceDown());
+        if (durabilityCardInBoard is null)
         {
             GD.PrintErr($"[OnDurabilityDamageHandler] Game over for {Name}");
             return;
         }
         // "Draw" the card to hand 
-        durabilityCard.DestroyCard(); // Destroy card from board
         ALHand hand = GetPlayerHand<ALHand>();
-        hand.AddCardToHand(durabilityCard.GetAttributes<ALCardDTO>());
+        ALCard durabilityCardInHand = hand.AddCardToHand(durabilityCardInBoard.GetAttributes<ALCardDTO>());
+        durabilityCardInHand.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
+        durabilityCardInBoard.DestroyCard(); // Destroy card from board
         GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown()).Count}/{durabilityCards.Count}");
     }
 
