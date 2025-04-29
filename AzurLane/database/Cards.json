@@ -17,13 +17,14 @@
 				"triggerEvent": "EndOfTurn",
 				"condition": [
 					{ 
-						"conditionId": "Durability",
-						"conditionArgs": [ "EqualOrLess", "1"]
+						"conditionId": "CheckFlagshipDurability",
+						"conditionArgs": ["EqualOrLess", "1"]
 					}
 				],
 				"duration": "WhileVisible",
 				"effectId": "Awakening",
-				"effectLabel": "■【At the end of your turn】Activate this card. When the durability of your flagship is 1 or less, turn this card face down."
+				"effectLabel": "■【At the end of your turn】Activate this card. When the durability of your flagship is 1 or less, turn this card face down.",
+				"effectValue": ["500", "Reactivate"]
 			}
 		],
 		"type": "Flagship",
@@ -389,12 +390,13 @@
 				"triggerEvent": "EndOfTurn",
 				"condition": [
 					{ 
-						"conditionId": "Durability", 
-						"conditionArgs": [ "EqualOrLess", "1"]
+						"conditionId": "CheckFlagshipDurability",
+						"conditionArgs": ["EqualOrLess", "1"]
 					 }
 				],
 				"effectId": "Awakening",
-				"effectLabel": "■【At the end of your turn】Activate 1 of your own Cube Cards. [Awakening] When the durability of your flagship is 1 or less, turn this card face down."
+				"effectLabel": "■【At the end of your turn】Activate 1 of your own Cube Cards. [Awakening] When the durability of your flagship is 1 or less, turn this card face down.",
+				"effectValue": ["500", "ReactivateCube"]
 			}
 		],
 		"type": "Flagship",

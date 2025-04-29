@@ -62,7 +62,6 @@ public static class ALCardEffectDuration
     public static readonly string MainPhase = "MainPhase"; // While in the main phase
     public static readonly string AttackPhase = "AttackPhase"; // While in the attack phase
     public static readonly string CurrentBattle = "CurrentBattle"; // While in a battle
-    public static readonly string UntilDestroyed = "UntilDestroyed"; // While in a battle
 }
 
 public static class ALCardEffectCondition
@@ -81,12 +80,6 @@ public static class ALCardEffectTrigger
     public static readonly string EndOfTurn = "EndOfTurn"; // When a player is on end phase
 }
 
-public static class ALCardEffectIds
-{
-    public static readonly string GetPower = "GetPower";
-    public static readonly string AddStatusEffect = "AddStatusEffect";
-
-}
 public static class ALCardStatusEffects
 {
     public static readonly string LimitBattleSupport = "LimitBattleSupport";

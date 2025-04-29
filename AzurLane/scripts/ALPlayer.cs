@@ -1,7 +1,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 
@@ -125,6 +124,8 @@ public partial class ALPlayer : Player
 
     public void EndTurn()
     {
+        GetUnitsInBoard().ForEach(card => card.TryToTriggerCardEffect(ALCardEffectTrigger.EndOfTurn));
+        GetCardsInHand().ForEach(card => card.TryToTriggerCardEffect(ALCardEffectTrigger.EndOfTurn));
         if (OnTurnEnd is not null) OnTurnEnd();
     }
 
@@ -422,8 +423,7 @@ public partial class ALPlayer : Player
             else
             {
                 GD.Print($"[SettleBattle] {attackedAttrs.name} destroyed!");
-                AddToRetreatAreaOnTop(attackedAttrs);
-                attackedCard.DestroyCard();
+                DestroyUnitCard(attackedCard);
             }
         }
         else
@@ -435,6 +435,13 @@ public partial class ALPlayer : Player
         SetPlayState(EPlayState.Select);
         if (OnAttackEnd is not null) OnAttackEnd(this);
         await phaseManager.EndBattlePhaseIfNoActiveCards();
+    }
+
+    void DestroyUnitCard(ALCard card)
+    {
+        AddToRetreatAreaOnTop(card.GetAttributes<ALCardDTO>());
+        card.TryToTriggerCardEffect(ALCardEffectTrigger.OnceDestroyed);
+        card.DestroyCard();
     }
 
     // Nodes
@@ -499,6 +506,7 @@ public partial class ALPlayer : Player
     }
 
     public List<ALCard> GetUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>();
+    public List<ALCard> GetCardsInHand() => GetPlayerHand<ALHand>().TryGetAllChildOfType<ALCard>();
     public List<ALCard> GetActiveUnitsInBoard() => GetUnitsInBoard().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.GetIsEmptyField());

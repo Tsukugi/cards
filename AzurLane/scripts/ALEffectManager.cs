@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 
@@ -55,23 +56,26 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             });
 
         bool fulfillsCondition = findResult is ALCard foundCard;
-        GD.Print($"[IsSpecificCardOnField] {fulfillsCondition}");
+        GD.Print($"[Condition - IsSpecificCardOnField] {fulfillsCondition}");
         return fulfillsCondition;
     }
 
     public bool OnBackRow(CardEffectConditionDTO conditionDTO)
     {
         bool fulfillsCondition = card.CastToALCard().GetAttackFieldType() == EAttackFieldType.BackRow;
-        GD.Print($"[OnBackRow] {fulfillsCondition} - {card.CastToALCard().GetAttackFieldType()}");
+        GD.Print($"[Condition - OnBackRow] {fulfillsCondition} - {card.CastToALCard().GetAttackFieldType()}");
         return fulfillsCondition;
     }
 
-    public bool Counter(CardEffectConditionDTO conditionDTO)
+    public bool CheckFlagshipDurability(CardEffectConditionDTO conditionDTO)
     {
-        bool isBattlePhase = matchManager.GetMatchPhase() == EALTurnPhase.Battle;
-        bool isDefenceStep = ownerPlayer.GetPlayState() == EPlayState.EnemyInteraction;
-        bool fulfillsCondition = isBattlePhase && isDefenceStep;
-        GD.Print($"[Counter] {fulfillsCondition}");
+        string comparisonOperator = conditionDTO.conditionArgs[0];
+        string valueToCompare = conditionDTO.conditionArgs[1];
+
+        int durability = ((ALPlayer)ownerPlayer).GetDurabilityCards().Count;
+
+        bool fulfillsCondition = LogicUtils.ApplyComparison(durability, comparisonOperator, valueToCompare.ToInt());
+        GD.Print($"[Condition - CheckFlagshipDurability] {fulfillsCondition}");
         return fulfillsCondition;
     }
 
@@ -129,11 +133,44 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     public async Task ReturnToHand(CardEffectDTO effectDTO)
     {
         GD.Print($"[Effect - ReturnToHand] {effectDTO.effectValue}");
-        var times = effectDTO.effectValue[0];
-        var attributeToCompare = effectDTO.effectValue[1];
-        var comparator = effectDTO.effectValue[2];
-        var value = effectDTO.effectValue[3];
+        string times = effectDTO.effectValue[0];
+        string attributeToCompare = effectDTO.effectValue[1];
+        string comparator = effectDTO.effectValue[2];
+        string value = effectDTO.effectValue[3];
+        // TODO Add me
         await Task.CompletedTask;
     }
 
+    public async Task Awakening(CardEffectDTO effectDTO)
+    {
+        string newPower = effectDTO.effectValue[0];
+        string awakeningEffect = effectDTO.effectValue[1];
+        GD.Print($"[Effect - Awakening] {effectDTO.effectValue}");
+        card.SetIsFaceDown(true);
+        card.AddModifier(new AttributeModifier()
+        {
+            AttributeName = "Power",
+            Duration = CardEffectDuration.WhileFaceDown,
+            Amount = newPower.ToInt() - card.GetAttributes<ALCardDTO>().power,
+            // If face up power is 400 and face down (awakened) is 500, i want to give a 100 boost (500 - 400)
+        });
+
+        await ClassUtils.CallMethodAsync(card, awakeningEffect, effectDTO.effectValue);
+    }
+    public async Task ReactivateCube(CardEffectDTO effectDTO)
+    {
+        GD.Print($"[Effect - ReactivateCube]");
+        var cube = ((ALPlayer)ownerPlayer).GetCubesInBoard().Find(cube => !cube.GetIsEmptyField() && !cube.GetIsInActiveState());
+        if (cube is not ALCard inactiveCube)
+        {
+            GD.PrintErr($"[ReactivateCube] No cube found to reactivate");
+            return;
+        }
+        inactiveCube.SetIsInActiveState(true);
+    }
+    public async Task Reactivate(CardEffectDTO effectDTO)
+    {
+        GD.Print($"[Effect - Reactivate]");
+        card.CastToALCard().SetIsInActiveState(true);
+    }
 }
