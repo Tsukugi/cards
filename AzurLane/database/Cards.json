@@ -473,12 +473,12 @@
 		"power": 400,
 		"effects": [
 			{
-				"triggerEvent": "OncePlayed",
+				"triggerEvent": "WhenPlayed",
 				"effectId": "DiscardCard",
 				"effectLabel": "You can discard 1 card from your hand."
 			},
 			{	
-				"triggerEvent": "OncePlayed",
+				"triggerEvent": "WhenPlayed",
 				"effectId": "DrawCubeDown",
 				"effectLabel": "Put 1 Cube card from your Cube Deck face down into the Cost Zone."
 			}
@@ -497,12 +497,12 @@
 		"power": 400,
 		"effects": [
 			{
-				"triggerEvent": "OncePlayed",
+				"triggerEvent": "WhenPlayed",
 				"effectId": "DiscardCard",
 				"effectLabel": "You can discard 1 card from your hand."
 			},
 			{	
-				"triggerEvent": "OncePlayed",
+				"triggerEvent": "WhenPlayed",
 				"effectId": "DrawCubeDown",
 				"effectLabel": "Put 1 Cube card from your Cube Deck face down into the Cost Zone."
 			}
@@ -534,9 +534,10 @@
 		"power": 500,
 		"effects": [
 			{	
-				"triggerEvent": "OncePlayed",
-				"effectId": "RestEnemy4Cube",
-				"effectLabel": "Put a Ship Card with a cost of 4 or less on the opponent's battlefield to Rest."
+				"triggerEvent": "WhenPlayed",
+				"effectId": "RestEnemy",
+				"effectLabel": "Put a Ship Card with a cost of 4 or less on the opponent's battlefield to Rest.",
+				"effectValue": ["EqualOrLess", "4"]
 			}
 		],
 		"type": "Ship",
@@ -544,5 +545,226 @@
 		"supportValue": 100,
 		"supportScope": "Both",
 		"imageSrc": "SD02-008.png"
+	},
+	{
+		"id": "SD02-009",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Rodney",
+		"power": 600,
+		"effects": [
+			{	
+				"triggerEvent": "WhenPlayed",
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectLabel": "【Ranged】(This card in the back row can attack the opponent's back row card)",
+				"effectValue": ["RangedAttack"]
+			},
+			{	
+				"triggerEvent": "IsAttacked",
+				"duration": "CurrentBattle",
+				"effectId": "GetPower",
+				"effectLabel": "[Defense +100] (During a battle when this card is attacked, this card gains +100 Power)",
+				"effectValue": ["100"]
+			}
+		],
+		"type": "Ship",
+		"cost": 6,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD02-009.png"
+	},
+	{
+		"id": "SD02-0010",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Glorious",
+		"power": 800,
+		"effects": [
+			{	
+				"triggerEvent": "WhenPlayed",
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectLabel": "【Ranged】(This card in the back row can attack the opponent's back row card)",
+				"effectValue": ["RangedAttack"]
+			}
+		],
+		"type": "Ship",
+		"cost": 7,
+		"supportValue": 100,
+		"supportScope": "Battlefield",
+		"imageSrc": "SD02-0010.png"
+	},
+	{
+		"id": "SD02-0011",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Illustrious",
+		"power": 800,
+		"effects": [
+			{	
+				"triggerEvent": "WhenPlayed",
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectLabel": "【Ranged】(This card in the back row can attack the opponent's back row card)",
+				"effectValue": ["RangedAttack"]
+			},
+			{
+				"triggerEvent": "WhenPlayed",
+				"condition": [
+					{ 
+						"conditionId": "EnemyShipOnBattlefield",
+						"conditionArgs": ["Cube", "EqualOrLess", "4"]
+					}
+				],
+				"effectId": "IllustriousEffect",
+				"effectLabel": "[When Entering the Field] Choose a Ship Card with a Cost of 4 or less on your opponent's battlefield. If the card is in the activated state, it is turned into the resting state; If it is in the resting state, it is destroyed."
+			}
+		],
+		"type": "Ship",
+		"cost": 7,
+		"supportValue": 100,
+		"supportScope": "Battlefield",
+		"imageSrc": "SD02-0011.png",
+		"rarity": "SSR"
+	},
+	{
+		"id": "SD02-0012",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Hermes",
+		"power": 500,
+		"effects": [
+			{	
+				"triggerEvent": "WhenPlayed",
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectLabel": "【Ranged】(This card in the back row can attack the opponent's back row card)",
+				"effectValue": ["RangedAttack"]
+			}
+		],
+		"type": "Ship",
+		"cost": 4,
+		"supportValue": 100,
+		"supportScope": "Both",
+		"imageSrc": "SD02-0012.png"
+	},
+	{
+		"id": "SD02-0013",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Royal Vow",
+		"effects": [
+			{	
+				"triggerEvent": "Counter",
+				"duration": "CurrentBattle",
+				"effectId": "SelectAndGivePower",
+				"effectLabel": "[Counter] (Can be activated during your defense step) During this battle, a card on your battlefield gains +200 power.",
+				"effectValue": ["200"]
+			},
+			{	
+				"triggerEvent": "Counter",
+				"condition": [
+					{
+						"conditionId": "CheckFlagshipDurability",
+						"conditionArgs": ["EqualOrLess", "0"]
+					}
+				],
+				"duration": "CurrentBattle",
+				"effectId": "ActivateCube",
+				"effectLabel": "Afterwards, when the durability of your flagship reaches 0, activate 1 of your cube cards.",
+				"effectValue": ["1"]
+			}
+		],
+		"type": "Event",
+		"cost": 1,
+		"imageSrc": "SD02-0013.png"
+	},
+	{
+		"id": "SD02-0014",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Royal Iron Wall",
+		"effects": [
+			{	
+				"triggerEvent": "Counter",
+				"duration": "CurrentBattle",
+				"effectId": "SelectAndGivePower",
+				"effectLabel": "[Counter] (Can be activated during your defense step) During this battle, a card on your battlefield gains +600 power.",
+				"effectValue": ["600"]
+			},
+			{	
+				"triggerEvent": "Counter",
+				"condition": [
+					{
+						"conditionId": "CheckFlagshipDurability",
+						"conditionArgs": ["EqualOrLess", "0"]
+					}
+				],
+				"duration": "CurrentBattle",
+				"effectId": "DrawCubeDown",
+				"effectLabel": "Afterwards, when the durability of your flagship reaches 0, place 1 Cube card from your Cube Deck face down into the Cost Zone.",
+				"effectValue": ["1"]
+			}
+		],
+		"type": "Event",
+		"cost": 3,
+		"imageSrc": "SD02-0014.png"
+	},
+	{
+		"id": "SD02-0015",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "English Afternoon Tea",
+		"effects": [
+			{
+				"triggerEvent": "Retaliation",
+				"effectId": "Retaliation",
+				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost)"
+			},
+			{	
+				"triggerEvent": "WhenPlayed",
+				"effectId": "DrawCubeDown",
+				"effectLabel": "[Main Phase] Place 1 Cube card from your Cube Deck face down in the Cost Zone.",
+				"effectValue": ["1"]
+			}
+		],
+		"type": "Event",
+		"cost": 3,
+		"imageSrc": "SD02-0015.png"
+	},
+	{
+		"id": "SD02-0016",
+		"faction": "AzurLane",
+		"factionCountry": "RoyalNavy",
+		"name": "Royal Guardian",
+		"effects": [
+			{
+				"triggerEvent": "Retaliation",
+				"effectId": "Retaliation",
+				"effectLabel": "(When the flagship card is damaged and this card as the flagship durability is added to the hand, you can use this card without paying the cost)"
+			},
+			{	
+				"triggerEvent": "WhenPlayed",
+				"effectId": "RestEnemy",
+				"effectLabel": "[Main Phase Start] Put a Ship card with a cost of 5 or less on the opponent's battlefield into Resting State.",
+				"effectValue": ["EqualOrLess", "5"]
+			}
+		],
+		"type": "Event",
+		"cost": 3,
+		"imageSrc": "SD02-0016.png"
 	}
 ]
