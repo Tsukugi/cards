@@ -147,6 +147,7 @@ text = "State"
 [node name="SelectedCardUI" parent="Control" instance=ExtResource("6_o4q8i")]
 visible = false
 layout_mode = 0
+scale = Vector2(0.9, 0.9)
 
 [node name="AttackerUI" parent="Control" instance=ExtResource("6_o4q8i")]
 visible = false

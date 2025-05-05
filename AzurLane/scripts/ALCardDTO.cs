@@ -2,11 +2,12 @@ public class ALCardDTO : CardDTO
 {
     public string faction = ALFaction.None;
     public string rarity = CardRarity.N;
-    public string type = ALCardType.Ship;
+    public string cardType = ALCardType.Ship;
+    public string shipType = ALShipType.None;
 
     // Flagship, Ship
     public int power = 0;
-    public string factionCountry = ALFactionCountry.None;
+    public string[] factionCountry = [];
 
     // Flagship 
     public int durability = 0;
@@ -23,10 +24,26 @@ public class ALCardDTO : CardDTO
 
 public static class ALCardType
 {
-    public static readonly string Ship = "Ship";
-    public static readonly string Flagship = "Flagship";
-    public static readonly string Cube = "Cube";
-    public static readonly string Event = "Event";
+    public static readonly string Ship = "ShipCard";
+    public static readonly string Flagship = "FlagshipCard";
+    public static readonly string FlagshipAwakened = "FlagshipAwakenedCard";
+    public static readonly string Cube = "CubeCard";
+    public static readonly string Event = "EventCard";
+}
+public static class ALShipType
+{
+    public static readonly string Destroyer = "Destroyer";
+    public static readonly string LightCruiser = "LightCruiser";
+    public static readonly string HeavyCruiser = "HeavyCruiser";
+    public static readonly string ArmoredHeavyCruiser = "ArmoredHeavyCruiser";
+    public static readonly string BattleCruiser = "BattleCruiser";
+    public static readonly string Battleship = "Battleship";
+    public static readonly string AviationBattleship = "AviationBattleship";
+    public static readonly string LightCarrier = "LightCarrier";
+    public static readonly string AircraftCarrier = "AircraftCarrier";
+    public static readonly string Submarine = "Submarine";
+    public static readonly string RepairShip = "RepairShip";
+    public static readonly string None = "-";
 }
 
 public static class ALSupportScope
@@ -45,11 +62,12 @@ public static class ALFaction
 
 public static class ALFactionCountry
 {
-    public static readonly string None = "None";
     public static readonly string EagleUnion = "EagleUnion";
     public static readonly string RoyalNavy = "RoyalNavy";
     public static readonly string SakuraEmpire = "SakuraEmpire";
     public static readonly string IronBlood = "IronBlood";
+    public static readonly string VichiyaDominion = "VichiyaDominion";
+    public static readonly string IrisLibre = "IrisLibre";
 }
 
 public static class ALCardRarity

@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Text;
 
 public partial class ALSelectedCardUI : Panel
 {
@@ -39,16 +40,16 @@ public partial class ALSelectedCardUI : Panel
         selectedCardNameLabel.Text = attributes.name;
         selectedCardEffectsLabel.Text = boundCard.GetFormattedEffect();
         selectedCardSupportScopeLabel.Text = attributes.supportScope;
-        selectedCardShipTypeLabel.Text = attributes.type;
-        selectedCardFactionCountryLabel.Text = attributes.factionCountry;
+        selectedCardShipTypeLabel.Text = attributes.shipType;
+        selectedCardFactionCountryLabel.Text = GetArrayAsString(attributes.factionCountry);
         selectedCardFactionLabel.Text = attributes.faction;
 
         effectsPanel.Visible = selectedCardEffectsLabel.Text.Length > 0;
 
-        bool isEventCard = attributes.type == ALCardType.Event;
-        supportScopePanel.Visible = !isEventCard;
-        powerLabel.Visible = !isEventCard;
-        if (isEventCard)
+        bool isNotShipCard = attributes.cardType == ALCardType.Event || attributes.cardType == ALCardType.Cube;
+        supportScopePanel.Visible = !isNotShipCard;
+        powerLabel.Visible = !isNotShipCard;
+        if (isNotShipCard)
         {
             effectsPanel.Position = new Vector2(effectsPanel.Position.X, 315f);
             factionPanel.Position = new Vector2(116f, factionPanel.Position.Y);
@@ -66,5 +67,14 @@ public partial class ALSelectedCardUI : Panel
         boundCard = card;
         UpdateUINodes(boundCard);
     }
-
+    public string GetArrayAsString(string[] data, string separator = " ")
+    // TODO : Add colors for duration and condition
+    {
+        string res = $"";
+        foreach (var item in data)
+        {
+            res += ($"{item}{separator}");
+        }
+        return res;
+    }
 }

@@ -168,7 +168,7 @@ public partial class ALPlayer : Player
         ALCard card = cardToPlay.CastToALCard();
         ALCardDTO attributes = card.GetAttributes<ALCardDTO>();
 
-        if (attributes.type == ALCardType.Event)
+        if (attributes.cardType == ALCardType.Event)
         {
             TryToPlayEventCard(card, (ALHand)card.GetBoard(), CardEffectTrigger.WhenPlayed);
             return;
@@ -293,7 +293,7 @@ public partial class ALPlayer : Player
         {
             if (!cardToGuard.IsCardUnit())
             {
-                if (attrs.type == ALCardType.Event) // Events are a special card that has its own process
+                if (attrs.cardType == ALCardType.Event) // Events are a special card that has its own process
                 {
                     TryToPlayEventCard(cardToGuard, guardingHand, ALCardEffectTrigger.Counter.ToString());
                     return;

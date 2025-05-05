@@ -85,7 +85,7 @@ public partial class ALCard : Card
     public bool CanShowPowerLabel() => IsCardUnit();
     public bool IsCardUnit() =>
         !GetIsEmptyField() && !isResource && !isDeck
-        && (GetAttributes<ALCardDTO>().type == ALCardType.Ship || GetAttributes<ALCardDTO>().type == ALCardType.Flagship); // Refers to a placed card that is a ship or flagship
+        && (GetAttributes<ALCardDTO>().cardType == ALCardType.Ship || GetAttributes<ALCardDTO>().cardType == ALCardType.Flagship); // Refers to a placed card that is a ship or flagship
     public string GetFormattedEffectMini()
     // TODO : Add colors for duration and condition
     {

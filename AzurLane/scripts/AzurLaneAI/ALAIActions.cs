@@ -136,7 +136,7 @@ public class ALAIActions
         return hand.TryGetAllChildOfType<ALCard>().FindAll(card =>
             {
                 var attrs = card.GetAttributes<ALCardDTO>();
-                return attrs.cost <= availableCubes && attrs.type == ALCardType.Ship;
+                return attrs.cost <= availableCubes && attrs.cardType == ALCardType.Ship;
             });
     }
 
