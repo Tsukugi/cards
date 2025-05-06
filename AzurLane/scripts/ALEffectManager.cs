@@ -95,13 +95,9 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     {
         GD.Print($"[Effect - SelectAndGivePower]");
         bool isFinished = false;
-        var previousState = ownerPlayer.GetPlayState();
-        ownerPlayer.SetPlayState(EPlayState.SelectEffectTarget);
-
-        var board = ownerPlayer.GetPlayerBoard<ALBoard>();
+        EPlayState previousState = ownerPlayer.GetPlayState();
         void OnAfterSelectAndGivePower(Card selectedTarget)
         {
-            var board = ownerPlayer.GetPlayerBoard<ALBoard>();
             GD.Print($"[Effect - OnAfterSelectAndGivePower]");
             selectedTarget.AddModifier(new AttributeModifier()
             {
@@ -109,19 +105,16 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
                 Duration = effectDTO.duration,
                 Amount = effectDTO.effectValue[0].ToInt(),
             });
-            board.OnCardTrigger -= OnAfterSelectAndGivePower;
             ownerPlayer.SetPlayState(previousState);
             isFinished = true;
         }
-        board.OnCardTrigger -= OnAfterSelectAndGivePower;
-        board.OnCardTrigger += OnAfterSelectAndGivePower;
 
-        await asyncHandler.AwaitForCheck(
-            null,
-            () => isFinished && ownerPlayer.GetPlayState() == previousState, // Playstate has delay, that's why i need to check for it too
-            -1);
+        await ApplySelectPlayState(
+               ownerPlayer.GetPlayerBoard<ALBoard>(),
+               OnAfterSelectAndGivePower,
+               () => isFinished
+            );
     }
-
 
     public async Task AddStatusEffect(CardEffectDTO effectDTO)
     {
@@ -130,32 +123,43 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         await Task.CompletedTask;
     }
 
-    public async Task ReturnToHand(CardEffectDTO effectDTO)
+    public async Task ReturnEnemyToHand(CardEffectDTO effectDTO)
     {
-        GD.Print($"[Effect - ReturnToHand] {effectDTO.effectValue}");
-        string times = effectDTO.effectValue[0];
-        string attributeToCompare = effectDTO.effectValue[1];
-        string comparator = effectDTO.effectValue[2];
-        string value = effectDTO.effectValue[3];
-        // TODO Add me
-        await Task.CompletedTask;
+        GD.Print($"[Effect - ReturnEnemyToHand]");
+        string attributeToCompare = effectDTO.effectValue[0];
+        string comparator = effectDTO.effectValue[1];
+        string value = effectDTO.effectValue[2];
+
+        EPlayState previousState = ownerPlayer.GetPlayState();
+        void OnAfterSelectReturningCard(Card selectedTarget)
+        {
+            var board = ownerPlayer.GetPlayerBoard<ALBoard>();
+            GD.Print($"[Effect - OnAfterSelectReturningCard]");
+            int attr = selectedTarget.GetAttributeWithModifiers<ALCardDTO>(attributeToCompare);
+            if (LogicUtils.ApplyComparison(attr, comparator, value.ToInt()))
+            {
+                ownerPlayer.SetPlayState(previousState);
+            }
+            else
+            {
+                GD.PrintErr($"[OnAfterSelectReturningCard] Attribute: {attr} - {comparator} - Value: {value}");
+            }
+        }
+
+        await ApplySelectPlayState(
+                ownerPlayer.GetEnemyPlayerBoard<PlayerBoard>(),
+                OnAfterSelectReturningCard
+            );
+
     }
 
     public async Task Awakening(CardEffectDTO effectDTO)
     {
-        string newPower = effectDTO.effectValue[0];
-        string awakeningEffect = effectDTO.effectValue[1];
         GD.Print($"[Effect - Awakening] {effectDTO.effectValue}");
         card.SetIsFaceDown(true);
-        card.AddModifier(new AttributeModifier()
-        {
-            AttributeName = "Power",
-            Duration = CardEffectDuration.WhileFaceDown,
-            Amount = newPower.ToInt() - card.GetAttributes<ALCardDTO>().power,
-            // If face up power is 400 and face down (awakened) is 500, i want to give a 100 boost (500 - 400)
-        });
-
-        await ClassUtils.CallMethodAsync(card, awakeningEffect, effectDTO.effectValue);
+        var id = card.GetAttributes<ALCardDTO>().id;
+        card.UpdateAttributes(matchManager.GetDatabase().cards[$"{id}覺醒"]);
+        await Task.CompletedTask;
     }
     public async Task ReactivateCube(CardEffectDTO effectDTO)
     {
@@ -167,10 +171,33 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             return;
         }
         inactiveCube.SetIsInActiveState(true);
+        await Task.CompletedTask;
     }
     public async Task Reactivate(CardEffectDTO effectDTO)
     {
         GD.Print($"[Effect - Reactivate]");
         card.CastToALCard().SetIsInActiveState(true);
+        await Task.CompletedTask;
     }
+
+    async Task ApplySelectPlayState(Board target, Board.CardEvent OnAfterSelect, AsyncHandler.SimpleCheck ConclusionCheck = null)
+    {
+        GD.Print($"[ApplySelectPlayState]");
+        ConclusionCheck ??= () => true;
+
+        EPlayState previousState = ownerPlayer.GetPlayState();
+        ownerPlayer.SetPlayState(EPlayState.SelectEffectTarget);
+        target.OnCardTrigger -= OnAfterSelect;
+        target.OnCardTrigger += OnAfterSelect;
+
+        await asyncHandler.AwaitForCheck(
+            () =>
+            {
+                target.OnCardTrigger -= OnAfterSelect;
+            },
+            () => ConclusionCheck() && ownerPlayer.GetPlayState() == previousState // Playstate has delay, that's why i need to check for it too
+            - 1);
+    }
+
+
 }

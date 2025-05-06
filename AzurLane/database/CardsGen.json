@@ -11,10 +11,23 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "SD01-001",
-    "name": "華盛頓",
+    "name": "Washington",
     "effects": [
       {
-        "effectLabel": "■【己方回合結束時】將此卡轉為激活狀態。■【覺醒】己方的旗艦耐久為1或以下時，將此卡轉為反面。"
+        "triggerEvent": ["EndOfTurn"],
+        "effectId": "Reactivate",
+        "effectLabel": "■【End of Turn】turn this card into active state."
+      },
+      {
+        "triggerEvent": ["OnDamageReceived"],
+        "condition": [
+					{ 
+						"conditionId": "CheckFlagshipDurability",
+						"conditionArgs": ["EqualOrLess", "1"]
+					}
+				],
+        "effectId": "Awakening",
+        "effectLabel": "■【Awakening】When the flagship's durability is 1 or below, turn this card face down."
       }
     ],
     "imageSrc": "SD01-001.png",
@@ -32,10 +45,12 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "SD01-001覺醒",
-    "name": "華盛頓",
+    "name": "Washington",
     "effects": [
       {
-        "effectLabel": "■【己方回合結束時】將此卡轉為激活狀態。"
+        "triggerEvent": ["EndOfTurn"],
+        "effectId": "Reactivate",
+        "effectLabel": "■【End of Turn】turn this card into active state."
       }
     ],
     "imageSrc": "SD01-001覺醒.png",
@@ -53,7 +68,7 @@
     "supportScope": "Hand",
     "supportValue": 100,
     "id": "SD01-002",
-    "name": "卡辛",
+    "name": "Cassin",
     "effects": [],
     "imageSrc": "SD01-002.png",
     "cardSet": "SD01"
@@ -70,7 +85,7 @@
     "supportScope": "Hand",
     "supportValue": 100,
     "id": "SD01-003",
-    "name": "唐斯",
+    "name": "Downes",
     "effects": [],
     "imageSrc": "SD01-003.png",
     "cardSet": "SD01"
@@ -87,10 +102,14 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "SD01-004",
-    "name": "西姆斯",
+    "name": "Sims",
     "effects": [
       {
-        "effectLabel": "■戰場上的此卡不能支援後排的卡牌。"
+        "triggerEvent": ["OnVisible"],
+				"duration": "WhileVisible",
+				"effectId": "AddStatusEffect",
+				"effectValue": ["LimitBattleSupport", "BackRow"],
+        "effectLabel": "■This card on the battlefield cannot support cards in the back row."
       }
     ],
     "imageSrc": "SD01-004.png",
@@ -108,10 +127,14 @@
     "supportScope": "Hand",
     "supportValue": 100,
     "id": "SD01-005",
-    "name": "哈曼",
+    "name": "Hammann",
     "effects": [
       {
-        "effectLabel": "■【對方回合中】【每回合1次】此卡被戰場上的卡牌支援時，本次戰鬥中，此卡戰力+100。"
+        "triggerEvent": ["IsBattleSupported"],
+				"duration": "CurrentBattle",
+				"effectId": "GetPower",
+				"effectValue": ["100"],
+        "effectLabel": "■【During the opponent's turn】【Once per turn】When this card is supported by cards on the battlefield, this card's gets power +100 for this battle."
       }
     ],
     "imageSrc": "SD01-005.png",
@@ -129,7 +152,7 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD01-006",
-    "name": "亞特蘭大",
+    "name": "Atlanta",
     "effects": [],
     "imageSrc": "SD01-006.png",
     "cardSet": "SD01"
@@ -146,7 +169,7 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD01-007",
-    "name": "朱諾",
+    "name": "Juno",
     "effects": [],
     "imageSrc": "SD01-007.png",
     "cardSet": "SD01"
@@ -163,10 +186,14 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "SD01-008",
-    "name": "安克拉治",
+    "name": "Anchorage",
     "effects": [
       {
-        "effectLabel": "■【強擊+100】(此卡發起攻擊的戰鬥中，此卡戰力+100)■【己方回合中】【每回合1次】戰場上的此卡發起攻擊時或發起支援的戰鬥結束時，將此卡轉為激活狀態。"
+        "triggerEvent": ["StartsAttack"],
+				"duration": "CurrentBattle",
+				"effectId": "GetPower",
+				"effectValue": ["100"],
+        "effectLabel": "■【Heavy Strike +100】(When this card attacks, it gets +100 power) ■【During our turn】【Once per turn】When this card attacks or finishes supporting, turn it into active state."
       }
     ],
     "imageSrc": "SD01-008.png",
@@ -184,10 +211,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD01-009",
-    "name": "波特蘭",
+    "name": "Portland",
     "effects": [
       {
-        "effectLabel": "■【固守+100】(此卡被攻擊的戰鬥中，此卡戰力+100)■當己方戰場上存在艦船卡「印第安納波利斯」時，戰場上的此卡戰力+100。"
+        "effectLabel": "■【Defend +100】(When this card is attacked, it gets +100 power) ■If there is a ship card 'Indianapolis' on our side, this card gets +100 power."
       }
     ],
     "imageSrc": "SD01-009.png",
@@ -205,10 +232,18 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD01-010",
-    "name": "印第安納波利斯",
+    "name": "Indianapolis",
     "effects": [
       {
-        "effectLabel": "■當己方的魔方卡數量為3或以上時，作為旗艦耐久的此卡獲得【絕地反擊】(旗艦卡受到傷害，將作為旗艦耐久的此卡加入手牌時，可以無需支付費用使用此卡)。"
+        "triggerEvent": ["OnDamageReceived"],
+				"condition": [
+					{ 
+						"conditionId": "HasCubes",
+						"conditionArgs": [ "EqualOrMore", "3"]
+					}
+				],
+				"effectId": "Retaliation",
+        "effectLabel": "■If you have 3 or more cube cards, this card gets【Retaliation】(When the flagship card is damaged, you can use this card without paying the cost)."
       }
     ],
     "imageSrc": "SD01-010.png",
@@ -226,11 +261,25 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD01-011",
-    "name": "賓夕法尼亞",
+    "name": "Pennsylvania",
     "effects": [
       {
-        "effectLabel": "■【遠程】(位於後排的此卡可以攻擊對方後排的卡牌)■【固守+200】(此卡被攻擊的戰鬥中，此卡戰力+200)"
-      }
+        "triggerEvent": ["WhenPlayed"],
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectValue": ["RangedAttack"],
+        "effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
+      },
+			{
+				"triggerEvent": ["IsAttacked"],
+				"duration": "CurrentBattle",
+				"effectId": "GetPower",
+				"effectLabel": "■【Defend +200】(When this card is attacked, it gets +200 power)",
+				"effectValue": ["200"]
+			}
     ],
     "imageSrc": "SD01-011.png",
     "cardSet": "SD01"
@@ -247,10 +296,17 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD01-012",
-    "name": "亞利桑那",
+    "name": "Arizona",
     "effects": [
       {
-        "effectLabel": "■【遠程】(位於後排的此卡可以攻擊對方後排的卡牌)"
+        "triggerEvent": ["WhenPlayed"],
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectValue": ["RangedAttack"],
+        "effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
       }
     ],
     "imageSrc": "SD01-012.png",
@@ -268,11 +324,25 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD01-013",
-    "name": "博格",
+    "name": "Bogue",
     "effects": [
       {
-        "effectLabel": "■【遠程】(位於後排的此卡可以攻擊對方的後排卡牌)■【登場時】可以將對方戰場上的1張費用為2或以下的艦船卡彈回手牌。"
-      }
+        "triggerEvent": ["WhenPlayed"],
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectValue": ["RangedAttack"],
+        "effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
+      },
+      
+			{	
+				"triggerEvent": ["WhenPlayed"],
+				"effectId": "ReturnEnemyToHand",
+        "effectValue": ["Cost", "EqualOrLess", 2],
+        "effectLabel": "■【When Played】You can return one ship card from the opponent's side that costs 2 or less to their hand."
+			}
     ],
     "imageSrc": "SD01-013.png",
     "cardSet": "SD01"
@@ -289,10 +359,21 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "SD01-014",
-    "name": "全員就位",
+    "name": "All Hands on Deck",
     "effects": [
       {
-        "effectLabel": "■【反制】(在己方的防守步驟可以發動)本次戰鬥中，己方戰場上的1張卡牌戰力+200。之後，查看己方卡組最上方的1張卡，選擇將其置於卡組最上方或最下方。"
+        "triggerEvent": ["Counter"],
+				"duration": "CurrentBattle",
+				"effectId": "SelectAndGivePower",
+				"effectValue" : ["200"],
+        "effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +200 power for this battle."
+      },
+      {
+        "triggerEvent": ["Counter"],
+				"duration": "CurrentBattle",
+				"effectId": "PutCardTopOrBottomDeck",
+				"effectLabel": "Then, look at the top card of our deck and choose to put it on the top or bottom.",
+				"effectValue" : ["1"]
       }
     ],
     "imageSrc": "SD01-014.png",
@@ -310,11 +391,25 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "SD01-015",
-    "name": "戰力補充",
+    "name": "Combat Power Supply",
     "effects": [
       {
-        "effectLabel": "■【反制】(在己方的防守步驟可以發動)本次戰鬥中，己方戰場上的1張卡牌戰力+400。之後，當己方手牌為0張時，抽1張卡。"
-      }
+        "triggerEvent": ["Counter"],
+				"duration": "CurrentBattle",
+				"effectId": "SelectAndGivePower",
+				"effectValue": ["400"],
+        "effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +400 power for this battle."
+      },
+			{
+				"triggerEvent": ["Counter"],
+				"condition": [
+					{ "conditionId": "EmptyHand" }
+				],
+				"duration": "CurrentBattle",
+				"effectId": "DrawCard",
+				"effectValue" : ["1"],
+				"effectLabel": "After that, if you have 0 cards in hand, draw 1 card."
+			}
     ],
     "imageSrc": "SD01-015.png",
     "cardSet": "SD01"
@@ -331,10 +426,12 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "SD01-016",
-    "name": "歸港",
+    "name": "Return to Port",
     "effects": [
       {
-        "effectLabel": "■【絕地反擊】(旗艦卡受到傷害，將作為旗艦耐久的此卡加入手牌時，可以無需支付費用使用此卡)■【主階段啟動】將對方戰場上的1張費用為3或以下的艦船卡彈回手牌。"
+        "triggerEvent": ["Retaliation"],
+				"effectId": "Retaliation",
+        "effectLabel": "■【Retaliation】(When the flagship card is damaged, you can use this card without paying the cost) ■【During Main Phase】Return one ship card from the opponent's side that costs 3 or less to their hand."
       }
     ],
     "imageSrc": "SD01-016.png",
@@ -352,10 +449,10 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "SD02-001",
-    "name": "胡德",
+    "name": "Hood",
     "effects": [
       {
-        "effectLabel": "■【己方回合結束時】將1張己方的魔方卡轉為激活狀態。■【覺醒】己方的旗艦耐久為1或以下時，將此卡轉為反面。"
+        "effectLabel": "■【End of Turn】Turn one of our cube cards into active state. ■【Awakening】If the flagship's durability is 1 or below, turn this card face down."
       }
     ],
     "imageSrc": "SD02-001.png",
@@ -373,10 +470,10 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "SD02-001覺醒",
-    "name": "胡德",
+    "name": "Hood",
     "effects": [
       {
-        "effectLabel": "■【己方回合結束時】將1張己方的魔方卡轉為激活狀態。"
+        "effectLabel": "■【End of Turn】Turn one of our cube cards into active state."
       }
     ],
     "imageSrc": "SD02-001覺醒.png",
@@ -394,10 +491,20 @@
     "supportScope": "Both",
     "supportValue": 0,
     "id": "SD02-002",
-    "name": "回聲",
+    "name": "Echo",
     "effects": [
       {
-        "effectLabel": "■當己方的魔方卡數量為5或以上時，所有區域的此卡支援+100。"
+        "triggerEvent": ["OnVisible", "OnCubeCountChanged"],
+				"condition": [
+					{ 
+						"conditionId": "HasCubes",
+						"conditionArgs": ["EqualOrMore", "5"]
+					}
+				],
+				"duration": "WhileVisible",
+				"effectId": "GetPower",
+				"effectValue": ["100"],
+        "effectLabel": "■When you have 5 or more cube cards, this card gets +100 power."
       }
     ],
     "imageSrc": "SD02-002.png",
@@ -415,7 +522,7 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD02-003",
-    "name": "紐卡斯爾",
+    "name": "Newcastle",
     "effects": [],
     "imageSrc": "SD02-003.png",
     "cardSet": "SD02"
@@ -432,10 +539,13 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD02-004",
-    "name": "謝菲爾德",
+    "name": "Sheffield",
     "effects": [
       {
-        "effectLabel": "■【被擊破時】從己方魔方卡組將1張魔方卡以反面置於費用區。"
+        "triggerEvent": ["OnCardDestroyed"],
+				"effectId": "DrawCubeDown",
+				"effectValue": ["1"],
+        "effectLabel": "■【When defeated】Put one cube card from our deck face down in the cost area."
       }
     ],
     "imageSrc": "SD02-004.png",
@@ -453,10 +563,10 @@
     "supportScope": "Hand",
     "supportValue": 100,
     "id": "SD02-005",
-    "name": "愛丁堡",
+    "name": "Edinburgh",
     "effects": [
       {
-        "effectLabel": "■【登場時】可以捨棄1張手牌：從己方魔方卡組將1張魔方卡以反面置於費用區。"
+        "effectLabel": "■【When Played】You can discard 1 card from your hand: Put one cube card from our deck face down in the cost area."
       }
     ],
     "imageSrc": "SD02-005.png",
@@ -474,10 +584,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD02-006",
-    "name": "貝爾法斯特",
+    "name": "Belfast",
     "effects": [
       {
-        "effectLabel": "■【登場時】可以捨棄1張手牌：從己方魔方卡組將1張魔方卡以反面置於費用區。"
+        "effectLabel": "■【When Played】You can discard 1 card from your hand: Put one cube card from our deck face down in the cost area."
       }
     ],
     "imageSrc": "SD02-006.png",
@@ -495,7 +605,7 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD02-007",
-    "name": "反擊",
+    "name": "Repulse",
     "effects": [],
     "imageSrc": "SD02-007.png",
     "cardSet": "SD02"
@@ -512,10 +622,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD02-008",
-    "name": "納爾遜",
+    "name": "Nelson",
     "effects": [
       {
-        "effectLabel": "■【登場時】將對方戰場上的1張費用為4或以下的艦船卡轉為休息狀態。"
+        "effectLabel": "■【When Played】Turn one ship card from the opponent's side that costs 4 or less into a resting state."
       }
     ],
     "imageSrc": "SD02-008.png",
@@ -533,10 +643,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD02-009",
-    "name": "羅德尼",
+    "name": "Rodney",
     "effects": [
       {
-        "effectLabel": "■【遠程】(位於後排的此卡可以攻擊對方後排的卡牌)■【固守+100】(此卡被攻擊的戰鬥中，此卡戰力+100)"
+        "effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards) ■【Defend +100】(When this card is attacked, it gets +100 power)"
       }
     ],
     "imageSrc": "SD02-009.png",
@@ -554,10 +664,17 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "SD02-010",
-    "name": "光榮",
+    "name": "Glorious",
     "effects": [
       {
-        "effectLabel": "■【遠程】(位於後排的此卡可以攻擊對方後排的卡牌)"
+        "triggerEvent": ["WhenPlayed"],
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectValue": ["RangedAttack"],
+        "effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
       }
     ],
     "imageSrc": "SD02-010.png",
@@ -575,10 +692,20 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "SD02-011",
-    "name": "光輝",
+    "name": "Illustrious",
     "effects": [
       {
-        "effectLabel": "■【遠程】(位於後排的此卡可以攻擊對方後排的卡牌)■【登場時】選擇對方戰場上的1張費用為4或以下的艦船卡。當該卡處於激活狀態時，將其轉為休息狀態；當處於休息狀態時，將其擊破。"
+        "triggerEvent": ["WhenPlayed"],
+				"condition": [
+					{ "conditionId": "OnBackRow" }
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectValue": ["RangedAttack"],
+        "effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
+      },
+      {
+        "effectLabel": "■【When Played】Choose one ship card from the opponent's side that costs 4 or less. If that card is activated, turn it to a resting state; if it is resting, destroy it."
       }
     ],
     "imageSrc": "SD02-011.png",
@@ -596,10 +723,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD02-012",
-    "name": "競技神",
+    "name": "Hermes",
     "effects": [
       {
-        "effectLabel": "■【遠程】(位於後排的此卡可以攻擊對方後排的卡牌)"
+        "effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards) ■【When Played】Choose one ship card from the opponent's side that costs 4 or less. If that card is activated, turn it to a resting state; if it is resting, destroy it."
       }
     ],
     "imageSrc": "SD02-012.png",
@@ -617,10 +744,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "SD02-013",
-    "name": "皇家的誓約",
+    "name": "Royal Navy Oath",
     "effects": [
       {
-        "effectLabel": "■【反制】(在己方的防守步驟可以發動)本次戰鬥中，己方戰場上的1張卡牌戰力+200。之後，當己方的旗艦耐久為0時，將1張己方的魔方卡轉為激活狀態。"
+        "effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +200 power for this battle. After that, if the flagship's durability is 0, turn one of our cube cards into active state."
       }
     ],
     "imageSrc": "SD02-013.png",
@@ -638,10 +765,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "SD02-014",
-    "name": "皇室鐵壁",
+    "name": "Royal Navy Bulwark",
     "effects": [
       {
-        "effectLabel": "■【反制】(在己方的防守步驟可以發動)本次戰鬥中，己方戰場上的1張卡牌戰力+600。之後，當己方的旗艦耐久為0時，從己方魔方卡組將1張魔方卡以反面置於費用區。"
+        "effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +600 power for this battle. After that, if the flagship's durability is 0, put one cube card from our deck face down in the cost area."
       }
     ],
     "imageSrc": "SD02-014.png",
@@ -659,10 +786,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "SD02-015",
-    "name": "英式午茶",
+    "name": "English Afternoon Tea",
     "effects": [
       {
-        "effectLabel": "■【絕地反擊】(旗艦卡受到傷害，將作為旗艦耐久的此卡加入手牌時，可以無需支付費用使用此卡)■【主階段啟動】從己方魔方卡組將1張魔方卡以反面置於費用區。"
+        "effectLabel": "■【Retaliation】(When the flagship card is damaged, you can use this card without paying the cost) ■【During Main Phase】Put one cube card from our deck face down in the cost area."
       }
     ],
     "imageSrc": "SD02-015.png",
@@ -680,10 +807,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "SD02-016",
-    "name": "皇室守護",
+    "name": "Royal Guardian",
     "effects": [
       {
-        "effectLabel": "■【絕地反擊】(旗艦卡受到傷害，將作為旗艦耐久的此卡加入手牌時，可以無需支付費用使用此卡)■【主階段啟動】將對方戰場上的1張費用為5或以下的艦船卡轉為休息狀態。"
+        "effectLabel": "■【Retaliation】(When the flagship card is damaged, you can use this card without paying the cost) ■【During Main Phase】Turn one ship card from the opponent's side that costs 5 or less into a resting state."
       }
     ],
     "imageSrc": "SD02-016.png",
@@ -701,10 +828,10 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "SD03-001",
-    "name": "俾斯麥",
+    "name": "Bismarck",
     "effects": [
       {
-        "effectLabel": "■【覺醒】己方的旗艦耐久為1或以下時，將此卡轉為反面。"
+        "effectLabel": "■【Awakening】If the flagship's durability is 1 or below, turn this card to face down."
       }
     ],
     "imageSrc": "SD03-001.png",
@@ -722,10 +849,10 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "SD03-001覺醒",
-    "name": "俾斯麥",
+    "name": "Bismarck",
     "effects": [
       {
-        "effectLabel": "■【己方回合中】此卡支援+100。"
+        "effectLabel": "■【During our turn】This card gets +100 power."
       }
     ],
     "imageSrc": "SD03-001覺醒.png",
@@ -746,7 +873,7 @@
     "name": "Z16",
     "effects": [
       {
-        "effectLabel": "■【絕地反擊】(旗艦卡受到傷害，將作為旗艦耐久的此卡加入手牌時，可以無需支付費用使用此卡)■【登場時】本回合中，對方戰場上的1張艦船卡戰力-100。"
+        "effectLabel": "■【Retaliation】(When the flagship card is damaged, you can use this card without paying the cost) ■【When Played】This turn, one ship card on the opponent's side loses -100 power."
       }
     ],
     "imageSrc": "SD03-002.png",
@@ -784,7 +911,7 @@
     "name": "Z19",
     "effects": [
       {
-        "effectLabel": "■【絕地反擊】(旗艦卡受到傷害，將作為旗艦耐久的此卡加入手牌時，可以無需支付費用使用此卡)"
+        "effectLabel": "■【Retaliation】(When the flagship card is damaged, you can use this card without paying the cost)"
       }
     ],
     "imageSrc": "SD03-004.png",
@@ -822,7 +949,7 @@
     "name": "Z21",
     "effects": [
       {
-        "effectLabel": "■【強擊+200】(此卡發起攻擊的戰鬥中，此卡戰力+200)"
+        "effectLabel": "■【Heavy Strike +200】(When this card attacks, it gets +200 power)"
       }
     ],
     "imageSrc": "SD03-006.png",
@@ -840,7 +967,7 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD03-007",
-    "name": "萊比錫",
+    "name": "Leipzig",
     "effects": [],
     "imageSrc": "SD03-007.png",
     "cardSet": "SD03"
@@ -857,7 +984,7 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD03-008",
-    "name": "紐倫堡",
+    "name": "Nüremberg",
     "effects": [],
     "imageSrc": "SD03-008.png",
     "cardSet": "SD03"
@@ -874,10 +1001,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD03-009",
-    "name": "希佩爾將軍",
+    "name": "Admiral Hipper",
     "effects": [
       {
-        "effectLabel": "■【速攻】(此卡在登場的回合即可發起攻擊)"
+        "effectLabel": "■【Rush】(This card can attack in the turn it is played)"
       }
     ],
     "imageSrc": "SD03-009.png",
@@ -895,10 +1022,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD03-010",
-    "name": "布呂歇爾",
+    "name": "Blücher",
     "effects": [
       {
-        "effectLabel": "【登場時】本回合中，對方戰場上的1張艦船卡戰力-100。"
+        "effectLabel": "【When Played】This turn, one ship card on the opponent's side loses -100 power."
       }
     ],
     "imageSrc": "SD03-010.png",
@@ -916,10 +1043,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD03-011",
-    "name": "歐根親王",
+    "name": "Prinz Eugen",
     "effects": [
       {
-        "effectLabel": "■【速攻】(此卡在登場的回合即可發起攻擊)■【固守+100】(此卡被攻擊的戰鬥中，此卡戰力+100)"
+        "effectLabel": "■【Rush】(This card can attack in the turn it is played) ■【Defend +100】(When this card is attacked, it gets +100 power)"
       }
     ],
     "imageSrc": "SD03-011.png",
@@ -937,10 +1064,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "SD03-012",
-    "name": "圖林根",
+    "name": "Thüringen",
     "effects": [
       {
-        "effectLabel": "■【遠程】(位於後排的此卡可以攻擊對方後排的卡牌)"
+    "effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
       }
     ],
     "imageSrc": "SD03-012.png",
@@ -958,10 +1085,10 @@
     "supportScope": "Hand",
     "supportValue": 0,
     "id": "SD03-013",
-    "name": "威悉",
+    "name": "Wesser",
     "effects": [
       {
-        "effectLabel": "■【遠程】(位於後排的此卡可以攻擊對方後排的卡牌)"
+    "effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
       }
     ],
     "imageSrc": "SD03-013.png",
@@ -979,10 +1106,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "SD03-014",
-    "name": "真理必勝",
+    "name": "Truth Prevails",
     "effects": [
       {
-        "effectLabel": "■【反制】(在己方的防守步驟可以發動)本次戰鬥中，對方戰場上的1張艦船卡戰力-200。之後，當己方手牌數量為1或以下時，進一步使其戰力-100。"
+        "effectLabel": "■【Counter】(Can be used during our defense step) One ship card on the opponent's side loses -200 power for this battle. After that, if you have 1 or fewer cards in hand, further reduce its power by -100."
       }
     ],
     "imageSrc": "SD03-014.png",
@@ -1000,10 +1127,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "SD03-015",
-    "name": "火力壓制",
+    "name": "Firepower Suppression",
     "effects": [
       {
-        "effectLabel": "■【反制】(在己方的防守步驟可以發動)本次戰鬥中，對方戰場上的1張卡牌戰力-400。之後，當己方的旗艦耐久為0時，進一步使其戰力-100。"
+        "effectLabel": "■【Counter】(Can be used during our defense step) One card on the opponent's side loses -400 power for this battle. After that, if our flagship's durability is 0, further reduce its power by -100."
       }
     ],
     "imageSrc": "SD03-015.png",
@@ -1021,10 +1148,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "SD03-016",
-    "name": "鐵血威壓",
+    "name": "Iron Blood Pressure",
     "effects": [
       {
-        "effectLabel": "■【絕地反擊】(旗艦卡受到傷害，將作為旗艦耐久的此卡加入手牌時，可以無需支付費用使用此卡)■【主階段啟動】本回合中，對方戰場上的1張艦船卡戰力-300。"
+        "effectLabel": "■【Retaliation】(When the flagship card is damaged, you can use this card without paying the cost) ■【During Main Phase】This turn, one ship card on the opponent's side loses -300 power."
       }
     ],
     "imageSrc": "SD03-016.png",
@@ -1042,10 +1169,10 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "BP01-001",
-    "name": "薩拉托加",
+    "name": "Saratoga",
     "effects": [
       {
-        "effectLabel": "■【轉為休息狀態時】查看己方卡組最上方的2張卡，而後以任意順序將其置於卡組最上方。■【覺醒】己方的旗艦耐久為1或以下時，將此卡轉為反面。"
+        "effectLabel": "■【When Turning to Resting State】Look at the top 2 cards of our deck, then place them back on top in any order. ■【Awakening】If our flagship's durability is 1 or below, turn this card to the opposite side."
       }
     ],
     "imageSrc": "BP01-001.png",
@@ -1063,10 +1190,10 @@
     "supportScope": "Battlefield",
     "supportValue": 200,
     "id": "BP01-001覺醒",
-    "name": "薩拉托加",
+    "name": "Saratoga",
     "effects": [
       {
-        "effectLabel": "■【固守+100】(此卡被攻擊的戰鬥中，此卡戰力+100)■【轉為休息狀態時】查看己方卡組最上方的2張卡，而後以任意順序將其置於卡組最上方。"
+        "effectLabel": "■【Defend +100】(When this card is attacked, it gets +100 power) ■【When Turning to Resting State】Look at the top 2 cards of our deck, then place them back on top in any order."
       }
     ],
     "imageSrc": "BP01-001覺醒.png",
@@ -1084,10 +1211,10 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "BP01-002",
-    "name": "企業",
+    "name": "Enterprise",
     "effects": [
       {
-        "effectLabel": "■【覺醒】己方的旗艦耐久為1或以下時，將此卡轉為反面。"
+        "effectLabel": "■【Awakening】If our flagship's durability is 1 or below, turn this card face down."
       }
     ],
     "imageSrc": "BP01-002.png",
@@ -1105,10 +1232,10 @@
     "supportScope": "Battlefield",
     "supportValue": 100,
     "id": "BP01-002覺醒",
-    "name": "企業",
+    "name": "Enterprise",
     "effects": [
       {
-        "effectLabel": "■【攻擊時】可以捨棄3張手牌：當對方的旗艦耐久為0時，本次戰鬥中，此卡戰力+500。"
+        "effectLabel": "■【When Attacking】You can discard 3 cards from your hand: If the opponent's flagship's durability is 0, this card gets +500 power for this battle."
       }
     ],
     "imageSrc": "BP01-002覺醒.png",
@@ -1126,10 +1253,10 @@
     "supportScope": "Both",
     "supportValue": 0,
     "id": "BP01-003",
-    "name": "格里德利",
+    "name": "Gridley",
     "effects": [
       {
-        "effectLabel": "■當己方的旗艦卡為「列星頓」或「薩拉托加」時，所有區域的此卡支援+100。■當己方的魔方卡數量為3或以上時，作為旗艦耐久的此卡獲得【絕地反擊】(旗艦卡受到傷害，將作為旗艦耐久的此卡加入手牌時，可以無需支付費用使用此卡)。"
+        "effectLabel": "■If our flagship card is 'Lexington' or 'Saratoga', this card gets +100 support in all areas. ■If you have 3 or more cube cards, this card gains 【Counterattack】(If the flagship takes damage, this card can be added to our hand without cost)."
       }
     ],
     "imageSrc": "BP01-003.png",
@@ -1147,7 +1274,7 @@
     "supportScope": "Hand",
     "supportValue": 100,
     "id": "BP01-004",
-    "name": "克雷文",
+    "name": "Craven",
     "effects": [],
     "imageSrc": "BP01-004.png",
     "cardSet": "BP01"
@@ -1164,10 +1291,10 @@
     "supportScope": "Hand",
     "supportValue": 100,
     "id": "BP01-005",
-    "name": "麥考爾",
+    "name": "McCall",
     "effects": [
       {
-        "effectLabel": "■【強擊+100】(此卡發起攻擊的戰鬥中，此卡戰力+100)■【登場時】查看己方卡組最上方的3張卡，而後將其以任意順序置於卡組最上方。"
+        "effectLabel": "■【Heavy Strike +100】(When this card attacks, it gets +100 power) ■【When Played】Look at the top 3 cards of our deck, then place them back on top in any order."
       }
     ],
     "imageSrc": "BP01-005.png",
@@ -1185,10 +1312,10 @@
     "supportScope": "Hand",
     "supportValue": 100,
     "id": "BP01-006",
-    "name": "莫里",
+    "name": "Maury",
     "effects": [
       {
-        "effectLabel": "■【登場時】查看己方卡組最上方的3張卡，將其中最多1張《白鷹》艦船卡公開並加入手牌，而後將其餘卡牌以任意順序置於卡組最上方。"
+        "effectLabel": "■【When Played】Look at the top 3 cards of our deck, reveal up to 1 'Eagle Union' ship card and add it to your hand, then place the remaining cards back on top in any order."
       }
     ],
     "imageSrc": "BP01-006.png",
@@ -1206,10 +1333,10 @@
     "supportScope": "Hand",
     "supportValue": 0,
     "id": "BP01-007",
-    "name": "班森",
+    "name": "Benson",
     "effects": [
       {
-        "effectLabel": "■【固守+100】(此卡被攻擊的戰鬥中，此卡戰力+100)"
+        "effectLabel": "■【Defend +100】(When this card is attacked, it gets +100 power)"
       }
     ],
     "imageSrc": "BP01-007.png",
@@ -1227,10 +1354,10 @@
     "supportScope": "Hand",
     "supportValue": 100,
     "id": "BP01-008",
-    "name": "拉菲",
+    "name": "Raleigh",
     "effects": [
       {
-        "effectLabel": "■【被攻擊時】【每回合1次】公開雙方卡組最上方的1張卡，而後將其置於卡組最下方。當己方公開的卡牌的費用大於等於對方公開的卡牌的費用時，此卡在本回合中獲得【固守+100】(此卡被攻擊的戰鬥中，此卡戰力+100)。"
+        "effectLabel": "■【When Attacked】【Once per turn】Reveal the top card of both decks, then place it at the bottom of the deck. If our revealed card's cost is greater than or equal to the opponent's revealed card's cost, this card gains 【Defend +100】(When this card is attacked, it gets +100 power) for this turn."
       }
     ],
     "imageSrc": "BP01-008.png",
@@ -1248,10 +1375,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "BP01-009",
-    "name": "聖路易斯",
+    "name": "St. Louis",
     "effects": [
       {
-        "effectLabel": "■【固守+100】(此卡被攻擊的戰鬥中，此卡戰力+100)"
+        "effectLabel": "■【Defend +100】(When this card is attacked, it gets +100 power)"
       }
     ],
     "imageSrc": "BP01-009.png",
@@ -1269,10 +1396,10 @@
     "supportScope": "Both",
     "supportValue": 0,
     "id": "BP01-010",
-    "name": "海倫娜",
+    "name": "Helena",
     "effects": [
       {
-        "effectLabel": "■當己方的旗艦耐久為0時，所有區域的此卡支援+100。"
+        "effectLabel": "■If our flagship's durability is 0, this card gets +100 support in all areas."
       }
     ],
     "imageSrc": "BP01-010.png",
@@ -1290,10 +1417,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "BP01-011",
-    "name": "克里夫蘭",
+    "name": "Cleveland",
     "effects": [
       {
-        "effectLabel": "■此卡與對方後排的卡牌的戰鬥中，此卡戰力+100。■【登場時】公開己方卡組最上方的1張卡，而後將其置於卡組最下方。當己方公開的卡牌為費用為3或以上的《白鷹》艦船卡時，抽1張卡。"
+        "effectLabel": "■This card gets +100 power in battles against the opponent's back row cards. ■【When Played】Reveal the top card of our deck, then place it at the bottom of the deck. If our revealed card is an 'Eagle Union' ship card with a cost of 3 or more, draw 1 card."
       }
     ],
     "imageSrc": "BP01-011.png",
@@ -1311,10 +1438,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "BP01-012",
-    "name": "哥倫比亞",
+    "name": "Columbia",
     "effects": [
       {
-        "effectLabel": "■此卡被後排的卡牌攻擊的戰鬥中，此卡戰力+200。"
+        "effectLabel": "■This card gets +200 power in battles when attacked by back row cards."
       }
     ],
     "imageSrc": "BP01-012.png",
@@ -1332,10 +1459,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "BP01-013",
-    "name": "丹佛",
+    "name": "Denver",
     "effects": [
       {
-        "effectLabel": "■位於前排的此卡可以攻擊對方後排處於激活狀態的艦船卡。■此卡與對方後排的卡牌的戰鬥中，此卡戰力+100。"
+        "effectLabel": "■This card in the front row can attack the opponent's back row ship cards that are activated. ■This card gets +100 power in battles against the opponent's back row cards."
       }
     ],
     "imageSrc": "BP01-013.png",
@@ -1353,10 +1480,10 @@
     "supportScope": "Hand",
     "supportValue": 100,
     "id": "BP01-014",
-    "name": "比洛克西",
+    "name": "Biloxi",
     "effects": [
       {
-        "effectLabel": "■此卡發起攻擊的戰鬥結束時，可以將此卡置於卡組最下方。若有執行此動作時，將1張作為己方的旗艦耐久的卡牌加入手牌。"
+        "effectLabel": "■At the end of battles where this card attacks, you can place this card at the bottom of the deck. If you do, add one card that serves as our flagship's durability to your hand."
       }
     ],
     "imageSrc": "BP01-014.png",
@@ -1374,10 +1501,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "BP01-015",
-    "name": "彭薩科拉",
+    "name": "Pensacola",
     "effects": [
       {
-        "effectLabel": "■【登場時】可以將對方戰場上的1張費用為2或以下的艦船卡彈回手牌。"
+        "effectLabel": "■【When Played】You can return one ship card from the opponent's side that costs 2 or less to their hand."
       }
     ],
     "imageSrc": "BP01-015.png",
@@ -1395,10 +1522,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "BP01-016",
-    "name": "布雷默頓",
+    "name": "Bremerton",
     "effects": [
       {
-        "effectLabel": "■【固守+100】(此卡被攻擊的戰鬥中，此卡戰力+100)■【己方回合結束時】當此卡處於休息狀態時，公開雙方卡組最上方的1張卡，而後將其置於卡組最下方。當己方公開的卡牌的費用大於等於對方公開的卡牌的費用時，將此卡轉為激活狀態。"
+        "effectLabel":"■【Defend +100】(When this card is attacked, it gets +100 power) ■【End of Turn】If this card is resting, reveal the top card of both decks, then place it at the bottom of the deck. If our revealed card's cost is greater than or equal to the opponent's revealed card's cost, turn this card into active state."
       }
     ],
     "imageSrc": "BP01-016.png",
@@ -1416,10 +1543,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "BP01-017",
-    "name": "長島",
+    "name": "Long Island",
     "effects": [
       {
-        "effectLabel": "■【遠程】(位於後排的此卡可以攻擊對方後排的卡牌)■【攻擊時】【每回合一次】公開雙方卡組最上方的1張卡，而後將其置於卡組最下方。當己方公開的卡牌的費用大於等於對方公開的卡牌的費用時，將此卡轉為激活狀態。"
+        "effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards) ■【When Attacking】【Once per turn】Reveal the top card of both decks, then place it at the bottom of the deck. If our revealed card's cost is greater than or equal to the opponent's revealed card's cost, turn this card into active state."
       }
     ],
     "imageSrc": "BP01-017.png",
@@ -1437,10 +1564,10 @@
     "supportScope": "Both",
     "supportValue": 100,
     "id": "BP01-018",
-    "name": "女灶神",
+    "name": "Vestal",
     "effects": [
       {
-        "effectLabel": "■【對方回合中】當己方的旗艦卡為「約克鎮」或「企業」時，戰場上的此卡支援+100。■戰場上的此卡發起支援的戰鬥結束時，將此卡置於撤退區。"
+        "effectLabel": "■【During the Opponent's Turn】If our flagship card is 'Yorktown' or 'Enterprise', this card gets +100 support on the battlefield. ■At the end of battles where this card supports, place this card in the retreat area."
       }
     ],
     "imageSrc": "BP01-018.png",
@@ -1458,10 +1585,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "BP01-019",
-    "name": "假日時光",
+    "name": "Holiday Time",
     "effects": [
       {
-        "effectLabel": "■【主階段啟動】將對方戰場上的1張費用為2或以下的艦船卡彈回卡組最下方。"
+        "effectLabel": "■【During Main Phase】Return one ship card from the opponent's side that costs 2 or less to the bottom of their deck."
       }
     ],
     "imageSrc": "BP01-019.png",
@@ -1479,10 +1606,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "BP01-020",
-    "name": "整裝待發",
+    "name": "Ready to Go",
     "effects": [
       {
-        "effectLabel": "■【主階段啟動】抽2張卡。之後，查看己方卡組最上方的1張卡，選擇將其置於卡組最上方或最下方。"
+        "effectLabel": "■【During Main Phase】Draw 2 cards. Then, look at the top card of our deck and choose to place it on top or at the bottom."
       }
     ],
     "imageSrc": "BP01-020.png",
@@ -1500,10 +1627,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "BP01-021",
-    "name": "禁忌的雙重列星頓",
+    "name": "Forbidden Double Lexington",
     "effects": [
       {
-        "effectLabel": "■【反制】(在己方的防守步驟可以發動)本次戰鬥中，己方戰場上的1張卡牌戰力+300。之後，當己方的旗艦卡為「列星頓」或「薩拉托加」時，將己方的旗艦卡轉為激活狀態。■位於卡組的此卡費用+3。"
+        "effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +300 power for this battle. After that, if our flagship card is 'Lexington' or 'Saratoga', turn our flagship card into active state. ■This card's cost in the deck is +3."
       }
     ],
     "imageSrc": "BP01-021.png",
@@ -1521,10 +1648,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "BP01-022",
-    "name": "與騎士共舞",
+    "name": "Dancing with Knights",
     "effects": [
       {
-        "effectLabel": "■【絕地反擊】(旗艦卡受到傷害，將作為旗艦耐久的此卡加入手牌時，可以無需支付費用使用此卡)■【主階段啟動】查看己方卡組最上方的3張卡，將其中最多1張《白鷹》卡牌公開並加入手牌，而後將其餘卡牌以任意順序置於卡組最上方。"
+        "effectLabel": "■【Retaliation】(When the flagship card is damaged, you can use this card without paying the cost) ■【During Main Phase】Look at the top 3 cards of our deck, reveal up to 1 'Eagle Union' card and add it to your hand, then place the remaining cards back on top in any order."
       }
     ],
     "imageSrc": "BP01-022.png",
@@ -1542,10 +1669,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "BP01-023",
-    "name": "鐵底灣之夜",
+    "name": "Iron Bottom Sound Night",
     "effects": [
       {
-        "effectLabel": "■【絕地反擊】(旗艦卡受到傷害，將作為旗艦耐久的此卡加入手牌時，可以無需支付費用使用此卡)■【主階段啟動】公開雙方卡組最上方的1張卡，而後將其置於卡組最下方。當己方公開的卡牌的費用大於等於對方公開的卡牌的費用時，將對方戰場上的1張費用為3或以下的艦船卡彈回卡組最下方。"
+        "effectLabel": "■【Retaliation】(When the flagship card is damaged, you can use this card without paying the cost) ■【During Main Phase】Reveal the top card of both decks, then place it at the bottom of the deck. If our revealed card's cost is greater than or equal to the opponent's revealed card's cost, return one ship card from the opponent's side that costs 3 or less to the bottom of their deck."
       }
     ],
     "imageSrc": "BP01-023.png",
@@ -1563,10 +1690,10 @@
     "supportScope": "-",
     "supportValue": 0,
     "id": "BP01-024",
-    "name": "反擊之翼",
+    "name": "Counterattack Wings",
     "effects": [
       {
-        "effectLabel": "■【絕地反擊】(旗艦卡受到傷害，將作為旗艦耐久的此卡加入手牌時，可以無需支付費用使用此卡)■【主階段啟動】抽1張卡。之後，將對方戰場上的1張費用為3或以下的艦船卡彈回卡組最下方。"
+        "effectLabel": "■【Retaliation】(When the flagship card is damaged, you can use this card without paying the cost) ■【During Main Phase】Draw 1 card. Then, return one ship card from the opponent's side that costs 3 or less to the bottom of their deck."
       }
     ],
     "imageSrc": "BP01-024.png",

@@ -124,8 +124,7 @@ public partial class ALPlayer : Player
 
     public void EndTurn()
     {
-        GetUnitsInBoard().ForEach(card => card.TryToTriggerCardEffect(ALCardEffectTrigger.EndOfTurn));
-        GetCardsInHand().ForEach(card => card.TryToTriggerCardEffect(ALCardEffectTrigger.EndOfTurn));
+        TryToTriggerOnAllCards(ALCardEffectTrigger.EndOfTurn);
         if (OnTurnEnd is not null) OnTurnEnd();
     }
 
@@ -345,6 +344,7 @@ public partial class ALPlayer : Player
         ALCard durabilityCardInHand = hand.AddCardToHand(durabilityCardInBoard.GetAttributes<ALCardDTO>());
         durabilityCardInHand.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
         durabilityCardInBoard.DestroyCard(); // Destroy card from board
+        TryToTriggerOnAllCards(ALCardEffectTrigger.OnDamageReceived);
         GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown()).Count}/{durabilityCards.Count}");
     }
 
@@ -440,7 +440,7 @@ public partial class ALPlayer : Player
     void DestroyUnitCard(ALCard card)
     {
         AddToRetreatAreaOnTop(card.GetAttributes<ALCardDTO>());
-        card.TryToTriggerCardEffect(ALCardEffectTrigger.OnceDestroyed);
+        card.TryToTriggerCardEffect(ALCardEffectTrigger.OnCardDestroyed);
         card.DestroyCard();
     }
 
@@ -495,6 +495,12 @@ public partial class ALPlayer : Player
     {
         GetPlayerBoard<ALBoard>().GetCardsInTree().ForEach(card => card.TryToExpireEffectOrModifier(duration));
         GetPlayerHand<ALHand>().GetCardsInTree().ForEach(card => card.TryToExpireEffectOrModifier(duration));
+    }
+
+    void TryToTriggerOnAllCards(string triggerEvent)
+    {
+        GetPlayerBoard<ALBoard>().GetCardsInTree().ForEach(card => card.TryToTriggerCardEffect(triggerEvent));
+        GetPlayerHand<ALHand>().GetCardsInTree().ForEach(card => card.TryToTriggerCardEffect(triggerEvent));
     }
 
     // Public Player Actions for AI 
