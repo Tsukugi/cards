@@ -115,7 +115,7 @@ public partial class Board : Node3D
             return;
         }
         selectedCard[playerName] = foundCard;
-        GD.Print($"[SelectCardField] Selected {player.Name}.{Name} - {foundCard.Name}");
+        //GD.Print($"[SelectCardField] Selected {player.Name}.{Name} - {foundCard.Name}");
         foundCard.UpdatePlayerSelectedColor(player);
         foundCard.SetIsSelected(true);
     }
@@ -142,10 +142,19 @@ public partial class Board : Node3D
                     switch (playState)
                     {
                         case EPlayState.EnemyInteraction: SkipInteraction(player); break;
+                        case EPlayState.SelectEffectTarget: CancelInteraction(player); break;
+                        case EPlayState.SelectTarget: CancelInteraction(player); break;
                     }
                     break;
                 }
         }
+    }
+
+    public virtual void CancelInteraction(Player player)
+    {
+        //! ALl bound interactions should ONLY depend on playState to be completed to safely use this
+        GD.Print($"[CancelInteraction]");
+        player.SetPlayState(EPlayState.Select);
     }
     public virtual void RetireCard(Card card)
     {
@@ -162,7 +171,7 @@ public partial class Board : Node3D
         string playerName = player.Name.ToString();
         if (selectedCard.TryGetValue(playerName, out Card value))
         {
-            GD.Print($"[ClearSelectionForPlayer] {playerName} {value.Name} ");
+            // GD.Print($"[ClearSelectionForPlayer] {playerName} {value.Name} ");
             value.SetIsSelected(false);
             selectedCard.Remove(playerName);
         }

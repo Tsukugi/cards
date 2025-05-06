@@ -79,7 +79,9 @@ public class ALAIActions
         await BattlePhaseAttack(() =>
         {
             List<ALCard> enemyUnits = player.GetEnemyPlayerBoard<ALBoard>().GetUnits(); // Find all placed cards
-            return enemyUnits.GetRandomFromList();
+            var selected = enemyUnits.GetRandomFromList();
+            GD.Print($"[BattlePhaseAttackRandom] {selected.GetAttributes<CardDTO>().name}");
+            return selected;
         });
     }
     public async Task AttackProcess(ALCard attacker, ALCard target)
@@ -145,7 +147,7 @@ public class ALAIActions
         await asyncHandler.AwaitForCheck(
             () =>
             {
-                GD.Print($"[WaitUntilPhase] Success {player.Phase.GetCurrentPhase()} {phase}");
+                // GD.Print($"[WaitUntilPhase] Success {player.Phase.GetCurrentPhase()} {phase}");
             },
             () =>
             {
@@ -160,7 +162,7 @@ public class ALAIActions
         await asyncHandler.AwaitForCheck(
             () =>
             {
-                GD.Print($"[WaitUntilPlayState] Success {player.GetPlayState()} {playState}");
+                // GD.Print($"[WaitUntilPlayState] Success {player.GetPlayState()} {playState}");
             },
             () =>
             {

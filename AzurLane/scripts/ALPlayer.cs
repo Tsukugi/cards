@@ -548,9 +548,14 @@ public partial class ALPlayer : Player
         for (int i = 0; i < num; i++)
         {
             ALCardDTO cardToDraw = DrawCard(deckSet.deck, deckField);
-            ALHand hand = GetPlayerHand<ALHand>();
-            hand.AddCardToHand(cardToDraw);
+            AddCardToHand(cardToDraw);
         }
+    }
+
+    public void AddCardToHand(ALCardDTO card)
+    {
+        ALHand hand = GetPlayerHand<ALHand>();
+        hand.AddCardToHand(card);
     }
 
     public void SetBoardCardsAsActive()

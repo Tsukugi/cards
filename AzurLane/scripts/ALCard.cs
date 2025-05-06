@@ -112,29 +112,23 @@ public partial class ALCard : Card
             string formattedEffects = $"■";
             if (effect.triggerEvent.Length > 0) formattedEffects += $"({LoggingUtils.ArrayToString(effect.triggerEvent)}) - ";
             if (effect.duration is not null) formattedEffects += $"[{effect.duration}] - ";
-            if (effect.condition is CardEffectConditionDTO[] conditions && conditions.Length > 0)
+            if (effect.condition.Length > 0)
             {
                 formattedEffects += "[";
-                for (int i = 0; i < conditions.Length; i++)
+                for (int i = 0; i < effect.condition.Length; i++)
                 {
-                    formattedEffects += $"{conditions[i].conditionId}";
-
-                    foreach (string amount in conditions[i].conditionArgs)
+                    formattedEffects += $"{effect.condition[i].conditionId}";
+                    if (effect.condition[i].conditionArgs.Length > 0)
                     {
-                        formattedEffects += $" ({amount})";
+                        formattedEffects += $" ({LoggingUtils.ArrayToString(effect.condition[i].conditionArgs)})";
                     }
-                    if (conditions[i].conditionCard is string card) formattedEffects += $" ({card})";
-                    if (i != conditions.Length - 1) formattedEffects += " - ";
                 }
                 formattedEffects += "] - ";
             }
             if (effect.effectId is not null)
             {
                 formattedEffects += $"[{effect.effectId}";
-                foreach (var value in effect.effectValue)
-                {
-                    formattedEffects += $"({value})";
-                }
+                if (effect.effectValue.Length > 0) formattedEffects += $" ({LoggingUtils.ArrayToString(effect.effectValue)})";
                 formattedEffects += $"] - ";
             }
             stringBuilder.AppendLine($"{formattedEffects}{effect.effectLabel}");

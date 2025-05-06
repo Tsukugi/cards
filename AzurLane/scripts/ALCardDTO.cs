@@ -20,6 +20,7 @@ public class ALCardDTO : CardDTO
 
     // Dynamic readable properties for Modifiers
     public int Power { get => power; }
+    public int Cost { get => cost; }
 }
 
 public static class ALCardType

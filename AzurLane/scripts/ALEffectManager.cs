@@ -46,13 +46,15 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
 
     public bool IsSpecificCardOnField(CardEffectConditionDTO conditionDTO)
     {
+        string cardId = conditionDTO.conditionArgs[0];
+
         List<ALCard> units = ((ALPlayer)ownerPlayer).GetUnitsInBoard();
         ALCardDTO attrs = card.GetAttributes<ALCardDTO>();
 
         ALCard? findResult = units.Find(unit =>
             {
                 if (unit.GetIsEmptyField()) return false;
-                return unit.GetAttributes<ALCardDTO>().id == conditionDTO.conditionCard;
+                return unit.GetAttributes<ALCardDTO>().id == cardId;
             });
 
         bool fulfillsCondition = findResult is ALCard foundCard;
@@ -76,6 +78,18 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
 
         bool fulfillsCondition = LogicUtils.ApplyComparison(durability, comparisonOperator, valueToCompare.ToInt());
         GD.Print($"[Condition - CheckFlagshipDurability] {fulfillsCondition}");
+        return fulfillsCondition;
+    }
+
+    public bool HasCubes(CardEffectConditionDTO conditionDTO)
+    {
+        string comparisonOperator = conditionDTO.conditionArgs[0];
+        string valueToCompare = conditionDTO.conditionArgs[1];
+
+        int cubes = ((ALPlayer)ownerPlayer).GetActiveCubesInBoard().Count;
+
+        bool fulfillsCondition = LogicUtils.ApplyComparison(cubes, comparisonOperator, valueToCompare.ToInt());
+        GD.Print($"[Condition - HasCubes] {fulfillsCondition}");
         return fulfillsCondition;
     }
 
@@ -138,12 +152,13 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             int attr = selectedTarget.GetAttributeWithModifiers<ALCardDTO>(attributeToCompare);
             if (LogicUtils.ApplyComparison(attr, comparator, value.ToInt()))
             {
+                ALPlayer enemyPlayer = selectedTarget.GetOwnerPlayer<ALPlayer>();
+                enemyPlayer.AddCardToHand(selectedTarget.GetAttributes<ALCardDTO>());
+                selectedTarget.DestroyCard();
                 ownerPlayer.SetPlayState(previousState);
+                return;
             }
-            else
-            {
-                GD.PrintErr($"[OnAfterSelectReturningCard] Attribute: {attr} - {comparator} - Value: {value}");
-            }
+            GD.PrintErr($"[OnAfterSelectReturningCard] Attribute: {attr} - {comparator} - Value: {value}");
         }
 
         await ApplySelectPlayState(

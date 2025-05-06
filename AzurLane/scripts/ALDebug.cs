@@ -6,7 +6,7 @@ public partial class ALDebug
 
     public ALDebug(ALGameMatchManager _matchManager) => matchManager = _matchManager;
 
-    bool ignoreCosts = false;
+    bool ignoreCosts = true;
 
     public void ToggleIgnoreCosts()
     {

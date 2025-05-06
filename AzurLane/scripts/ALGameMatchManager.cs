@@ -161,8 +161,16 @@ public partial class ALGameMatchManager : Node
 
     ALPlayer PickNextPlayer()
     {
-        playerIndexPlayingTurn = orderedPlayers.Count.ApplyCircularBounds(playerIndexPlayingTurn + 1);
+        playerIndexPlayingTurn = GetNextPlayerIndex(playerIndexPlayingTurn);
         return GetPlayerPlayingTurn();
+    }
+
+    int GetNextPlayerIndex(int fromPlayerIndex) => orderedPlayers.Count.ApplyCircularBounds(fromPlayerIndex + 1);
+    int FindIndexForPlayer(ALPlayer player) => orderedPlayers.FindIndex(orderedPlayer => orderedPlayer == player);
+    ALPlayer GetNextPlayer(ALPlayer fromPlayer = null)
+    {
+        var currentPlayer = fromPlayer is null ? GetPlayerPlayingTurn() : fromPlayer;
+        return orderedPlayers[GetNextPlayerIndex(FindIndexForPlayer(currentPlayer))];
     }
 
     // ----- API -----

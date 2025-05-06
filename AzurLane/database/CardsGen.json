@@ -214,7 +214,24 @@
     "name": "Portland",
     "effects": [
       {
-        "effectLabel": "■【Defend +100】(When this card is attacked, it gets +100 power) ■If there is a ship card 'Indianapolis' on our side, this card gets +100 power."
+        "triggerEvent": ["IsAttacked"],
+				"duration": "CurrentBattle",
+				"effectId": "GetPower",
+				"effectValue": ["100"],
+        "effectLabel": "■【Defend +100】(When this card is attacked, it gets +100 power)"
+      }, 
+      {
+        "triggerEvent": ["AnyCardPlayed", "WhenPlayed"],
+        "condition": [
+          {
+            "conditionId": "IsSpecificCardOnField",
+            "conditionArgs": ["SD01-010"]
+          }
+        ],
+				"duration": "WhileVisible",
+				"effectId": "GetPower",
+				"effectValue": ["100"],
+        "effectLabel":  "■If there is a ship card 'Indianapolis' on our side, this card gets +100 power."
       }
     ],
     "imageSrc": "SD01-009.png",
@@ -277,8 +294,8 @@
 				"triggerEvent": ["IsAttacked"],
 				"duration": "CurrentBattle",
 				"effectId": "GetPower",
-				"effectLabel": "■【Defend +200】(When this card is attacked, it gets +200 power)",
-				"effectValue": ["200"]
+				"effectValue": ["200"],
+				"effectLabel": "■【Defend +200】(When this card is attacked, it gets +200 power)"
 			}
     ],
     "imageSrc": "SD01-011.png",
@@ -336,7 +353,6 @@
 				"effectValue": ["RangedAttack"],
         "effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
       },
-      
 			{	
 				"triggerEvent": ["WhenPlayed"],
 				"effectId": "ReturnEnemyToHand",
@@ -452,7 +468,20 @@
     "name": "Hood",
     "effects": [
       {
-        "effectLabel": "■【End of Turn】Turn one of our cube cards into active state. ■【Awakening】If the flagship's durability is 1 or below, turn this card face down."
+        "triggerEvent": ["EndOfTurn"],
+        "effectId": "ReactivateCube",
+        "effectLabel": "■【End of Turn】Turn one of our cube cards into active state."
+      },
+      {
+        "triggerEvent": ["OnDamageReceived"],
+        "condition": [
+					{ 
+						"conditionId": "CheckFlagshipDurability",
+						"conditionArgs": ["EqualOrLess", "1"]
+					}
+				],
+        "effectId": "Awakening",
+        "effectLabel": "■【Awakening】When the flagship's durability is 1 or below, turn this card face down."
       }
     ],
     "imageSrc": "SD02-001.png",
@@ -473,6 +502,8 @@
     "name": "Hood",
     "effects": [
       {
+        "triggerEvent": ["EndOfTurn"],
+        "effectId": "ReactivateCube",
         "effectLabel": "■【End of Turn】Turn one of our cube cards into active state."
       }
     ],

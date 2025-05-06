@@ -24,7 +24,7 @@ public class EffectManager(Card _card, List<CardEffectDTO> _activeStatusEffects,
 
     public virtual async Task TryToApplyEffects(string triggerEvent)
     {
-        GD.Print($"[TryToApplyEffects] {triggerEvent}");
+        //GD.Print($"[TryToApplyEffects] {triggerEvent}");
         await Task.CompletedTask;
     }
     public bool HasActiveEffect(string name)
