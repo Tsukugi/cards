@@ -83,9 +83,12 @@ public partial class ALCard : Card
     public bool CanShowStackCount() => !GetIsEmptyField() && CardStack > 1;
     public bool CanShowCardDetailsUI() => !GetIsEmptyField() && !isDeck && !(isFlagship && GetIsFaceDown()) && !GetIsFaceDown();
     public bool CanShowPowerLabel() => IsCardUnit();
-    public bool IsCardUnit() =>
-        !GetIsEmptyField() && !isResource && !isDeck
-        && (GetAttributes<ALCardDTO>().cardType == ALCardType.Ship || GetAttributes<ALCardDTO>().cardType == ALCardType.Flagship); // Refers to a placed card that is a ship or flagship
+    public bool IsCardUnit()
+    {
+        var attrs = GetAttributes<ALCardDTO>();
+        return !GetIsEmptyField() && !isResource && !isDeck
+           && (attrs.cardType == ALCardType.Ship || attrs.cardType == ALCardType.Flagship || attrs.cardType == ALCardType.FlagshipAwakened); // Refers to a placed card that is a ship or flagship
+    }
     public string GetFormattedEffectMini()
     // TODO : Add colors for duration and condition
     {
@@ -106,7 +109,8 @@ public partial class ALCard : Card
         foreach (var effect in effects)
         {
 
-            string formattedEffects = $"■ [{effect.triggerEvent}] - ";
+            string formattedEffects = $"■";
+            if (effect.triggerEvent.Length > 0) formattedEffects += $"({LoggingUtils.ArrayToString(effect.triggerEvent)}) - ";
             if (effect.duration is not null) formattedEffects += $"[{effect.duration}] - ";
             if (effect.condition is CardEffectConditionDTO[] conditions && conditions.Length > 0)
             {

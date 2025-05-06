@@ -24,6 +24,19 @@ public static class LoggingUtils
         return sb.ToString();
     }
 
+    public static string ArrayToString(string[] array)
+    {
+        string res = $"[";
+        for (int i = 0; i < array.Length; i++)
+        {
+            res += array[i];
+            if (i < array.Length - 1) res += " - ";
+        }
+        res += "]";
+
+        return res;
+    }
+
     public static void Log(this Node node, string message)
     {
         GD.Print($"[{node.GetType()}] {message}");

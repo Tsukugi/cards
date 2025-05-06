@@ -23,7 +23,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     {
         ALCardDTO attrs = card.GetAttributes<ALCardDTO>();
         // Filter only the ones with the matching trigger event
-        CardEffectDTO[] matchingEffects = Array.FindAll(attrs.effects, skill => skill.triggerEvent == triggerEvent);
+        CardEffectDTO[] matchingEffects = Array.FindAll(attrs.effects, skill => skill.triggerEvent.Contains(triggerEvent));
         return matchingEffects;
     }
 
@@ -156,7 +156,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     public async Task Awakening(CardEffectDTO effectDTO)
     {
         GD.Print($"[Effect - Awakening] {effectDTO.effectValue}");
-        card.SetIsFaceDown(true);
+        //card.SetIsFaceDown(true);
         var id = card.GetAttributes<ALCardDTO>().id;
         card.UpdateAttributes(matchManager.GetDatabase().cards[$"{id}覺醒"]);
         await Task.CompletedTask;

@@ -372,8 +372,8 @@
         "triggerEvent": ["Counter"],
 				"duration": "CurrentBattle",
 				"effectId": "PutCardTopOrBottomDeck",
-				"effectLabel": "Then, look at the top card of our deck and choose to put it on the top or bottom.",
-				"effectValue" : ["1"]
+				"effectValue" : ["1"],
+				"effectLabel": "Then, look at the top card of our deck and choose to put it on the top or bottom."
       }
     ],
     "imageSrc": "SD01-014.png",

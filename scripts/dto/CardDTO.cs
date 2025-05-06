@@ -10,7 +10,7 @@ public class CardDTO : BaseDTO
 public class CardEffectDTO
 {
     public CardEffectConditionDTO[] condition = [];
-    public string triggerEvent = CardEffectTrigger.ManuallyActivated;
+    public string[] triggerEvent = [];
     public string duration = CardEffectDuration.WhileVisible;
     public string effectId;
     public string effectLabel; // Card description or flavor text

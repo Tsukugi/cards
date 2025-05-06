@@ -47,8 +47,6 @@ public partial class ALPlayer : Player
         costArea = board.GetNode<ALBoardArea>("CostArea");
         unitsArea = board.GetNode<Node3D>("Units");
         durabilityArea = board.GetNode<ALBoardArea>("FlagshipDurability");
-
-        Callable.From(StartGameForPlayer).CallDeferred();
     }
 
     protected override void InitializeEvents()
@@ -68,8 +66,8 @@ public partial class ALPlayer : Player
         List<ALCard> units = GetUnitsInBoard();
         units.ForEach(unit =>
         {
-            unit.OnDurabilityDamage -= OnDurabilityDamageHandler;
-            unit.OnDurabilityDamage += OnDurabilityDamageHandler;
+            unit.OnDurabilityDamage -= ApplyDurabilityDamage;
+            unit.OnDurabilityDamage += ApplyDurabilityDamage;
         });
 
         GD.Print("[InitializeEvents] ALPlayer events initialized");
@@ -95,7 +93,7 @@ public partial class ALPlayer : Player
         GD.Print($"[AssignDeck] Deck size: {newDeckSet.deck.Count}");
     }
 
-    void StartGameForPlayer()
+    public void StartGameForPlayer()
     {
         // Deck setup
         deckField.CardStack = deckSet.deck.Count; // Set it as deck size
@@ -330,7 +328,7 @@ public partial class ALPlayer : Player
         hand.RemoveCardFromHand(this, eventCard);
     }
 
-    void OnDurabilityDamageHandler(Card card)
+    public void ApplyDurabilityDamage(Card card)
     {
         List<ALCard> durabilityCards = GetDurabilityCards();
         ALCard durabilityCardInBoard = durabilityCards.FindLast(durabilityCard => durabilityCard.GetIsFaceDown());
@@ -483,6 +481,7 @@ public partial class ALPlayer : Player
     void ApplyFlagshipDurability()
     {
         int durability = flagshipField.GetAttributes<ALCardDTO>().durability;
+        GD.Print($"[{Name}.ApplyFlagshipDurability] {durability}");
         List<ALCard> durabilityList = durabilityArea.TryGetAllChildOfType<ALCard>();
         for (int i = 0; i < durability; i++)
         {

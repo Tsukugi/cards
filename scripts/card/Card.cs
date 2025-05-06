@@ -172,7 +172,7 @@ public partial class Card : CardField
 
     public void SetEffectManager(EffectManager newEffect)
     {
-        GD.Print($"[SetEffectManager] {GetAttributes<CardDTO>().name}");
+        // GD.Print($"[SetEffectManager] {GetAttributes<CardDTO>().name}");
         effect = newEffect;
     }
 

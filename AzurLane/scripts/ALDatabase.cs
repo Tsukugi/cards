@@ -19,7 +19,7 @@ public class ALDatabase
         Dictionary<string, T> values = [];
         loader.GetListFromJson<T>(name).ForEach(value =>
         {
-            values.Add(value.id, value); GD.Print($"[ALDatabase.Load] {value.id} loaded");
+            values.Add(value.id, value); //GD.Print($"[ALDatabase.Load] {value.id} loaded");
         });
         return values;
     }

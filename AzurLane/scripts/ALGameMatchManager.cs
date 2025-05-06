@@ -43,8 +43,8 @@ public partial class ALGameMatchManager : Node
         userPlayer.AssignEnemyBoards(enemyHand, enemyBoard);
         enemyPlayer.AssignEnemyBoards(userHand, userBoard);
 
-        userPlayer.AssignDeck(BuildDeckSet("SD03"));
-        enemyPlayer.AssignDeck(BuildDeckSet("SD04"));
+        userPlayer.AssignDeck(BuildDeckSet("SD01"));
+        enemyPlayer.AssignDeck(BuildDeckSet("SD02"));
 
         orderedPlayers.ForEach(player =>
         {
@@ -70,6 +70,13 @@ public partial class ALGameMatchManager : Node
             player.GetPlayerHand<ALHand>().OnSkipInteraction += OnSkipInteractionHandler;
         });
 
+        Callable.From(StartMatchForPlayer).CallDeferred();
+    }
+
+    void StartMatchForPlayer()
+    {
+        userPlayer.StartGameForPlayer();
+        enemyPlayer.StartGameForPlayer();
         Callable.From(GetPlayerPlayingTurn().StartTurn).CallDeferred();
     }
 

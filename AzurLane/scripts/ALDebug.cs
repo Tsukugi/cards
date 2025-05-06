@@ -24,4 +24,11 @@ public partial class ALDebug
         matchManager.GetControlledPlayer().TryDrawCubeToBoard();
     }
     public bool GetIgnoreCosts() => ignoreCosts;
+
+    public void InflictDamage()
+    {
+        GD.Print($"[Debug.InflictDamage]");
+        var player = matchManager.GetPlayerPlayingTurn();
+        player.ApplyDurabilityDamage(player.GetPlayerBoard<ALBoard>().GetFlagship());
+    }
 }

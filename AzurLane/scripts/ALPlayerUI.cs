@@ -92,6 +92,9 @@ public partial class ALPlayerUI : Control
             case 2:
                 attachedPlayer.GetMatchManager().GetDebug().DrawCubeCard();
                 break;
+            case 3:
+                attachedPlayer.GetMatchManager().GetDebug().InflictDamage();
+                break;
             // Add more cases as needed
             default:
                 GD.PrintErr("Unknown item selected");

@@ -10,7 +10,7 @@ public class ALCardDTO : CardDTO
     public string[] factionCountry = [];
 
     // Flagship 
-    public int durability = 0;
+    public int durability = 5;
 
     // Ship
     public int supportValue = 0;
