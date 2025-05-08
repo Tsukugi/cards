@@ -185,7 +185,9 @@ public partial class ALPlayer : Player
 
         for (int i = 0; i < attributes.cost; i++)
         {
-            cubes[cubes.Count - 1 - i].SetIsInActiveState(true); // Last match
+            var lastInactiveCubeIndex = cubes.Count - 1 - i;
+            if (!lastInactiveCubeIndex.IsInsideBounds(cubes.Count)) continue; // This can happen if CardCost > drawnCubes : Mainly on debug mode 
+            cubes[lastInactiveCubeIndex].SetIsInActiveState(true); // Last match
         }
         OnPlaceCardCancelHandler(card);
     }
@@ -437,7 +439,7 @@ public partial class ALPlayer : Player
 
     async void DestroyUnitCard(ALCard card)
     {
-        AddToRetreatAreaOnTop(card.GetAttributes<ALCardDTO>());
+        card.GetOwnerPlayer<ALPlayer>().AddToRetreatAreaOnTop(card.GetAttributes<ALCardDTO>());
         await card.TryToTriggerCardEffect(ALCardEffectTrigger.OnCardDestroyed);
         card.DestroyCard();
     }
