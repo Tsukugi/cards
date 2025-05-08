@@ -8,6 +8,7 @@ public partial class ALSelectedCardUI : Panel
     Label powerLabel, selectedCardNameLabel, selectedCardEffectsLabel, selectedCardSupportScopeLabel, selectedCardFactionCountryLabel, selectedCardShipTypeLabel, selectedCardFactionLabel;
     TextureRect selectedCardImage;
     ALCard boundCard = null;
+    AnimationPlayer animationPlayer;
 
     public override void _Ready()
     {
@@ -23,6 +24,7 @@ public partial class ALSelectedCardUI : Panel
         selectedCardFactionCountryLabel = factionPanel.GetNode<Label>("FactionCountryLabel");
         selectedCardFactionLabel = factionPanel.GetNode<Label>("FactionLabel");
         selectedCardShipTypeLabel = factionPanel.GetNode<Label>("ShipTypeLabel");
+        animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
     }
 
     public override void _Process(double delta)
@@ -41,7 +43,7 @@ public partial class ALSelectedCardUI : Panel
         selectedCardEffectsLabel.Text = boundCard.GetFormattedEffect();
         selectedCardSupportScopeLabel.Text = attributes.supportScope;
         selectedCardShipTypeLabel.Text = attributes.shipType;
-        selectedCardFactionCountryLabel.Text = GetArrayAsString(attributes.factionCountry);
+        selectedCardFactionCountryLabel.Text = LoggingUtils.ArrayToString(attributes.factionCountry, "-", false);
         selectedCardFactionLabel.Text = attributes.faction;
 
         effectsPanel.Visible = selectedCardEffectsLabel.Text.Length > 0;
@@ -62,19 +64,15 @@ public partial class ALSelectedCardUI : Panel
         }
     }
 
+    public void PlayEffectAnimation()
+    {
+        animationPlayer.Play("Show");
+    }
+
     public void UpdateValues(ALCard? card)
     {
         boundCard = card;
         UpdateUINodes(boundCard);
     }
-    public string GetArrayAsString(string[] data, string separator = " ")
-    // TODO : Add colors for duration and condition
-    {
-        string res = $"";
-        foreach (var item in data)
-        {
-            res += ($"{item}{separator}");
-        }
-        return res;
-    }
+
 }

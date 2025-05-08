@@ -59,7 +59,8 @@ public partial class ALPlayerUI : Control
     {
         triggerCardUI.UpdateValues(triggeredCard);
         triggerCardUI.Visible = true;
-        await this.Wait(2f);
+        triggerCardUI.PlayEffectAnimation();
+        await this.Wait(2f); // TODO make animation awaitable
         triggerCardUI.UpdateValues(null);
         triggerCardUI.Visible = false;
     }

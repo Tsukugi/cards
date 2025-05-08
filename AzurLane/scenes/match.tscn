@@ -147,54 +147,40 @@ theme = ExtResource("4_swjf8")
 text = "State"
 
 [node name="SelectedCardUI" parent="Control" instance=ExtResource("6_o4q8i")]
-visible = false
 layout_mode = 0
-scale = Vector2(0.9, 0.9)
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = -24.0
+offset_top = -28.0
+offset_right = 458.0
+offset_bottom = 618.0
+grow_horizontal = 1
+grow_vertical = 1
 
 [node name="AttackerUI" parent="Control" instance=ExtResource("6_o4q8i")]
 visible = false
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -421.0
-offset_top = -442.0
-offset_right = 61.0
-offset_bottom = 204.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_left = -466.0
+offset_top = -444.6
+offset_right = 16.0
+offset_bottom = 201.4
 
 [node name="AttackedUI" parent="Control" instance=ExtResource("6_o4q8i")]
 visible = false
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 36.0
-offset_top = -442.0
-offset_right = 518.0
-offset_bottom = 204.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_left = -9.0
+offset_top = -444.6
+offset_right = 473.0
+offset_bottom = 201.4
 
 [node name="TriggerCardUI" parent="Control" instance=ExtResource("6_o4q8i")]
 visible = false
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -187.0
-offset_top = -442.0
-offset_right = 295.0
-offset_bottom = 204.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_top = -466.0
+offset_bottom = 180.0
 
 [editable path="UserPlayer"]
 [editable path="UserPlayer/Board"]

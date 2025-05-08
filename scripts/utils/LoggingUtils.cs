@@ -24,15 +24,17 @@ public static class LoggingUtils
         return sb.ToString();
     }
 
-    public static string ArrayToString(string[] array)
+    public static string ArrayToString(string[] array, string separator = "-", bool wrap = true)
     {
-        string res = $"[";
+        string res = "";
+
+        if (wrap) res += $"[";
         for (int i = 0; i < array.Length; i++)
         {
             res += array[i];
-            if (i < array.Length - 1) res += " - ";
+            if (i < array.Length - 1) res += $" {separator} ";
         }
-        res += "]";
+        if (wrap) res += "]";
 
         return res;
     }
