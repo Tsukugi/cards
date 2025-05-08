@@ -10,7 +10,7 @@ public class ALDatabase
 
     public void LoadData()
     {
-        cards = Load<ALCardDTO>("CardsGen");
+        cards = Load<ALCardDTO>("Cards");
         decks = Load<ALDeckDTO>("Decks");
     }
 

@@ -54,7 +54,7 @@ public class ALPhase
         // Place 1 face up cube if possible
         GD.Print($"[{player.Name}.PlayPreparationPhase]");
         player.TryDrawCubeToBoard();
-        player.DrawCardToHand();
+        await player.DrawCardToHand();
         UpdatePhase(EALTurnPhase.Preparation);
         await asyncPhase.AwaitBefore(PlayNextPhase);
     }
@@ -64,6 +64,7 @@ public class ALPhase
         GD.Print($"[{player.Name}.PlayMainPhase]");
         player.SetPlayState(EPlayState.Select);
         UpdatePhase(EALTurnPhase.Main);
+        await player.TryToExpireCardsModifierDuration(ALCardEffectDuration.MainPhase);
         await Task.CompletedTask;
     }
     async Task PlayBattlePhase()
@@ -72,6 +73,7 @@ public class ALPhase
         GD.Print($"[{player.Name}.PlayBattlePhase]");
         player.SetPlayState(EPlayState.Select);
         UpdatePhase(EALTurnPhase.Battle);
+        await player.TryToExpireCardsModifierDuration(ALCardEffectDuration.BattlePhase);
         await asyncPhase.AwaitBefore(EndBattlePhaseIfNoActiveCards);
     }
     async Task PlayEndPhase()

@@ -13,10 +13,10 @@ public partial class ALDebug
         ignoreCosts = !ignoreCosts;
         GD.Print($"[Debug.ToggleIgnoreCosts] {ignoreCosts}");
     }
-    public void DrawCard()
+    public async void DrawCard()
     {
         GD.Print($"[Debug.DrawCard]");
-        matchManager.GetControlledPlayer().DrawCardToHand();
+        await matchManager.GetControlledPlayer().DrawCardToHand();
     }
     public void DrawCubeCard()
     {

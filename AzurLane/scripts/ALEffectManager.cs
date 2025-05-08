@@ -201,6 +201,13 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         await Task.CompletedTask;
     }
 
+    public async Task Retaliation(CardEffectDTO effectDTO)
+    {
+        GD.Print($"[Effect - Retaliation]");
+        // TODO implement me
+        await Task.CompletedTask;
+    }
+
     async Task ApplySelectPlayState(Board target, Board.CardEvent OnAfterSelect, AsyncHandler.SimpleCheck ConclusionCheck = null)
     {
         GD.Print($"[ApplySelectPlayState]");

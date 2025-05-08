@@ -79,7 +79,7 @@ public static class ALCardRarity
 public static class ALCardEffectDuration
 {
     public static readonly string MainPhase = "MainPhase"; // While in the main phase
-    public static readonly string AttackPhase = "AttackPhase"; // While in the attack phase
+    public static readonly string BattlePhase = "BattlePhase"; // While in the battle phase
     public static readonly string CurrentBattle = "CurrentBattle"; // While in a battle
 }
 
@@ -98,6 +98,7 @@ public static class ALCardEffectTrigger
     public static readonly string OnCardDestroyed = "OnCardDestroyed"; // When this card is send to the retreat zone
     public static readonly string EndOfTurn = "EndOfTurn"; // When a player is on end phase
     public static readonly string OnDamageReceived = "OnDamageReceived"; // When flagship durability takes damage
+    public static readonly string OnMaxCubeCountChanged = "OnMaxCubeCountChanged"; // When MAX Cube count is modified with a draw of effect
 }
 
 public static class ALCardStatusEffects

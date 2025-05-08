@@ -135,10 +135,12 @@ public partial class ALGameMatchManager : Node
         GD.Print($"[OnGuardProvidedHandler] Add Guard Modifier for {GetAttackedCard().GetAttributes<ALCardDTO>().name}");
     }
 
-    void OnAttackEndHandler(Player guardingPlayer)
+    async void OnAttackEndHandler(Player guardingPlayer)
     {
-        GetAttackerCard().TryToExpireEffectOrModifier(ALCardEffectDuration.CurrentBattle);
-        attackedCard?.TryToExpireEffectOrModifier(ALCardEffectDuration.CurrentBattle); // May be destroyed at this point
+        foreach (var player in orderedPlayers)
+        {
+            await player.TryToExpireCardsModifierDuration(ALCardEffectDuration.CurrentBattle);
+        }
         attackerCard = null;
         attackedCard = null;
         GD.Print($"[OnAttackEndHandler]");

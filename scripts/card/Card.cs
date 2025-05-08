@@ -137,7 +137,11 @@ public partial class Card : CardField
     {
         isFaceDown = value;
         if (isFaceDown) cardDisplay.RotationDegrees = cardDisplay.RotationDegrees.WithZ(180);
-        else cardDisplay.RotationDegrees = cardDisplay.RotationDegrees.WithZ(0);
+        else
+        {
+            TryToExpireEffectOrModifier(CardEffectDuration.WhileFaceDown);
+            cardDisplay.RotationDegrees = cardDisplay.RotationDegrees.WithZ(0);
+        }
     }
 
     public void SetIsSideWays(bool value)
@@ -180,6 +184,7 @@ public partial class Card : CardField
 
     public void DestroyCard()
     {
+        TryToExpireEffectOrModifier(CardEffectDuration.WhileVisible);
         SetIsEmptyField(true);
     }
 

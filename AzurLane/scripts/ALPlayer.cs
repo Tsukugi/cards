@@ -93,7 +93,7 @@ public partial class ALPlayer : Player
         GD.Print($"[AssignDeck] Deck size: {newDeckSet.deck.Count}");
     }
 
-    public void StartGameForPlayer()
+    public async void StartGameForPlayer()
     {
         // Deck setup
         deckField.CardStack = deckSet.deck.Count; // Set it as deck size
@@ -106,7 +106,7 @@ public partial class ALPlayer : Player
 
         // Player preparation
         ALHand hand = GetPlayerHand<ALHand>();
-        DrawCardToHand(5);
+        await DrawCardToHand(5);
         SelectBoard(hand);
         hand.SelectCardField(this, Vector2I.Zero);
         ApplyFlagshipDurability(); // Manual says that this step is after drawing hand cards
@@ -120,9 +120,9 @@ public partial class ALPlayer : Player
         phaseManager.StartTurn();
     }
 
-    public void EndTurn()
+    public async void EndTurn()
     {
-        TryToTriggerOnAllCards(ALCardEffectTrigger.EndOfTurn);
+        await TryToTriggerOnAllCards(ALCardEffectTrigger.EndOfTurn);
         if (OnTurnEnd is not null) OnTurnEnd();
     }
 
@@ -344,7 +344,7 @@ public partial class ALPlayer : Player
         ALCard durabilityCardInHand = await hand.AddCardToHand(durabilityCardInBoard.GetAttributes<ALCardDTO>());
         await durabilityCardInHand.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
         durabilityCardInBoard.DestroyCard(); // Destroy card from board
-        TryToTriggerOnAllCards(ALCardEffectTrigger.OnDamageReceived);
+        await TryToTriggerOnAllCards(ALCardEffectTrigger.OnDamageReceived);
         GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown()).Count}/{durabilityCards.Count}");
     }
 
@@ -492,16 +492,35 @@ public partial class ALPlayer : Player
             durabilityList[i].IsInputSelectable = true;
         }
     }
-    void TryToExpireCardsModifierDuration(string duration)
+    public async Task TryToExpireCardsModifierDuration(string duration)
     {
-        GetPlayerBoard<ALBoard>().GetCardsInTree().ForEach(card => card.TryToExpireEffectOrModifier(duration));
-        GetPlayerHand<ALHand>().GetCardsInTree().ForEach(card => card.TryToExpireEffectOrModifier(duration));
+        var boardCards = GetPlayerBoard<ALBoard>().GetCardsInTree();
+        var handCards = GetPlayerHand<ALHand>().GetCardsInTree();
+
+        foreach (var card in boardCards)
+        {
+            card.TryToExpireEffectOrModifier(duration);
+        }
+        foreach (var card in handCards)
+        {
+            card.TryToExpireEffectOrModifier(duration);
+        }
+        await Task.CompletedTask;
     }
 
-    void TryToTriggerOnAllCards(string triggerEvent)
+    async Task TryToTriggerOnAllCards(string triggerEvent)
     {
-        GetPlayerBoard<ALBoard>().GetCardsInTree().ForEach(async card => await card.TryToTriggerCardEffect(triggerEvent));
-        GetPlayerHand<ALHand>().GetCardsInTree().ForEach(async card => await card.TryToTriggerCardEffect(triggerEvent));
+        var boardCards = GetPlayerBoard<ALBoard>().GetCardsInTree();
+        var handCards = GetPlayerHand<ALHand>().GetCardsInTree();
+
+        foreach (var card in boardCards)
+        {
+            await card.TryToTriggerCardEffect(triggerEvent);
+        }
+        foreach (var card in handCards)
+        {
+            await card.TryToTriggerCardEffect(triggerEvent);
+        }
     }
 
     // Public Player Actions for AI 
@@ -545,19 +564,19 @@ public partial class ALPlayer : Player
         TriggerAction(InputAction.Ok);
     }
 
-    public void DrawCardToHand(int num = 1)
+    public async Task DrawCardToHand(int num = 1)
     {
         for (int i = 0; i < num; i++)
         {
             ALCardDTO cardToDraw = DrawCard(deckSet.deck, deckField);
-            AddCardToHand(cardToDraw);
+            await AddCardToHand(cardToDraw);
         }
     }
 
-    public void AddCardToHand(ALCardDTO card)
+    public async Task AddCardToHand(ALCardDTO card)
     {
         ALHand hand = GetPlayerHand<ALHand>();
-        hand.AddCardToHand(card);
+        await hand.AddCardToHand(card);
     }
 
     public void SetBoardCardsAsActive()
@@ -567,7 +586,7 @@ public partial class ALPlayer : Player
         GetUnitsInBoard().ForEach(card => card.SetIsInActiveState(true));
     }
 
-    public void TryDrawCubeToBoard()
+    public async void TryDrawCubeToBoard()
     {
         try
         {
@@ -579,6 +598,8 @@ public partial class ALPlayer : Player
             GetPlayerBoard<ALBoard>()
                 .GetCardInPosition<ALCard>(this, cubeField.PositionInBoard)
                 .UpdateAttributes(cardToDraw);
+
+            await TryToTriggerOnAllCards(ALCardEffectTrigger.OnMaxCubeCountChanged);
         }
         catch (Exception e)
         {
