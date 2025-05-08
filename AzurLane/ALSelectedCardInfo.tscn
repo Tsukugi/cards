@@ -2,12 +2,12 @@
 
 [ext_resource type="Script" uid="uid://d0oqxn7lieahc" path="res://AzurLane/scripts/ALSelectedCardUI.cs" id="1_b2va0"]
 [ext_resource type="Shader" uid="uid://6vual11gqb6h" path="res://shaders/roundedCorners.gdshader" id="1_gjpc5"]
-[ext_resource type="Texture2D" uid="uid://5g3o4xkut2ou" path="res://AzurLane/res/SD01-001B.png" id="1_kidmi"]
 [ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="2_b2va0"]
+[ext_resource type="Texture2D" uid="uid://diulp7rb2y70x" path="res://AzurLane/res/BP01-026.png" id="3_wmudh"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_b2va0"]
 shader = ExtResource("1_gjpc5")
-shader_parameter/corner_scale = 0.153
+shader_parameter/corner_scale = 0.096
 
 [sub_resource type="LabelSettings" id="LabelSettings_vpce2"]
 font = ExtResource("2_b2va0")
@@ -18,7 +18,7 @@ outline_color = Color(0.649063, 0.677992, 0.718958, 1)
 [sub_resource type="LabelSettings" id="LabelSettings_qholi"]
 line_spacing = 0.0
 font = ExtResource("2_b2va0")
-font_size = 12
+font_size = 14
 
 [sub_resource type="LabelSettings" id="LabelSettings_takk7"]
 font = ExtResource("2_b2va0")
@@ -26,7 +26,7 @@ font_size = 12
 
 [sub_resource type="LabelSettings" id="LabelSettings_b2va0"]
 font = ExtResource("2_b2va0")
-font_size = 40
+font_size = 44
 outline_size = 20
 outline_color = Color(0.423651, 0.423651, 0.423651, 1)
 
@@ -176,19 +176,19 @@ script = ExtResource("1_b2va0")
 
 [node name="SelectedCardImage" type="TextureRect" parent="."]
 layout_mode = 0
-offset_left = 32.0
-offset_top = 26.0
-offset_right = 449.0
-offset_bottom = 615.0
-texture = ExtResource("1_kidmi")
+offset_left = 3.0
+offset_top = 2.0
+offset_right = 479.0
+offset_bottom = 644.0
+texture = ExtResource("3_wmudh")
 expand_mode = 1
 
 [node name="NamePanel" type="Panel" parent="."]
 layout_mode = 0
 offset_left = 50.0
-offset_top = 515.0
+offset_top = 536.18
 offset_right = 431.0
-offset_bottom = 546.0
+offset_bottom = 567.18
 
 [node name="NameLabel" type="Label" parent="NamePanel"]
 layout_mode = 1
@@ -214,31 +214,31 @@ anchor_left = 0.104
 anchor_top = 0.5
 anchor_right = 0.894
 anchor_bottom = 0.789
-offset_left = -0.128002
-offset_top = 64.0
-offset_right = 0.09198
-offset_bottom = 0.305969
+offset_left = -24.128
+offset_top = 70.0
+offset_right = 15.092
+offset_bottom = 2.30603
 
 [node name="ScrollContainer" type="ScrollContainer" parent="EffectsPanel"]
 layout_mode = 0
 offset_left = 6.0
 offset_top = 3.0
-offset_right = 378.0
-offset_bottom = 119.0
+offset_right = 416.0
+offset_bottom = 118.0
 
 [node name="EffectsLabel" type="Label" parent="EffectsPanel/ScrollContainer"]
-custom_minimum_size = Vector2(370, 0)
+custom_minimum_size = Vector2(410, 0)
 layout_mode = 2
-text = "[awdawdawd] a dwawdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdaw"
+text = "[awdawdawd] a dwawdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdawwdwadawd dwa dawd awd wadawdaw wa dawd awd awdawdd  wadawawdaw d awdaw"
 label_settings = SubResource("LabelSettings_qholi")
 autowrap_mode = 3
 
 [node name="SupportScopePanel" type="Panel" parent="."]
 layout_mode = 1
-offset_left = 49.0
+offset_left = 25.0
 offset_top = 291.0
-offset_right = 145.0
-offset_bottom = 317.0
+offset_right = 121.0
+offset_bottom = 315.0
 rotation = -1.5708
 
 [node name="SupportScopeLabel" type="Label" parent="SupportScopePanel"]
@@ -259,10 +259,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 182.0
-offset_top = 550.0
-offset_right = -54.0
-offset_bottom = -58.0
+offset_left = 192.5
+offset_top = 574.25
+offset_right = -43.5
+offset_bottom = -33.75
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -271,8 +271,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 128.0
-offset_top = 19.0
+offset_left = 128.75
+offset_top = 20.0
+offset_right = 0.749969
+offset_bottom = 0.999985
 grow_horizontal = 2
 grow_vertical = 2
 text = "Ship"
@@ -313,10 +315,10 @@ vertical_alignment = 1
 
 [node name="PowerLabel" type="Label" parent="."]
 layout_mode = 0
-offset_left = 54.0
-offset_top = 546.0
-offset_right = 168.0
-offset_bottom = 595.0
+offset_left = 21.25
+offset_top = 565.5
+offset_right = 164.25
+offset_bottom = 625.5
 text = "1000"
 label_settings = SubResource("LabelSettings_b2va0")
 horizontal_alignment = 1

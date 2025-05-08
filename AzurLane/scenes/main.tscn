@@ -7,11 +7,11 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_p83fu"]
 shader = ExtResource("2_evx30")
 shader_parameter/base_col = Color(0.183819, 0.212248, 0.413669, 1)
-shader_parameter/border_thickness = 0.044
+shader_parameter/border_thickness = 0.0
 shader_parameter/isoline_offset = 0.0
 shader_parameter/isoline_offset2 = 0.0
-shader_parameter/pattern_scale = 8.018
-shader_parameter/animation_speed = 1.0
+shader_parameter/pattern_scale = 0.429
+shader_parameter/animation_speed = 0.03
 shader_parameter/time_multiplier = 1.0
 shader_parameter/pixel_size = 512.0
 

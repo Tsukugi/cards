@@ -10,6 +10,8 @@ public partial class ALSelectedCardUI : Panel
     ALCard boundCard = null;
     AnimationPlayer animationPlayer;
 
+    Vector2 effectOriginalPosition, factionOriginalPosition;
+
     public override void _Ready()
     {
         base._Ready();
@@ -25,6 +27,8 @@ public partial class ALSelectedCardUI : Panel
         selectedCardFactionLabel = factionPanel.GetNode<Label>("FactionLabel");
         selectedCardShipTypeLabel = factionPanel.GetNode<Label>("ShipTypeLabel");
         animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
+        effectOriginalPosition = effectsPanel.Position;
+        factionOriginalPosition = factionPanel.Position;
     }
 
     public override void _Process(double delta)
@@ -53,13 +57,13 @@ public partial class ALSelectedCardUI : Panel
         powerLabel.Visible = !isNotShipCard;
         if (isNotShipCard)
         {
-            effectsPanel.Position = new Vector2(effectsPanel.Position.X, 315f);
-            factionPanel.Position = new Vector2(116f, factionPanel.Position.Y);
+            effectsPanel.Position = new Vector2(effectOriginalPosition.X, effectOriginalPosition.Y - 75f);
+            factionPanel.Position = new Vector2(factionOriginalPosition.X - 80f, factionOriginalPosition.Y);
         }
         else
         {
-            effectsPanel.Position = new Vector2(effectsPanel.Position.X, 387f);
-            factionPanel.Position = new Vector2(182f, factionPanel.Position.Y);
+            effectsPanel.Position = effectOriginalPosition;
+            factionPanel.Position = factionOriginalPosition;
             powerLabel.Text = boundCard.GetAttributeWithModifiers<ALCardDTO>("Power").ToString();
         }
     }
