@@ -104,7 +104,7 @@ public partial class Card : CardField
     }
     public virtual void TryToExpireEffectOrModifier(string duration)
     {
-        GD.Print($"[TryToExpireModifier] {duration}");
+        //GD.Print($"[TryToExpireModifier] {duration}");
         var modifiers = activeModifiers.FindAll(modifier => modifier.Duration.ToString() == duration);
         modifiers.ForEach(RemoveModifier);
         var statusEffects = activeStatusEffects.FindAll(modifier => modifier.duration.ToString() == duration);
