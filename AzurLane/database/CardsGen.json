@@ -221,7 +221,7 @@
         "effectLabel": "■【Defend +100】(When this card is attacked, it gets +100 power)"
       }, 
       {
-        "triggerEvent": ["AnyCardPlayed", "WhenPlayed"],
+        "triggerEvent": ["AnyCardPlayed"],
         "condition": [
           {
             "conditionId": "IsSpecificCardOnField",

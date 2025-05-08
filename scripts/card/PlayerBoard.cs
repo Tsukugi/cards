@@ -94,7 +94,7 @@ public partial class PlayerBoard : Board
         GD.Print($"[PlaceCardInBoardFromHand] Placing {attributes.name}!");
         selectedCard.UpdateAttributes(attributes);
         await selectedCard.TryToTriggerCardEffect(CardEffectTrigger.WhenPlayed);
-        GetCardsInTree().ForEach(async card => await card.TryToTriggerCardEffect(CardEffectTrigger.OnCardPlayed));
+        GetCardsInTree().ForEach(async card => await card.TryToTriggerCardEffect(CardEffectTrigger.AnyCardPlayed));
         OnPlaceCardEnd(cardToPlace);
         CardToPlace = null;
     }

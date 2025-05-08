@@ -133,7 +133,13 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     public async Task AddStatusEffect(CardEffectDTO effectDTO)
     {
         activeStatusEffects.Add(effectDTO);
-        GD.Print($"[Effect - AddEffect] {effectDTO.effectValue[0]} to {card.GetAttributes<ALCardDTO>().name}, ActiveEffects: {activeStatusEffects.Count}");
+        string effectName = effectDTO.effectValue[0];
+        if (activeStatusEffects.Contains(effectDTO) && !effectDTO.effectValue.Contains(ALCardReservedEffectValues.StackableEffect))
+        {
+            GD.PrintErr($"[Effect - AddEffect] Effect {effectName} already exists");
+            return;
+        }
+        GD.Print($"[Effect - AddEffect] {effectName} to {card.GetAttributes<ALCardDTO>().name}, ActiveEffects: {activeStatusEffects.Count}");
         await Task.CompletedTask;
     }
 

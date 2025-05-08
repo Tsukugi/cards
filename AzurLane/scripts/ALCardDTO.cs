@@ -105,3 +105,7 @@ public static class ALCardStatusEffects
     public static readonly string LimitBattleSupport = "LimitBattleSupport";
     public static readonly string RangedAttack = "RangedAttack";
 }
+public static class ALCardReservedEffectValues
+{
+    public static readonly string StackableEffect = "StackableEffect";
+}
