@@ -310,7 +310,7 @@ public partial class ALPlayer : Player
         if (OnGuardProvided is not null) OnGuardProvided(this, cardToGuard);
     }
 
-    void TryToPlayEventCard(ALCard eventCard, ALHand hand, string trigger)
+    async void TryToPlayEventCard(ALCard eventCard, ALHand hand, string trigger)
     {
         var attrs = eventCard.GetAttributes<ALCardDTO>();
 
@@ -323,12 +323,12 @@ public partial class ALPlayer : Player
         if (!cubesSpent) { GD.PrintErr($"[TryToPlayEventCard] Not enough cubes {attrs.cost}"); return; }
         GD.Print("[TryToPlayEventCard] After effect");
         eventCard.SetIsEmptyField(true);
-        eventCard.TryToTriggerCardEffect(trigger);
+        await eventCard.TryToTriggerCardEffect(trigger);
         AddToRetreatAreaOnTop(eventCard.GetAttributes<ALCardDTO>());
         hand.RemoveCardFromHand(this, eventCard);
     }
 
-    public void ApplyDurabilityDamage(Card card)
+    public async void ApplyDurabilityDamage(Card card)
     {
         List<ALCard> durabilityCards = GetDurabilityCards();
         ALCard durabilityCardInBoard = durabilityCards.FindLast(durabilityCard => durabilityCard.GetIsFaceDown());
@@ -339,8 +339,8 @@ public partial class ALPlayer : Player
         }
         // "Draw" the card to hand 
         ALHand hand = GetPlayerHand<ALHand>();
-        ALCard durabilityCardInHand = hand.AddCardToHand(durabilityCardInBoard.GetAttributes<ALCardDTO>());
-        durabilityCardInHand.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
+        ALCard durabilityCardInHand = await hand.AddCardToHand(durabilityCardInBoard.GetAttributes<ALCardDTO>());
+        await durabilityCardInHand.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
         durabilityCardInBoard.DestroyCard(); // Destroy card from board
         TryToTriggerOnAllCards(ALCardEffectTrigger.OnDamageReceived);
         GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown()).Count}/{durabilityCards.Count}");
@@ -435,10 +435,10 @@ public partial class ALPlayer : Player
         await phaseManager.EndBattlePhaseIfNoActiveCards();
     }
 
-    void DestroyUnitCard(ALCard card)
+    async void DestroyUnitCard(ALCard card)
     {
         AddToRetreatAreaOnTop(card.GetAttributes<ALCardDTO>());
-        card.TryToTriggerCardEffect(ALCardEffectTrigger.OnCardDestroyed);
+        await card.TryToTriggerCardEffect(ALCardEffectTrigger.OnCardDestroyed);
         card.DestroyCard();
     }
 
@@ -498,8 +498,8 @@ public partial class ALPlayer : Player
 
     void TryToTriggerOnAllCards(string triggerEvent)
     {
-        GetPlayerBoard<ALBoard>().GetCardsInTree().ForEach(card => card.TryToTriggerCardEffect(triggerEvent));
-        GetPlayerHand<ALHand>().GetCardsInTree().ForEach(card => card.TryToTriggerCardEffect(triggerEvent));
+        GetPlayerBoard<ALBoard>().GetCardsInTree().ForEach(async card => await card.TryToTriggerCardEffect(triggerEvent));
+        GetPlayerHand<ALHand>().GetCardsInTree().ForEach(async card => await card.TryToTriggerCardEffect(triggerEvent));
     }
 
     // Public Player Actions for AI 

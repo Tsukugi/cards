@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
 
 public partial class Card : CardField
@@ -38,6 +39,7 @@ public partial class Card : CardField
         side = GetNodeOrNull<MeshInstance3D>("CardDisplay/Side");
         SetIsFaceDown(isFaceDown);
         SetIsSideWays(isSideWays);
+        effect = new(this, activeStatusEffects, ownerPlayer);
     }
 
     public override void _Process(double delta)
@@ -108,11 +110,11 @@ public partial class Card : CardField
         var statusEffects = activeStatusEffects.FindAll(modifier => modifier.duration.ToString() == duration);
         statusEffects.ForEach(effect => activeStatusEffects.Remove(effect));
     }
-    public virtual void TryToTriggerCardEffect(string triggerEvent)
+    public virtual async Task TryToTriggerCardEffect(string triggerEvent)
     {
         if (effect is null) { GD.PrintErr($"[TryToTriggerCardEffect] Cannot trigger effects with a card that doesn't have an Effect instance"); return; }
         // GD.Print($"[TryToTriggerCardEffect] {triggerEvent}");
-        _ = effect.TryToApplyEffects(triggerEvent);
+        await effect.TryToApplyEffects(triggerEvent);
     }
 
     public T GetEffectManager<T>() where T : EffectManager => effect as T;

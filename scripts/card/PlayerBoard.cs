@@ -85,7 +85,7 @@ public partial class PlayerBoard : Board
     }
 
     public static Card FindLastEmptyFieldInRow(List<Card> row) => row.Find(card => card.GetIsEmptyField());
-    public virtual void PlaceCardInBoardFromHand<T>(Player player, T cardToPlace) where T : Card
+    public virtual async void PlaceCardInBoardFromHand<T>(Player player, T cardToPlace) where T : Card
     {
         T? selectedCard = GetSelectedCard<T>(player);
         if (selectedCard is null) { GD.PrintErr("[PlaceCardInBoardFromHand] This card place cannot be found!"); return; }
@@ -93,8 +93,8 @@ public partial class PlayerBoard : Board
         var attributes = cardToPlace.GetAttributes<CardDTO>();
         GD.Print($"[PlaceCardInBoardFromHand] Placing {attributes.name}!");
         selectedCard.UpdateAttributes(attributes);
-        selectedCard.TryToTriggerCardEffect(CardEffectTrigger.WhenPlayed);
-        GetCardsInTree().ForEach(card => card.TryToTriggerCardEffect(CardEffectTrigger.OnCardPlayed));
+        await selectedCard.TryToTriggerCardEffect(CardEffectTrigger.WhenPlayed);
+        GetCardsInTree().ForEach(async card => await card.TryToTriggerCardEffect(CardEffectTrigger.OnCardPlayed));
         OnPlaceCardEnd(cardToPlace);
         CardToPlace = null;
     }

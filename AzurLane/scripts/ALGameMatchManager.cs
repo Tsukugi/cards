@@ -87,10 +87,10 @@ public partial class ALGameMatchManager : Node
         if (playingPlayer.IsAwaitingBattleGuard()) _ = playingPlayer.SettleBattle(playerUI);
     }
 
-    void OnAttackStartHandler(Player guardingPlayer, Card card)
+    async void OnAttackStartHandler(Player guardingPlayer, Card card)
     {
         attackerCard = card.CastToALCard();
-        GetAttackerCard().TryToTriggerCardEffect(ALCardEffectTrigger.StartsAttack);
+        await GetAttackerCard().TryToTriggerCardEffect(ALCardEffectTrigger.StartsAttack);
         GD.Print($"[OnAttackStartHandler] {GetAttackerCard().Name} starts an attack!");
     }
 
@@ -113,17 +113,17 @@ public partial class ALGameMatchManager : Node
         GD.Print($"[OnAttackGuardStartHandler]");
     }
 
-    void OnAttackGuardEndHandler(Player guardingPlayer)
+    async void OnAttackGuardEndHandler(Player guardingPlayer)
     {
         guardingPlayer.SetPlayState(EPlayState.Wait);
         ALPlayer attackerPlayer = GetAttackerCard().GetOwnerPlayer<ALPlayer>();
         attackerPlayer.SetPlayState(EPlayState.Wait);
-        GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsAttacked);
-        _ = attackerPlayer.SettleBattle(playerUI);
+        await GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsAttacked);
+        await attackerPlayer.SettleBattle(playerUI);
         GD.Print($"[OnAttackGuardEndHandler]");
     }
 
-    void OnGuardProvidedHandler(Player guardingPlayer, Card card)
+    async void OnGuardProvidedHandler(Player guardingPlayer, Card card)
     {
         GetAttackedCard().AddModifier(new AttributeModifier()
         {
@@ -131,7 +131,7 @@ public partial class ALGameMatchManager : Node
             Duration = ALCardEffectDuration.CurrentBattle,
             Amount = card.GetAttributes<ALCardDTO>().supportValue,
         });
-        GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsBattleSupported);
+        await GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsBattleSupported);
         GD.Print($"[OnGuardProvidedHandler] Add Guard Modifier for {GetAttackedCard().GetAttributes<ALCardDTO>().name}");
     }
 

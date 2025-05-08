@@ -210,8 +210,8 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             {
                 target.OnCardTrigger -= OnAfterSelect;
             },
-            () => ConclusionCheck() && ownerPlayer.GetPlayState() == previousState // Playstate has delay, that's why i need to check for it too
-            - 1);
+            () => ConclusionCheck() && ownerPlayer.GetPlayState() == previousState, // Playstate has delay, that's why i need to check for it too
+            -1);
     }
 
 
