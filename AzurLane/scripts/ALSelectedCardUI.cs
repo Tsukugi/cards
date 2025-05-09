@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Text;
+using System.Threading.Tasks;
 
 public partial class ALSelectedCardUI : Panel
 {
@@ -11,6 +12,8 @@ public partial class ALSelectedCardUI : Panel
     AnimationPlayer animationPlayer;
 
     Vector2 effectOriginalPosition, factionOriginalPosition;
+
+    bool isAnimationRunning = false;
 
     public override void _Ready()
     {
@@ -29,6 +32,8 @@ public partial class ALSelectedCardUI : Panel
         animationPlayer = GetNode<AnimationPlayer>("AnimationPlayer");
         effectOriginalPosition = effectsPanel.Position;
         factionOriginalPosition = factionPanel.Position;
+
+        animationPlayer.AnimationFinished += OnAnimationEnd;
     }
 
     public override void _Process(double delta)
@@ -68,9 +73,20 @@ public partial class ALSelectedCardUI : Panel
         }
     }
 
-    public void PlayEffectAnimation()
+    public void OnAnimationEnd(StringName animName)
     {
-        animationPlayer.Play("Show");
+        isAnimationRunning = false;
+    }
+
+    public async Task PlayEffectAnimation() => await PlayAnimation("Show");
+    public async Task PlayDamagedAnimation() => await PlayAnimation("BattleDamaged");
+
+    async Task PlayAnimation(string name)
+    {
+        GD.Print($"[PlayAnimation] {name}");
+        animationPlayer.Play(name);
+        isAnimationRunning = true;
+        await this.Wait(animationPlayer.GetAnimation(name).Length);
     }
 
     public void UpdateValues(ALCard? card)

@@ -410,7 +410,7 @@ public partial class ALPlayer : Player
         GD.Print($"[SettleBattle] {attackedAttrs.name} Power: has base {attackedAttrs.power} with modifiers {attackedPower}");
         GD.Print($"[SettleBattle] Is attack succesful: {isAttackSuccessful}");
 
-        await playerUI.OnSettleBattleUI(attackerCard, attackedCard);
+        await playerUI.OnSettleBattleUI(attackerCard, attackedCard, isAttackSuccessful);
 
         if (isAttackSuccessful)
         {

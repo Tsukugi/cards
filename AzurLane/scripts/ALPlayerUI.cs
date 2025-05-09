@@ -42,13 +42,14 @@ public partial class ALPlayerUI : Control
         else { selectedCardUI.Visible = false; }
     }
 
-    public async Task OnSettleBattleUI(ALCard attacker, ALCard attacked)
+    public async Task OnSettleBattleUI(ALCard attacker, ALCard attacked, bool isAttackSuccessful)
     {
         attackerUI.UpdateValues(attacker);
         attackerUI.Visible = true;
         attackedUI.UpdateValues(attacked);
         attackedUI.Visible = true;
-        await this.Wait(2f);
+        await this.Wait(1f);
+        if (isAttackSuccessful) await attackedUI.PlayDamagedAnimation();
         attackerUI.UpdateValues(null);
         attackerUI.Visible = false;
         attackedUI.UpdateValues(null);
@@ -59,8 +60,7 @@ public partial class ALPlayerUI : Control
     {
         triggerCardUI.UpdateValues(triggeredCard);
         triggerCardUI.Visible = true;
-        triggerCardUI.PlayEffectAnimation();
-        await this.Wait(2f); // TODO make animation awaitable
+        await triggerCardUI.PlayEffectAnimation();
         triggerCardUI.UpdateValues(null);
         triggerCardUI.Visible = false;
     }
