@@ -110,7 +110,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         GD.Print($"[Effect - SelectAndGivePower]");
         bool isFinished = false;
         EPlayState previousState = ownerPlayer.GetPlayState();
-        void OnAfterSelectAndGivePower(Card selectedTarget)
+        async Task OnAfterSelectAndGivePower(Card selectedTarget)
         {
             GD.Print($"[Effect - OnAfterSelectAndGivePower]");
             selectedTarget.AddModifier(new AttributeModifier()
@@ -119,11 +119,11 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
                 Duration = effectDTO.duration,
                 Amount = effectDTO.effectValue[0].ToInt(),
             });
-            ownerPlayer.SetPlayState(previousState);
+            await ownerPlayer.SetPlayState(previousState);
             isFinished = true;
         }
 
-        await ApplySelectPlayState(
+        await ApplySelectEffectTargetAction(
                ownerPlayer.GetPlayerBoard<ALBoard>(),
                OnAfterSelectAndGivePower,
                () => isFinished
@@ -151,7 +151,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         string value = effectDTO.effectValue[2];
 
         EPlayState previousState = ownerPlayer.GetPlayState();
-        void OnAfterSelectReturningCard(Card selectedTarget)
+        async Task OnAfterSelectReturningCard(Card selectedTarget)
         {
             var board = ownerPlayer.GetPlayerBoard<ALBoard>();
             GD.Print($"[Effect - OnAfterSelectReturningCard]");
@@ -159,15 +159,15 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             if (LogicUtils.ApplyComparison(attr, comparator, value.ToInt()))
             {
                 ALPlayer enemyPlayer = selectedTarget.GetOwnerPlayer<ALPlayer>();
-                enemyPlayer.AddCardToHand(selectedTarget.GetAttributes<ALCardDTO>());
+                await enemyPlayer.AddCardToHand(selectedTarget.GetAttributes<ALCardDTO>());
                 selectedTarget.DestroyCard();
-                ownerPlayer.SetPlayState(previousState);
+                await ownerPlayer.SetPlayState(previousState);
                 return;
             }
             GD.PrintErr($"[OnAfterSelectReturningCard] Attribute: {attr} - {comparator} - Value: {value}");
         }
 
-        await ApplySelectPlayState(
+        await ApplySelectEffectTargetAction(
                 ownerPlayer.GetEnemyPlayerBoard<PlayerBoard>(),
                 OnAfterSelectReturningCard
             );
@@ -208,20 +208,20 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         await Task.CompletedTask;
     }
 
-    async Task ApplySelectPlayState(Board target, Board.CardEvent OnAfterSelect, AsyncHandler.SimpleCheck ConclusionCheck = null)
+    async Task ApplySelectEffectTargetAction(Board target, Board.CardEvent OnAfterSelect, AsyncHandler.SimpleCheck ConclusionCheck = null)
     {
-        GD.Print($"[ApplySelectPlayState]");
+        GD.Print($"[Effect - ApplySelectEffectTargetAction]");
         ConclusionCheck ??= () => true;
 
         EPlayState previousState = ownerPlayer.GetPlayState();
-        ownerPlayer.SetPlayState(EPlayState.SelectEffectTarget);
-        target.OnCardTrigger -= OnAfterSelect;
-        target.OnCardTrigger += OnAfterSelect;
+        await ownerPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectEffectTarget);
+        target.OnCardEffectTargetSelected -= OnAfterSelect;
+        target.OnCardEffectTargetSelected += OnAfterSelect;
 
         await asyncHandler.AwaitForCheck(
             () =>
             {
-                target.OnCardTrigger -= OnAfterSelect;
+                target.OnCardEffectTargetSelected -= OnAfterSelect;
             },
             () => ConclusionCheck() && ownerPlayer.GetPlayState() == previousState, // Playstate has delay, that's why i need to check for it too
             -1);

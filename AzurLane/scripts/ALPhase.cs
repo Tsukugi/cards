@@ -40,7 +40,7 @@ public class ALPhase
 
     async Task PlayResetPhase()
     {
-        player.SetPlayState(EPlayState.Wait);
+        await player.SetPlayState(EPlayState.Wait);
         // Reset all Units into active state
         GD.Print($"[{player.Name}.PlayResetPhase]");
         player.SetBoardCardsAsActive();
@@ -49,11 +49,11 @@ public class ALPhase
     }
     async Task PlayPreparationPhase()
     {
-        player.SetPlayState(EPlayState.Wait);
+        await player.SetPlayState(EPlayState.Wait);
         // Draw 1 card
         // Place 1 face up cube if possible
         GD.Print($"[{player.Name}.PlayPreparationPhase]");
-        player.TryDrawCubeToBoard();
+        await player.TryDrawCubeToBoard();
         await player.DrawCardToHand();
         UpdatePhase(EALTurnPhase.Preparation);
         await asyncPhase.AwaitBefore(PlayNextPhase);
@@ -62,7 +62,7 @@ public class ALPhase
     {
         // Player can play cards
         GD.Print($"[{player.Name}.PlayMainPhase]");
-        player.SetPlayState(EPlayState.Select);
+        await player.SetPlayState(EPlayState.SelectCardToPlay);
         UpdatePhase(EALTurnPhase.Main);
         await player.TryToExpireCardsModifierDuration(ALCardEffectDuration.MainPhase);
         await Task.CompletedTask;
@@ -71,17 +71,17 @@ public class ALPhase
     {
         // Player can declare attacks
         GD.Print($"[{player.Name}.PlayBattlePhase]");
-        player.SetPlayState(EPlayState.Select);
+        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackerUnit);
         UpdatePhase(EALTurnPhase.Battle);
         await player.TryToExpireCardsModifierDuration(ALCardEffectDuration.BattlePhase);
         await asyncPhase.AwaitBefore(EndBattlePhaseIfNoActiveCards);
     }
     async Task PlayEndPhase()
     {
-        player.SetPlayState(EPlayState.Wait);
+        await player.SetPlayState(EPlayState.Wait);
         // Clean some things
         UpdatePhase(EALTurnPhase.End);
-        player.EndTurn();
+        await player.EndTurn();
         await Task.CompletedTask;
         GD.Print($"[{player.Name}.PlayEndPhase] --------------- End of turn ---------------");
     }

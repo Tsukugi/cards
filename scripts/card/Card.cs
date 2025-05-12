@@ -5,7 +5,7 @@ using Godot;
 public partial class Card : CardField
 {
     readonly string resourcePath = "res://AzurLane/res/";
-    public delegate void OnProvidedCardEvent(Card card);
+    public delegate Task OnProvidedCardEvent(Card card);
     public event OnProvidedCardFieldEvent OnCardIsSidewaysUpdate;
     protected Node3D cardDisplay;
     protected MeshInstance3D front = null, back = null, side = null, selectedIndicator = null;

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Godot;
 
 public partial class ALDebug
@@ -13,22 +14,22 @@ public partial class ALDebug
         ignoreCosts = !ignoreCosts;
         GD.Print($"[Debug.ToggleIgnoreCosts] {ignoreCosts}");
     }
-    public async void DrawCard()
+    public async Task DrawCard()
     {
         GD.Print($"[Debug.DrawCard]");
         await matchManager.GetControlledPlayer().DrawCardToHand();
     }
-    public void DrawCubeCard()
+    public async Task DrawCubeCard()
     {
         GD.Print($"[Debug.DrawCubeCard]");
-        matchManager.GetControlledPlayer().TryDrawCubeToBoard();
+        await matchManager.GetControlledPlayer().TryDrawCubeToBoard();
     }
     public bool GetIgnoreCosts() => ignoreCosts;
 
-    public void InflictDamage()
+    public async Task InflictDamage()
     {
         GD.Print($"[Debug.InflictDamage]");
         var player = matchManager.GetPlayerPlayingTurn();
-        player.ApplyDurabilityDamage(player.GetPlayerBoard<ALBoard>().GetFlagship());
+        await player.ApplyDurabilityDamage(player.GetPlayerBoard<ALBoard>().GetFlagship());
     }
 }

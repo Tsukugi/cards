@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
 
 public partial class ALGameMatchManager : Node
@@ -14,12 +15,14 @@ public partial class ALGameMatchManager : Node
     ALCard attackerCard, attackedCard;
     ALPlayerUI playerUI;
     ALDebug debug;
+    ALInteraction interaction;
 
     public override void _Ready()
     {
         base._Ready();
 
         debug = new(this);
+        interaction = new(this);
 
         playerUI = GetNode<ALPlayerUI>("Control");
         playerUI.SetPlayer(userPlayer); // Assign the controlling player
@@ -62,68 +65,73 @@ public partial class ALGameMatchManager : Node
             player.OnAttackEnd += OnAttackEndHandler;
             player.OnTurnEnd -= OnTurnEndHandler;
             player.OnTurnEnd += OnTurnEndHandler;
+            player.OnRetaliation -= OnRetaliationHandler;
+            player.OnRetaliation += OnRetaliationHandler;
             player.Phase.OnPhaseChange -= OnPhaseChangeHandler;
             player.Phase.OnPhaseChange += OnPhaseChangeHandler;
-            player.GetPlayerBoard<ALBoard>().OnSkipInteraction -= OnSkipInteractionHandler;
-            player.GetPlayerBoard<ALBoard>().OnSkipInteraction += OnSkipInteractionHandler;
-            player.GetPlayerHand<ALHand>().OnSkipInteraction -= OnSkipInteractionHandler;
-            player.GetPlayerHand<ALHand>().OnSkipInteraction += OnSkipInteractionHandler;
+            player.GetPlayerBoard<ALBoard>().OnInputAction -= interaction.OnBoardInputActionHandler;
+            player.GetPlayerBoard<ALBoard>().OnInputAction += interaction.OnBoardInputActionHandler;
+            player.GetPlayerHand<ALHand>().OnInputAction -= interaction.OnHandInputActionHandler;
+            player.GetPlayerHand<ALHand>().OnInputAction += interaction.OnHandInputActionHandler;
         });
 
         Callable.From(StartMatchForPlayer).CallDeferred();
     }
 
-    void StartMatchForPlayer()
+    async void StartMatchForPlayer()
     {
-        userPlayer.StartGameForPlayer();
-        enemyPlayer.StartGameForPlayer();
+        await userPlayer.StartGameForPlayer();
+        await enemyPlayer.StartGameForPlayer();
         Callable.From(GetPlayerPlayingTurn().StartTurn).CallDeferred();
     }
 
-    void OnSkipInteractionHandler(Player player, Board triggeringBoard)
-    {
-        player.SetPlayState(EPlayState.Wait);
-        ALPlayer playingPlayer = GetPlayerPlayingTurn();
-        if (playingPlayer.IsAwaitingBattleGuard()) _ = playingPlayer.SettleBattle(playerUI);
-    }
 
-    async void OnAttackStartHandler(Player guardingPlayer, Card card)
+    async Task OnAttackStartHandler(Player guardingPlayer, Card card)
     {
         attackerCard = card.CastToALCard();
         await GetAttackerCard().TryToTriggerCardEffect(ALCardEffectTrigger.StartsAttack);
         GD.Print($"[OnAttackStartHandler] {GetAttackerCard().Name} starts an attack!");
     }
 
-    void OnAttackTargetAdquiredHandler(Player guardingPlayer, Card card)
+    async Task OnAttackTargetAdquiredHandler(Player guardingPlayer, Card card)
     {
         GetAttackerCard().SetIsInActiveState(false);
         attackedCard = card.CastToALCard();
         GD.Print($"[OnAttackTargetAdquiredHandler] {GetAttackerCard().Name} attacks {GetAttackedCard().Name}!");
+        await Task.CompletedTask;
     }
 
-    void OnAttackGuardStartHandler(Player attackerPlayer, Player attackedPlayer)
+    async Task OnAttackGuardStartHandler(Player attackerPlayer, Player attackedPlayer)
     {
         if (attackedPlayer is not ALPlayer)
         {
             GD.PrintErr($"[OnAttackGuardStartHandler] {attackedPlayer.GetType()} needs to be an ALPlayer instance.");
             return;
         }
-        attackerPlayer.SetPlayState(EPlayState.AwaitEnemyInteraction);
-        attackedPlayer.SetPlayState(EPlayState.EnemyInteraction);
+        await attackerPlayer.SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
+        await attackedPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectGuardingUnit);
         GD.Print($"[OnAttackGuardStartHandler]");
     }
 
-    async void OnAttackGuardEndHandler(Player guardingPlayer)
+    async Task OnAttackGuardEndHandler(Player guardingPlayer)
     {
-        guardingPlayer.SetPlayState(EPlayState.Wait);
+        await guardingPlayer.SetPlayState(EPlayState.Wait);
         ALPlayer attackerPlayer = GetAttackerCard().GetOwnerPlayer<ALPlayer>();
-        attackerPlayer.SetPlayState(EPlayState.Wait);
+        await attackerPlayer.SetPlayState(EPlayState.Wait);
         await GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsAttacked);
         await attackerPlayer.SettleBattle(playerUI);
         GD.Print($"[OnAttackGuardEndHandler]");
     }
 
-    async void OnGuardProvidedHandler(Player guardingPlayer, Card card)
+    async Task OnRetaliationHandler(Player damagedPlayer, Card retaliatingCard)
+    {
+        // TODO Make a retaliation phase
+        await damagedPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectRetaliationUnit);
+        await GetNextPlayer((ALPlayer)damagedPlayer).SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
+        //await retaliatingCard.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
+    }
+
+    async Task OnGuardProvidedHandler(Player guardingPlayer, Card card)
     {
         GetAttackedCard().AddModifier(new AttributeModifier()
         {
@@ -135,7 +143,7 @@ public partial class ALGameMatchManager : Node
         GD.Print($"[OnGuardProvidedHandler] Add Guard Modifier for {GetAttackedCard().GetAttributes<ALCardDTO>().name}");
     }
 
-    async void OnAttackEndHandler(Player guardingPlayer)
+    async Task OnAttackEndHandler(Player guardingPlayer)
     {
         foreach (var player in orderedPlayers)
         {

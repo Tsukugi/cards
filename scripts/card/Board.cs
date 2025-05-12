@@ -1,19 +1,20 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
 
 public partial class Board : Node3D
 {
-    public delegate void InteractionEvent(Player player, Board board);
+    public delegate Task InteractionEvent(Player player, Board board, InputAction action);
     public delegate void PlaceCardEvent(Card card);
-    public delegate void CardEvent(Card card);
+    public delegate Task CardEvent(Card card);
     public delegate void BoardEdgeEvent(Board board, Vector2I axis);
     public delegate void BoardCardEvent(Board board, Card card);
     public virtual event BoardEdgeEvent OnBoardEdge;
     public virtual event BoardCardEvent OnSelectFixedCardEdge;
     public event CardEvent OnRetireCardEvent;
 
-    public event CardEvent OnCardTrigger;
-    public event InteractionEvent OnSkipInteraction;
+    public event CardEvent OnCardEffectTargetSelected;
+    public event InteractionEvent OnInputAction;
 
     // --- Refs ---
 
@@ -29,26 +30,19 @@ public partial class Board : Node3D
     [Export]
     public Vector2I BoardPositionInGrid = new();
 
-    protected virtual void TriggerCard(Player player)
+    public virtual async Task TriggerCardEffectOnTargetSelected(Card card)
     {
-        Card card = GetSelectedCard<Card>(player);
-        if (OnCardTrigger is null)
+        if (OnCardEffectTargetSelected is null)
         {
-            GD.PrintErr($"[{GetType()}.TriggerCard] No events attached"); return;
+            GD.PrintErr($"[{GetType()}.TriggerCardEffectOnTargetSelected] No events attached"); return;
         }
         if (card is null)
         {
-            GD.PrintErr($"[{GetType()}.TriggerCard] No card selected, select a card to trigger"); return;
+            GD.PrintErr($"[{GetType()}.TriggerCardEffectOnTargetSelected] No card selected, select a card to trigger"); return;
         }
 
-        GD.Print($"[{GetType()}.TriggerCard] Triggering card {card.Name}");
-        OnCardTrigger(card);
-    }
-
-    protected void SkipInteraction(Player player)
-    {
-        GD.Print($"[{GetType()}.SkipInteraction] {player.Name} skips interaction");
-        if (OnSkipInteraction is not null) OnSkipInteraction(player, this);
+        GD.Print($"[{GetType()}.TriggerCardEffectOnTargetSelected] Triggering card {card.Name}");
+        await OnCardEffectTargetSelected(card);
     }
 
     static Card? FindCard(List<Card> cards, Vector2I position) => cards.Find(card => card.PositionInBoard == position);
@@ -115,7 +109,7 @@ public partial class Board : Node3D
             return;
         }
         selectedCard[playerName] = foundCard;
-        //GD.Print($"[SelectCardField] Selected {player.Name}.{Name} - {foundCard.Name}");
+        GD.Print($"[SelectCardField] {player.Name}.{Name} - {foundCard.Name}");
         foundCard.UpdatePlayerSelectedColor(player);
         foundCard.SetIsSelected(true);
     }
@@ -124,37 +118,9 @@ public partial class Board : Node3D
     public virtual void OnActionHandler(Player player, InputAction action)
     {
         EPlayState playState = player.GetPlayState();
-        GD.Print($"[OnActionHandler] {player.Name} - Action: {action} - PlayState {playState}");
-        switch (action)
-        {
-            case InputAction.Ok:
-                {
-                    switch (playState)
-                    {
-                        case EPlayState.EnemyInteraction: TriggerCard(player); break;
-                        case EPlayState.SelectEffectTarget: TriggerCard(player); break;
-                    }
-                    break;
-                }
-
-            case InputAction.Cancel:
-                {
-                    switch (playState)
-                    {
-                        case EPlayState.EnemyInteraction: SkipInteraction(player); break;
-                        case EPlayState.SelectEffectTarget: CancelInteraction(player); break;
-                        case EPlayState.SelectTarget: CancelInteraction(player); break;
-                    }
-                    break;
-                }
-        }
-    }
-
-    public virtual void CancelInteraction(Player player)
-    {
-        //! ALl bound interactions should ONLY depend on playState to be completed to safely use this
-        GD.Print($"[CancelInteraction]");
-        player.SetPlayState(EPlayState.Select);
+        string interactionState = player.GetInteractionState();
+        GD.Print($"[OnActionHandler] {player.Name} - Action: {action} - PlayState {playState} - InteractionState {interactionState}");
+        if (OnInputAction is not null) OnInputAction(player, this, action);
     }
     public virtual void RetireCard(Card card)
     {
@@ -164,7 +130,9 @@ public partial class Board : Node3D
     public T? GetSelectedCard<T>(Player player) where T : Card
     {
         string playerName = player.Name.ToString();
-        return selectedCard.TryGetValue(playerName, out Card value) ? value as T : null;
+        var res = selectedCard.TryGetValue(playerName, out Card value) ? value as T : null;
+        if (value is not T && value is not null) GD.PrintErr($"[GetSelectedCard] Value exists but is not of type {typeof(T)} => {value.GetType()}");
+        return res;
     }
     public void ClearSelectionForPlayer(Player player)
     {

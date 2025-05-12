@@ -26,28 +26,6 @@ public partial class PlayerHand : Board
         Position = showHandVisible ? originalPosition : originalPosition + positionOffsetWhenInactive;
     }
 
-    public override void OnActionHandler(Player player, InputAction action)
-    {
-        base.OnActionHandler(player, action);
-        switch (action)
-        {
-            case InputAction.Ok:
-                {
-                    switch (player.GetPlayState())
-                    {
-                        case EPlayState.Select: StartPlayCard(GetSelectedCard<Card>(player)); break;
-                    }
-                    break;
-                }
-        }
-    }
-
-    protected void StartPlayCard(Card card)
-    {
-        if (card is null) { GD.Print($"[PlayCard] No selected card available"); return; }
-        if (OnPlayCardStart is not null) OnPlayCardStart(card);
-    }
-
     public void AddCardToHand(CardDTO attributes)
     {
         Card newCard = cardTemplate.Instantiate<Card>();

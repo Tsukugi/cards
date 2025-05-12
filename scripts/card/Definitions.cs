@@ -1,10 +1,6 @@
 public enum EPlayState
 {
-    Select,
+    SelectCardToPlay,
     SelectTarget,
-    PlaceCard,
     Wait,
-    EnemyInteraction,
-    AwaitEnemyInteraction,
-    SelectEffectTarget,
 }

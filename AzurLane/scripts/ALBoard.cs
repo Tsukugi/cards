@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
 
 public partial class ALBoard : PlayerBoard
@@ -7,7 +8,7 @@ public partial class ALBoard : PlayerBoard
     ALCard flagshipCard;
 
     protected new PackedScene cardTemplate = GD.Load<PackedScene>("AzurLane/AzurLaneCard.tscn");
-    public override void PlaceCardInBoardFromHand<T>(Player player, T cardToPlace)
+    public override async Task PlaceCardInBoardFromHand<T>(Player player, T cardToPlace)
     {
         ALCard selectedField = GetSelectedCard<ALCard>(player);
         if (selectedField is null)
@@ -15,7 +16,7 @@ public partial class ALBoard : PlayerBoard
             GD.PrintErr($"[PlaceCardInBoardFromHand] Field cannot be found");
             return;
         }
-        base.PlaceCardInBoardFromHand(player, cardToPlace);
+        await base.PlaceCardInBoardFromHand(player, cardToPlace);
         selectedField.UpdateAttributes(cardToPlace.GetAttributes<ALCardDTO>());
     }
 

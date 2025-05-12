@@ -1,41 +1,12 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
 
 public partial class PlayerBoard : Board
 {
-    public event PlaceCardEvent OnPlaceCardStart;
-    public event PlaceCardEvent OnPlaceCardEnd;
-    public event PlaceCardEvent OnPlaceCardCancel;
     public override event BoardEdgeEvent OnBoardEdge;
     public override event BoardCardEvent OnSelectFixedCardEdge;
     public Card CardToPlace = null;
-    public override void OnActionHandler(Player player, InputAction action)
-    {
-        base.OnActionHandler(player, action);
-        switch (action)
-        {
-            case InputAction.Ok:
-                {
-                    switch (player.GetPlayState())
-                    {
-                        case EPlayState.PlaceCard: StartPlaceCard(CardToPlace); break;
-                        case EPlayState.Select: TriggerCard(player); break;
-                        case EPlayState.SelectTarget: TriggerCard(player); break;
-                    }
-                    break;
-                }
-
-            case InputAction.Cancel:
-                {
-                    switch (player.GetPlayState())
-                    {
-                        case EPlayState.PlaceCard: CancelPlaceCard(); break;
-                    }
-                    break;
-                }
-        }
-    }
-
     public override void OnInputAxisChange(Player player, Vector2I axis)
     {
         if (axis == Vector2I.Zero) return;
@@ -60,18 +31,6 @@ public partial class PlayerBoard : Board
         // GD.Print($"[{player.Name}.PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {selectedCardPosition}");
     }
 
-    void CancelPlaceCard()
-    {
-        if (OnPlaceCardCancel is not null) OnPlaceCardCancel(CardToPlace);
-        CardToPlace = null;
-    }
-
-
-    protected void StartPlaceCard(Card cardtoPlace)
-    {
-        if (OnPlaceCardStart is not null) OnPlaceCardStart(cardtoPlace);
-    }
-
     // --- Public API ---
 
     public void SetAllCardsAsActive()
@@ -85,7 +44,7 @@ public partial class PlayerBoard : Board
     }
 
     public static Card FindLastEmptyFieldInRow(List<Card> row) => row.Find(card => card.GetIsEmptyField());
-    public virtual async void PlaceCardInBoardFromHand<T>(Player player, T cardToPlace) where T : Card
+    public virtual async Task PlaceCardInBoardFromHand<T>(Player player, T cardToPlace) where T : Card
     {
         T? selectedCard = GetSelectedCard<T>(player);
         if (selectedCard is null) { GD.PrintErr("[PlaceCardInBoardFromHand] This card place cannot be found!"); return; }
@@ -95,7 +54,6 @@ public partial class PlayerBoard : Board
         selectedCard.UpdateAttributes(attributes);
         await selectedCard.TryToTriggerCardEffect(CardEffectTrigger.WhenPlayed);
         GetCardsInTree().ForEach(async card => await card.TryToTriggerCardEffect(CardEffectTrigger.AnyCardPlayed));
-        OnPlaceCardEnd(cardToPlace);
         CardToPlace = null;
     }
 

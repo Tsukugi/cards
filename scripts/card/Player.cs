@@ -1,13 +1,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
 
 public partial class Player : Node3D
 {
-    public delegate void EnemyInteractionRequestEvent(Player playerStartingInteraction, Player targetPlayerToInteract);
-    public delegate void InteractionEvent(Player playerStartingInteraction);
-    public delegate void ProvideCardInteractionEvent(Player playerStartingInteraction, Card card);
+    public delegate Task EnemyInteractionRequestEvent(Player playerStartingInteraction, Player targetPlayerToInteract);
+    public delegate Task InteractionEvent(Player playerStartingInteraction);
+    public delegate Task ProvideCardInteractionEvent(Player playerStartingInteraction, Card card);
 
     [Export]
     protected bool isControlledPlayer = false;
@@ -25,7 +26,8 @@ public partial class Player : Node3D
     int selectedBoardIndex = 0;
 
     // PlayState
-    EPlayState playState = EPlayState.Wait;
+    EPlayState playState = EPlayState.Wait; // Play state refers to the Player actions and what they can do via input --- Pressing Cancel, OK or Waiting for something
+    string interactionState = ALInteractionState.None; // Interaction state refers to what specifically each player action should be attached to --- Pressing OK is to play a card in the main phase or to select a target for an effect
 
     public override void _Ready()
     {
@@ -34,7 +36,6 @@ public partial class Player : Node3D
         board = GetNode<PlayerBoard>("Board");
         orderedBoards = [hand, board];
         SelectBoard(GetSelectedBoard());
-        Callable.From(InitializeEvents).CallDeferred();
     }
 
     public override void _Process(double delta)
@@ -42,23 +43,6 @@ public partial class Player : Node3D
         base._Process(delta);
         HandleInput();
         HandleAction();
-    }
-
-    protected virtual void InitializeEvents()
-    {
-        board.OnCardTrigger -= OnCardTriggerHandler;
-        board.OnCardTrigger += OnCardTriggerHandler;
-        hand.OnCardTrigger -= OnCardTriggerHandler;
-        hand.OnCardTrigger += OnCardTriggerHandler;
-        hand.OnPlayCardStart -= OnPlayCardStartHandler;
-        hand.OnPlayCardStart += OnPlayCardStartHandler;
-        board.OnPlaceCardStart -= OnPlaceCardStartHandler;
-        board.OnPlaceCardStart += OnPlaceCardStartHandler;
-        board.OnPlaceCardEnd -= OnPlaceCardEndHandler;
-        board.OnPlaceCardEnd += OnPlaceCardEndHandler;
-        board.OnPlaceCardCancel -= OnPlaceCardCancelHandler;
-        board.OnPlaceCardCancel += OnPlaceCardCancelHandler;
-        GD.Print("[InitializeEvents] Default Player events initialized");
     }
 
     protected virtual void UnassignBoardEvents(Board board)
@@ -84,34 +68,35 @@ public partial class Player : Node3D
         if (!isControlledPlayer) return;
         InputAction action = actionInputHandler.GetAction();
         if (action == InputAction.None) return;
-        boardInputAsync.Debounce(() => TriggerAction(action), 0.2f);
+        boardInputAsync.Debounce(() => TriggerAction(action, this), 0.2f);
     }
 
-    protected void OnPlaceCardCancelHandler(Card cardPlaced)
+    protected async Task OnPlaceCardCancelHandler(Card cardPlaced)
     {
         cardPlaced.SetIsEmptyField(false);
-        SetPlayState(EPlayState.Select);
+        await SetPlayState(EPlayState.SelectCardToPlay);
         SelectBoard(hand);
     }
 
-    protected void OnPlaceCardStartHandler(Card cardPlaced)
+    protected async Task OnPlaceCardStartHandler(Card cardPlaced)
     {
-        board.PlaceCardInBoardFromHand(this, cardPlaced);
+        await board.PlaceCardInBoardFromHand(this, cardPlaced);
     }
 
-    protected void OnPlaceCardEndHandler(Card cardPlaced)
+    protected async Task OnPlaceCardEndHandler(Card cardPlaced)
     {
+        GD.Print($"[OnPlaceCardEndHandler]");
         hand.RemoveCardFromHand(this, cardPlaced);
-        SetPlayState(EPlayState.Select);
+        await SetPlayState(EPlayState.SelectCardToPlay);
         SelectBoard(hand);
     }
 
-    protected void OnPlayCardStartHandler(Card cardToPlay)
+    public async Task OnPlayCardStartHandler(Card cardToPlay)
     {
         GD.Print($"[OnPlayCardStartHandler] Card to play {cardToPlay} {cardToPlay.GetAttributes<CardDTO>().name}");
         board.CardToPlace = cardToPlay;
         cardToPlay.SetIsEmptyField(true);
-        SetPlayState(EPlayState.PlaceCard);
+        await SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectBoardFieldToPlaceCard);
         SelectBoard(board);
     }
 
@@ -152,13 +137,17 @@ public partial class Player : Node3D
         if (selectedBoard is not null) AssignBoardEvents(selectedBoard);
     }
 
-    public void SetPlayState(EPlayState state)
+    public async Task SetPlayState(EPlayState state, string providedInteractionState = null)
     {
         EPlayState oldState = playState;
-        _ = boardInputAsync.AwaitBefore(() => // This delay allows to avoid trigering different EPlayState events on the same frame
+        string oldInteractionState = interactionState;
+        await boardInputAsync.AwaitBefore(() => // This delay allows to avoid trigering different EPlayState events on the same frame
             {
                 playState = state;
-                GD.Print("[SetPlayState] " + oldState + " -> " + playState);
+                string newInteraction = providedInteractionState is null ? ALInteractionState.None : providedInteractionState;
+                interactionState = newInteraction;
+                GD.Print($"[SetPlayState] {oldInteractionState} -> {newInteraction}");
+                GD.Print($"[SetPlayState] {oldState} -> {playState}");
             }, 0.1f);
     }
 
@@ -182,7 +171,7 @@ public partial class Player : Node3D
         orderedBoards = [hand, board, enemyBoard, enemyHand]; // assign order
         GD.Print($"[AssignEnemyBoards] Boards assigned for {Name}");
     }
-    protected virtual void OnCardTriggerHandler(Card card)
+    public virtual void OnCardTriggerHandler(Card card)
     {
         GD.Print($"[OnCardTriggerHandler] {card.Name}");
     }
@@ -192,15 +181,16 @@ public partial class Player : Node3D
         if (foundBoard is null) GD.PrintErr($"[SelectAndTriggerCard] Board {card.GetBoard()} cannot be found ");
         SelectBoard(foundBoard);
         foundBoard.SelectCardField(this, card.PositionInBoard);
-        TriggerAction(InputAction.Ok);
+        TriggerAction(InputAction.Ok, this);
     }
-    public void TriggerAction(InputAction action)
+    public void TriggerAction(InputAction action, Player player)
     {
         GD.Print($"[Action Triggered by player {Name}] {GetSelectedBoard().Name}.{action}");
-        GetSelectedBoard().OnActionHandler(this, action);
+        player.GetSelectedBoard().OnActionHandler(this, action);
     }
 
     public EPlayState GetPlayState() => playState;
+    public string GetInteractionState() => interactionState;
     public bool GetIsControllerPlayer() => isControlledPlayer;
     public Color GetPlayerColor() => playerColor;
     public Board GetSelectedBoard() => orderedBoards[selectedBoardIndex];

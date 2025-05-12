@@ -29,16 +29,16 @@ public class ALAIActions
 
     public async Task PlayCardToBoard(List<ALCard> availableCardsInHand, bool front = true)
     {
-        GD.Print($"[PlayCardToBoard]");
         // Select from hand
-        var card = FindMostExpensiveCard(availableCardsInHand);
-        player.OnCostPlayCardStartHandler(card);
+        ALCard card = FindMostExpensiveCard(availableCardsInHand);
+        await player.OnCostPlayCardStartHandler(card);
 
-        await WaitUntilPlayState(EPlayState.PlaceCard);
+        await WaitUntilPlayState(EPlayState.SelectTarget, ALInteractionState.SelectBoardFieldToPlaceCard);
         // Place card
         SelectAvailableBoardEmptyField(front);
         ALBoard board = player.GetPlayerBoard<ALBoard>();
-        board.PlaceCardInBoardFromHand(player, card);
+        await board.PlaceCardInBoardFromHand(player, card);
+        GD.Print($"[PlayCardToBoard] {card.GetAttributes<ALCardDTO>().name}");
     }
 
     // Battle Phase
@@ -88,12 +88,12 @@ public class ALAIActions
     {
         //Attacker
         GD.Print($"[AttackProcess] Start");
-        await WaitUntilPlayState(EPlayState.Select);
+        await WaitUntilPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackerUnit);
         SelectAndTriggerCardUnit(attacker);
         await Task.Delay(actionDelay);
         GD.Print($"[AttackProcess] Attacker {attacker.Name}");
         // Target
-        await WaitUntilPlayState(EPlayState.SelectTarget);
+        await WaitUntilPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackTarget);
         GD.Print($"[AttackProcess] Attacking {target}");
         SelectAndTriggerCardUnit(target);
         await Task.Delay(actionDelay);
@@ -126,20 +126,23 @@ public class ALAIActions
 
     public static ALCard FindMostExpensiveCard(List<ALCard> cards)
     {
-        GD.Print($"[FindMostExpensiveCard]");
-        cards.Sort((cardA, cardB) => cardA.GetAttributes<ALCardDTO>().cost - cardB.GetAttributes<ALCardDTO>().cost);
-        return cards[^1];
+        cards.FindAll(card => card.IsCardUnit()).Sort((cardA, cardB) => cardA.GetAttributes<ALCardDTO>().cost - cardB.GetAttributes<ALCardDTO>().cost);
+        var expensiveCard = cards[^1];
+        GD.Print($"[FindMostExpensiveCard] {expensiveCard.GetAttributes<ALCardDTO>().name}");
+        return expensiveCard;
     }
     public List<ALCard> GetPlayableCostCardsInHand()
     {
-        GD.Print($"[GetPlayableCostCardsInHand]");
         var availableCubes = player.GetActiveCubesInBoard().Count;
         ALHand hand = player.GetPlayerHand<ALHand>();
-        return hand.TryGetAllChildOfType<ALCard>().FindAll(card =>
+        var cards = hand.TryGetAllChildOfType<ALCard>().FindAll(card =>
             {
                 var attrs = card.GetAttributes<ALCardDTO>();
                 return attrs.cost <= availableCubes && attrs.cardType == ALCardType.Ship;
             });
+
+        GD.Print($"[GetPlayableCostCardsInHand] Card list {cards.Count}");
+        return cards;
     }
 
     public async Task WaitUntilPhase(EALTurnPhase phase, float timeout = -1)
@@ -157,17 +160,18 @@ public class ALAIActions
              timeout);
         await Task.Delay(actionDelay);
     }
-    public async Task WaitUntilPlayState(EPlayState playState, float timeout = -1)
+    public async Task WaitUntilPlayState(EPlayState playState, string interactionState = null, float timeout = -1)
     {
+        var checkInteractionState = interactionState is null ? ALInteractionState.None : interactionState;
         await asyncHandler.AwaitForCheck(
             () =>
             {
-                // GD.Print($"[WaitUntilPlayState] Success {player.GetPlayState()} {playState}");
+                //  GD.Print($"[WaitUntilPlayState] Success : {player.GetPlayState()} - {playState} : {player.GetInteractionState()} - {checkInteractionState}");
             },
             () =>
             {
-                // GD.Print($"[WaitUntilPlayState] {asyncHandler} {player.GetPlayState()} {playState}");
-                return player.GetPlayState() == playState;
+                //  GD.Print($"[WaitUntilPlayState] {asyncHandler} : {player.GetPlayState()} - {playState} : {player.GetInteractionState()} - {checkInteractionState}");
+                return player.GetPlayState() == playState && player.GetInteractionState() == checkInteractionState;
             },
             timeout);
         await Task.Delay(actionDelay);
@@ -175,7 +179,8 @@ public class ALAIActions
 
     public async Task PlayNextPhase()
     {
+        GD.Print($"[PlayNextPhase]");
         await Task.Delay(actionDelay);
-        player.TriggerPhaseButton();
+        player.TriggerPhaseButton(player);
     }
 }

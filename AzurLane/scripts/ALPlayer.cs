@@ -12,6 +12,7 @@ public partial class ALPlayer : Player
     public event EnemyInteractionRequestEvent OnAttackGuardStart;
     public event InteractionEvent OnAttackGuardEnd;
     public event ProvideCardInteractionEvent OnGuardProvided;
+    public event ProvideCardInteractionEvent OnRetaliation;
 
     // --- Events ---
     public event Action OnTurnEnd;
@@ -34,6 +35,8 @@ public partial class ALPlayer : Player
     AsyncHandler playerAsyncHandler;
     ALPhase phaseManager;
 
+    // --- Actions ---
+
     public override void _Ready()
     {
         base._Ready(); // Required for board/hand refs
@@ -47,44 +50,21 @@ public partial class ALPlayer : Player
         costArea = board.GetNode<ALBoardArea>("CostArea");
         unitsArea = board.GetNode<Node3D>("Units");
         durabilityArea = board.GetNode<ALBoardArea>("FlagshipDurability");
+
+        Callable.From(InitializeEvents).CallDeferred();
     }
 
-    protected override void InitializeEvents()
+    protected void InitializeEvents()
     {
-        base.InitializeEvents();
         ALHand hand = GetPlayerHand<ALHand>();
         ALBoard board = GetPlayerBoard<ALBoard>();
-        hand.OnPlayCardStart -= OnPlayCardStartHandler; // Unload default event
-        hand.OnPlayCardStart -= OnCostPlayCardStartHandler;
-        hand.OnPlayCardStart += OnCostPlayCardStartHandler;
-        board.OnPlaceCardCancel -= OnPlaceCardCancelHandler; // Unload default event
-        board.OnPlaceCardCancel -= OnCostPlaceCardCancelHandler;
-        board.OnPlaceCardCancel += OnCostPlaceCardCancelHandler;
-        board.OnPlaceCardStart -= OnPlaceCardStartHandler; // Unload default event
-        board.OnPlaceCardStart -= OnALPlaceCardStartHandler;
-        board.OnPlaceCardStart += OnALPlaceCardStartHandler;
         List<ALCard> units = GetUnitsInBoard();
         units.ForEach(unit =>
         {
             unit.OnDurabilityDamage -= ApplyDurabilityDamage;
             unit.OnDurabilityDamage += ApplyDurabilityDamage;
         });
-
         GD.Print("[InitializeEvents] ALPlayer events initialized");
-    }
-
-    protected override void UnassignBoardEvents(Board board)
-    {
-        base.UnassignBoardEvents(board);
-        ALBoard enemyBoard = GetEnemyPlayerBoard<ALBoard>();
-        if (enemyBoard is not null) enemyBoard.OnCardTrigger -= OnCardTriggerHandler;
-    }
-    protected override void AssignBoardEvents(Board board)
-    {
-        UnassignBoardEvents(board);
-        base.AssignBoardEvents(board);
-        ALBoard enemyBoard = GetEnemyPlayerBoard<ALBoard>();
-        if (enemyBoard is not null) enemyBoard.OnCardTrigger += OnCardTriggerHandler;
     }
 
     public void AssignDeck(ALDeckSet newDeckSet)
@@ -93,7 +73,7 @@ public partial class ALPlayer : Player
         GD.Print($"[AssignDeck] Deck size: {newDeckSet.deck.Count}");
     }
 
-    public async void StartGameForPlayer()
+    public async Task StartGameForPlayer()
     {
         // Deck setup
         deckField.CardStack = deckSet.deck.Count; // Set it as deck size
@@ -120,7 +100,7 @@ public partial class ALPlayer : Player
         phaseManager.StartTurn();
     }
 
-    public async void EndTurn()
+    public async Task EndTurn()
     {
         await TryToTriggerOnAllCards(ALCardEffectTrigger.EndOfTurn);
         if (OnTurnEnd is not null) OnTurnEnd();
@@ -152,8 +132,7 @@ public partial class ALPlayer : Player
         return true;
     }
 
-    // Event handlers
-    public void OnCostPlayCardStartHandler(Card cardToPlay)
+    public async Task OnCostPlayCardStartHandler(Card cardToPlay)
     {
         var currentPhase = phaseManager.GetCurrentPhase();
         if (currentPhase != EALTurnPhase.Main)
@@ -167,15 +146,16 @@ public partial class ALPlayer : Player
 
         if (attributes.cardType == ALCardType.Event)
         {
-            TryToPlayEventCard(card, (ALHand)card.GetBoard(), CardEffectTrigger.WhenPlayed);
+            await TryToPlayEventCard(card, (ALHand)card.GetBoard(), CardEffectTrigger.WhenPlayed);
             return;
         }
 
+        GD.Print($"[OnCostPlayCardStartHandler] {card.Name}");
         bool cubesSpent = TryToSpendCubes(attributes.cost);
-        if (cubesSpent) OnPlayCardStartHandler(card);
+        if (cubesSpent) await OnPlayCardStartHandler(card);
     }
 
-    protected void OnCostPlaceCardCancelHandler(Card cardToRestore)
+    public async Task OnCostPlaceCardCancelHandler(Card cardToRestore)
     {
         ALCard card = cardToRestore.CastToALCard();
 
@@ -189,10 +169,10 @@ public partial class ALPlayer : Player
             if (!lastInactiveCubeIndex.IsInsideBounds(cubes.Count)) continue; // This can happen if CardCost > drawnCubes : Mainly on debug mode 
             cubes[lastInactiveCubeIndex].SetIsInActiveState(true); // Last match
         }
-        OnPlaceCardCancelHandler(card);
+        await OnPlaceCardCancelHandler(card);
     }
 
-    protected void OnALPlaceCardStartHandler(Card fieldToPlace)
+    public async Task OnALPlaceCardStartHandler(Card fieldToPlace)
     {
         ALCard cardToPlace = fieldToPlace.CastToALCard();
         ALBoard board = GetPlayerBoard<ALBoard>();
@@ -208,49 +188,18 @@ public partial class ALPlayer : Player
             GD.Print($"[OnALPlaceCardStartHandler] Sending {existingCard} to retreat area");
             AddToRetreatAreaOnTop(existingCard);
         }
-        OnPlaceCardStartHandler(cardToPlace);
+        await OnPlaceCardStartHandler(cardToPlace);
+        await OnPlaceCardEndHandler(cardToPlace);
     }
 
-    protected override void OnCardTriggerHandler(Card field)
-    {
-        playerAsyncHandler.Debounce(() =>
-        {
-            base.OnCardTriggerHandler(field);
-            EALTurnPhase currentPhase = phaseManager.GetCurrentPhase();
-            EALTurnPhase matchPhase = matchManager.GetMatchPhase(); // I want the synched match phase so both player can interact
-            if (field is ALPhaseButton)
-            {
-                if (currentPhase == EALTurnPhase.Main) phaseManager.PlayNextPhase();
-                if (matchPhase == EALTurnPhase.Battle)
-                {
-                    if (GetPlayState() == EPlayState.Select) phaseManager.PlayNextPhase();
-                    if (GetPlayState() == EPlayState.EnemyInteraction) EndGuardPhase();
-                }
-            }
-            if (field is ALCard card)
-            {
-                if (currentPhase == EALTurnPhase.Battle)
-                {
-                    if (GetPlayState() == EPlayState.Select) StartBattle(card);
-                    if (GetPlayState() == EPlayState.SelectTarget) AttackCard(matchManager.GetAttackerCard(), card);
-
-                }
-                if (matchPhase == EALTurnPhase.Battle)
-                {
-                    if (GetPlayState() == EPlayState.EnemyInteraction) PlayCardAsGuard(card);
-                }
-            }
-        }, 1f);
-    }
-
-    void EndGuardPhase()
+    public void EndGuardPhase()
     {
         GD.PrintErr($"[EndGuardPhase]");
         if (OnAttackGuardEnd is not null) OnAttackGuardEnd(this);
     }
 
     // You can guard cards from field and hand
-    void PlayCardAsGuard(ALCard cardToGuard)
+    public async Task PlayCardAsGuard(ALCard cardToGuard)
     {
         var selectedGuard = cardToGuard.GetBoard();
         if (selectedGuard != GetPlayerBoard<ALBoard>() && selectedGuard != GetPlayerHand<ALHand>())
@@ -294,7 +243,7 @@ public partial class ALPlayer : Player
             {
                 if (attrs.cardType == ALCardType.Event) // Events are a special card that has its own process
                 {
-                    TryToPlayEventCard(cardToGuard, guardingHand, ALCardEffectTrigger.Counter.ToString());
+                    await TryToPlayEventCard(cardToGuard, guardingHand, ALCardEffectTrigger.Counter.ToString());
                     return;
                 }
                 GD.PrintErr($"[PlayCardAsGuard] You can only play ships as units, selected: {attrs.name} {attrs.supportScope}");
@@ -309,10 +258,10 @@ public partial class ALPlayer : Player
             AddToRetreatAreaOnTop(cardToGuard.GetAttributes<ALCardDTO>());
             guardingHand.RemoveCardFromHand(this, cardToGuard);
         }
-        if (OnGuardProvided is not null) OnGuardProvided(this, cardToGuard);
+        if (OnGuardProvided is not null) await OnGuardProvided(this, cardToGuard);
     }
 
-    async void TryToPlayEventCard(ALCard eventCard, ALHand hand, string trigger)
+    async Task TryToPlayEventCard(ALCard eventCard, ALHand hand, string trigger)
     {
         var attrs = eventCard.GetAttributes<ALCardDTO>();
 
@@ -330,7 +279,7 @@ public partial class ALPlayer : Player
         hand.RemoveCardFromHand(this, eventCard);
     }
 
-    public async void ApplyDurabilityDamage(Card card)
+    public async Task ApplyDurabilityDamage(Card card)
     {
         List<ALCard> durabilityCards = GetDurabilityCards();
         ALCard durabilityCardInBoard = durabilityCards.FindLast(durabilityCard => durabilityCard.GetIsFaceDown());
@@ -342,15 +291,15 @@ public partial class ALPlayer : Player
         // "Draw" the card to hand 
         ALHand hand = GetPlayerHand<ALHand>();
         ALCard durabilityCardInHand = await hand.AddCardToHand(durabilityCardInBoard.GetAttributes<ALCardDTO>());
-        await durabilityCardInHand.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
         durabilityCardInBoard.DestroyCard(); // Destroy card from board
         await TryToTriggerOnAllCards(ALCardEffectTrigger.OnDamageReceived);
         GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown()).Count}/{durabilityCards.Count}");
+        if (OnRetaliation is not null) await OnRetaliation(this, durabilityCardInHand);
     }
 
     // Actions 
 
-    void StartBattle(ALCard attacker)
+    public async Task StartBattle(ALCard attacker)
     {
         if (attacker.GetBoard() != GetPlayerBoard<ALBoard>() || !attacker.GetIsInActiveState())
         {
@@ -358,15 +307,15 @@ public partial class ALPlayer : Player
             return;
         }
 
-        if (OnAttackStart is not null) OnAttackStart(this, attacker);
-        SetPlayState(EPlayState.SelectTarget);
+        if (OnAttackStart is not null) await OnAttackStart(this, attacker);
+        await SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackTarget);
     }
 
     // Limitations on attack
     // BackRow ship -> FrontRow Ships
     // FrontRow Ship -> All ships 
     // Flagship -> All Ships
-    void AttackCard(ALCard attacker, ALCard target)
+    public void AttackCard(ALCard attacker, ALCard target)
     {
         if (target.GetBoard() != GetEnemyPlayerBoard<ALBoard>() || !target.IsCardUnit())
         {
@@ -397,7 +346,7 @@ public partial class ALPlayer : Player
 
     public async Task SettleBattle(ALPlayerUI playerUI)
     {
-        SetPlayState(EPlayState.Wait);
+        await SetPlayState(EPlayState.Wait);
         ALCard attackerCard = matchManager.GetAttackerCard();
         ALCard attackedCard = matchManager.GetAttackedCard();
         ALCardDTO attackerAttrs = attackerCard.GetAttributes<ALCardDTO>();
@@ -423,7 +372,7 @@ public partial class ALPlayer : Player
             else
             {
                 GD.Print($"[SettleBattle] {attackedAttrs.name} destroyed!");
-                DestroyUnitCard(attackedCard);
+                await DestroyUnitCard(attackedCard);
             }
         }
         else
@@ -432,15 +381,33 @@ public partial class ALPlayer : Player
         }
 
         // Clean
-        SetPlayState(EPlayState.Select);
-        if (OnAttackEnd is not null) OnAttackEnd(this);
+        await SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackerUnit);
+        if (OnAttackEnd is not null) await OnAttackEnd(this);
         await phaseManager.EndBattlePhaseIfNoActiveCards();
     }
 
-    async void DestroyUnitCard(ALCard card)
+    public async Task CancelAttack(Player player)
     {
+        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackTarget);
+    }
+
+    public virtual async Task CancelSelectEffectState(Player player)
+    {
+        GD.Print($"[CancelSelectEffectState]");
+        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectEffectTarget);
+    }
+
+    public async Task CancelRetaliation(Player player)
+    {
+        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackTarget);
+    }
+
+    static async Task DestroyUnitCard(ALCard card)
+    {
+
         card.GetOwnerPlayer<ALPlayer>().AddToRetreatAreaOnTop(card.GetAttributes<ALCardDTO>());
         await card.TryToTriggerCardEffect(ALCardEffectTrigger.OnCardDestroyed);
+        card.GetBoard().RetireCard(card);
         card.DestroyCard();
     }
 
@@ -540,7 +507,8 @@ public partial class ALPlayer : Player
 
     public bool IsAwaitingBattleGuard() =>
         phaseManager.GetCurrentPhase() == EALTurnPhase.Battle
-        && GetPlayState() == EPlayState.AwaitEnemyInteraction
+        && GetPlayState() == EPlayState.Wait
+        && GetInteractionState() == ALInteractionState.AwaitOtherPlayerInteraction
         && matchManager.IsAttackInProgress();
 
     public ALCard FindAvailableEmptyFieldInRow(bool frontRow = false)
@@ -555,13 +523,14 @@ public partial class ALPlayer : Player
     public ALGameMatchManager GetMatchManager() => matchManager;
 
     // Play actions
-    public void TriggerPhaseButton()
+    public void TriggerPhaseButton(Player player)
     {
-        ALBoard board = GetPlayerBoard<ALBoard>();
+        ALBoard board = player.GetPlayerBoard<ALBoard>();
         SelectBoard(board);
         // Select phase button
-        board.SelectCardField(this, phaseButtonField.PositionInBoard);
-        TriggerAction(InputAction.Ok);
+        board.SelectCardField(player, phaseButtonField.PositionInBoard);
+        GD.Print($"[TriggerPhaseButton] {board.GetSelectedCard<Card>(player)}");
+        TriggerAction(InputAction.Ok, player);
     }
 
     public async Task DrawCardToHand(int num = 1)
@@ -577,6 +546,7 @@ public partial class ALPlayer : Player
     {
         ALHand hand = GetPlayerHand<ALHand>();
         await hand.AddCardToHand(card);
+        await this.Wait(0.5f);
     }
 
     public void SetBoardCardsAsActive()
@@ -586,7 +556,7 @@ public partial class ALPlayer : Player
         GetUnitsInBoard().ForEach(card => card.SetIsInActiveState(true));
     }
 
-    public async void TryDrawCubeToBoard()
+    public async Task TryDrawCubeToBoard()
     {
         try
         {
@@ -607,6 +577,7 @@ public partial class ALPlayer : Player
             return;
         }
     }
+
 
 }
 

@@ -42,8 +42,8 @@ public class ALBasicAI
 
     public async Task SkipAttackGuards()
     {
-        await actions.WaitUntilPlayState(EPlayState.EnemyInteraction);
-        player.TriggerAction(InputAction.Cancel);
+        await actions.WaitUntilPlayState(EPlayState.SelectTarget, ALInteractionState.SelectGuardingUnit);
+        player.TriggerAction(InputAction.Cancel, player);
         await player.GetPlayerAsyncHandler().AwaitBefore(SkipAttackGuards, 0.5f);
     }
     public async Task StartTurn()
