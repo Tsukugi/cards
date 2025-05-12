@@ -124,7 +124,7 @@ public partial class Player : Node3D
         newBoard.SelectCardField(this, card.PositionInBoard); // Use the card's board to select itself, a referenced card can be from another board than the triggering one
     }
 
-    protected void SelectBoard(Board board)
+    public void SelectBoard(Board board)
     {
         if (selectedBoard is not null)
         {

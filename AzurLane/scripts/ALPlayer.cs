@@ -399,7 +399,7 @@ public partial class ALPlayer : Player
 
     public async Task CancelRetaliation(Player player)
     {
-        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackTarget);
+        await player.SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
     }
 
     static async Task DestroyUnitCard(ALCard card)

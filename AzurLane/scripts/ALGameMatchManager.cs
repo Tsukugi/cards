@@ -125,10 +125,11 @@ public partial class ALGameMatchManager : Node
 
     async Task OnRetaliationHandler(Player damagedPlayer, Card retaliatingCard)
     {
-        // TODO Make a retaliation phase
         await damagedPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectRetaliationUnit);
+        damagedPlayer.SelectBoard(damagedPlayer.GetPlayerHand<ALHand>());
+        await retaliatingCard.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
+
         await GetNextPlayer((ALPlayer)damagedPlayer).SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
-        //await retaliatingCard.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
     }
 
     async Task OnGuardProvidedHandler(Player guardingPlayer, Card card)
