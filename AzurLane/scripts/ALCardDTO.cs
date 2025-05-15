@@ -98,6 +98,7 @@ public static class ALCardEffectTrigger
     public static readonly string Counter = "Counter"; // (Can be activated during your Defense Step) 
     public static readonly string OnCardDestroyed = "OnCardDestroyed"; // When this card is send to the retreat zone
     public static readonly string EndOfTurn = "EndOfTurn"; // When a player is on end phase
+    public static readonly string StartOfTurn = "StartOfTurn"; // When a player is in the preparation phase
     public static readonly string OnDamageReceived = "OnDamageReceived"; // When flagship durability takes damage
     public static readonly string OnMaxCubeCountChanged = "OnMaxCubeCountChanged"; // When MAX Cube count is modified with a draw of effect
 }

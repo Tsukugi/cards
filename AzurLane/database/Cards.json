@@ -258,8 +258,8 @@
 				"triggerEvent": [
 					"IsAttacked"
 				],
-				"duration": "CurrentBattle",
 				"effectId": "GetPower",
+				"duration": "CurrentBattle",
 				"effectValue": [
 					"100"
 				],
@@ -760,6 +760,14 @@
 		"name": "Edinburgh",
 		"effects": [
 			{
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"effectId": "DiscardAndDrawCubeDown",
+				"effectValue": [
+					"1",
+					"1"
+				],
 				"effectLabel": "■【When Played】You can discard 1 card from your hand: Put one cube card from our deck face down in the cost area."
 			}
 		],
@@ -783,6 +791,14 @@
 		"name": "Belfast",
 		"effects": [
 			{
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"effectId": "DiscardAndDrawCubeDown",
+				"effectValue": [
+					"1",
+					"1"
+				],
 				"effectLabel": "■【When Played】You can discard 1 card from your hand: Put one cube card from our deck face down in the cost area."
 			}
 		],
@@ -825,6 +841,15 @@
 		"name": "Nelson",
 		"effects": [
 			{
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"effectId": "RestEnemy",
+				"effectValue": [
+					"Cost",
+					"EqualOrLess",
+					"4"
+				],
 				"effectLabel": "■【When Played】Turn one ship card from the opponent's side that costs 4 or less into a resting state."
 			}
 		],
@@ -848,7 +873,31 @@
 		"name": "Rodney",
 		"effects": [
 			{
-				"effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards) ■【Defend +100】(When this card is attacked, it gets +100 power)"
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"condition": [
+					{
+						"conditionId": "OnBackRow"
+					}
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectValue": [
+					"RangedAttack"
+				],
+				"effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
+			},
+			{
+				"triggerEvent": [
+					"IsAttacked"
+				],
+				"duration": "CurrentBattle",
+				"effectId": "GetPower",
+				"effectValue": [
+					"100"
+				],
+				"effectLabel": "■【Defend +100】(When this card is attacked, it gets +100 power)"
 			}
 		],
 		"imageSrc": "SD02-009.png",
@@ -923,7 +972,16 @@
 				"effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
 			},
 			{
-				"effectLabel": "■【When Played】Choose one ship card from the opponent's side that costs 4 or less. If that card is activated, turn it to a resting state; if it is resting, destroy it."
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"effectId": "RestOrDestroyEnemy",
+				"effectValue": [
+					"Cost",
+					"EqualOrLess",
+					"4"
+				],
+				"effectLabel": "■【When Played】Choose one ship card from the opponent's side that costs 4 or less. If that card is active, turn it to a resting state; if it is resting, destroy it."
 			}
 		],
 		"imageSrc": "SD02-011.png",
@@ -946,7 +1004,32 @@
 		"name": "Hermes",
 		"effects": [
 			{
-				"effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards) ■【When Played】Choose one ship card from the opponent's side that costs 4 or less. If that card is activated, turn it to a resting state; if it is resting, destroy it."
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"condition": [
+					{
+						"conditionId": "OnBackRow"
+					}
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectValue": [
+					"RangedAttack"
+				],
+				"effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
+			},
+			{
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"effectId": "RestOrDestroyEnemy",
+				"effectValue": [
+					"Cost",
+					"EqualOrLess",
+					"4"
+				],
+				"effectLabel": "■【When Played】Choose one ship card from the opponent's side that costs 4 or less. If that card is active, turn it to a resting state; if it is resting, destroy it."
 			}
 		],
 		"imageSrc": "SD02-012.png",
@@ -969,7 +1052,32 @@
 		"name": "Royal Navy Oath",
 		"effects": [
 			{
-				"effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +200 power for this battle. After that, if the flagship's durability is 0, turn one of our cube cards into active state."
+				"triggerEvent": [
+					"Counter"
+				],
+				"duration": "CurrentBattle",
+				"effectId": "SelectAndGivePower",
+				"effectValue": [
+					"200",
+					"Ally"
+				],
+				"effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +200 power for this battle."
+			},
+			{
+				"triggerEvent": [
+					"Counter"
+				],
+				"condition": [
+					{
+						"conditionId": "CheckFlagshipDurability",
+						"conditionArgs": [
+							"EqualOrLess",
+							"0"
+						]
+					}
+				],
+				"effectId": "ReactivateCube",
+				"effectLabel": "After that, if the flagship's durability is 0, turn one of our cube cards into active state."
 			}
 		],
 		"imageSrc": "SD02-013.png",
@@ -992,7 +1100,35 @@
 		"name": "Royal Navy Bulwark",
 		"effects": [
 			{
-				"effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +600 power for this battle. After that, if the flagship's durability is 0, put one cube card from our deck face down in the cost area."
+				"triggerEvent": [
+					"Counter"
+				],
+				"duration": "CurrentBattle",
+				"effectId": "SelectAndGivePower",
+				"effectValue": [
+					"600",
+					"Ally"
+				],
+				"effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +600 power for this battle."
+			},
+			{
+				"triggerEvent": [
+					"Counter"
+				],
+				"condition": [
+					{
+						"conditionId": "CheckFlagshipDurability",
+						"conditionArgs": [
+							"EqualOrLess",
+							"0"
+						]
+					}
+				],
+				"effectId": "DrawCubeDown",
+				"effectValue": [
+					"1"
+				],
+				"effectLabel": "After that, if the flagship's durability is 0, put one cube card from our deck face down in the cost area."
 			}
 		],
 		"imageSrc": "SD02-014.png",
@@ -1091,6 +1227,19 @@
 		"name": "Bismarck",
 		"effects": [
 			{
+				"triggerEvent": [
+					"OnDamageReceived"
+				],
+				"condition": [
+					{
+						"conditionId": "CheckFlagshipDurability",
+						"conditionArgs": [
+							"EqualOrLess",
+							"1"
+						]
+					}
+				],
+				"effectId": "Awakening",
 				"effectLabel": "■【Awakening】If the flagship's durability is 1 or below, turn this card to face down."
 			}
 		],
@@ -1114,6 +1263,18 @@
 		"name": "Bismarck",
 		"effects": [
 			{
+				"triggerEvent": [
+					"StartOfTurn"
+				],
+				"condition": [
+					{
+						"conditionId": "CurrentPlayerPlayingTurn",
+						"conditionArgs": [
+							"Self"
+						]
+					}
+				],
+				"effectId": "Awakening",
 				"effectLabel": "■【During our turn】This card gets +100 power."
 			}
 		],
@@ -1147,6 +1308,7 @@
 				"triggerEvent": [
 					"WhenPlayedIntoBoard"
 				],
+				"duration": "UntilEndOfTurn",
 				"effectId": "SelectAndGivePower",
 				"effectValue": [
 					"-100",
@@ -1240,6 +1402,13 @@
 		"name": "Z21",
 		"effects": [
 			{
+				"triggerEvent": [
+					"StartsAttack"
+				],
+				"effectId": "GetPower",
+				"effectValue": [
+					"200"
+				],
 				"effectLabel": "■【Heavy Strike +200】(When this card attacks, it gets +200 power)"
 			}
 		],
@@ -1301,6 +1470,10 @@
 		"name": "Admiral Hipper",
 		"effects": [
 			{
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"effectId": "Rush",
 				"effectLabel": "■【Rush】(This card can attack in the turn it is played)"
 			}
 		],
@@ -1324,6 +1497,15 @@
 		"name": "Blücher",
 		"effects": [
 			{
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"effectId": "SelectAndGivePower",
+				"duration": "UntilEndOfTurn",
+				"effectValue": [
+					"-100",
+					"Enemy"
+				],
 				"effectLabel": "【When Played】This turn, one ship card on the opponent's side loses -100 power."
 			}
 		],
@@ -1347,7 +1529,22 @@
 		"name": "Prinz Eugen",
 		"effects": [
 			{
-				"effectLabel": "■【Rush】(This card can attack in the turn it is played) ■【Defend +100】(When this card is attacked, it gets +100 power)"
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"effectId": "Rush",
+				"effectLabel": "■【Rush】(This card can attack in the turn it is played)"
+			},
+			{
+				"triggerEvent": [
+					"IsAttacked"
+				],
+				"effectId": "GetPower",
+				"duration": "CurrentBattle",
+				"effectValue": [
+					"100"
+				],
+				"effectLabel": "■【Defend +100】(When this card is attacked, it gets +100 power)"
 			}
 		],
 		"imageSrc": "SD03-011.png",
@@ -1370,6 +1567,19 @@
 		"name": "Thüringen",
 		"effects": [
 			{
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"condition": [
+					{
+						"conditionId": "OnBackRow"
+					}
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectValue": [
+					"RangedAttack"
+				],
 				"effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
 			}
 		],
@@ -1393,6 +1603,19 @@
 		"name": "Wesser",
 		"effects": [
 			{
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"condition": [
+					{
+						"conditionId": "OnBackRow"
+					}
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectValue": [
+					"RangedAttack"
+				],
 				"effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
 			}
 		],
@@ -1416,7 +1639,37 @@
 		"name": "Truth Prevails",
 		"effects": [
 			{
-				"effectLabel": "■【Counter】(Can be used during our defense step) One ship card on the opponent's side loses -200 power for this battle. After that, if you have 1 or fewer cards in hand, further reduce its power by -100."
+				"triggerEvent": [
+					"Counter"
+				],
+				"duration": "CurrentBattle",
+				"effectId": "SelectAndGivePower",
+				"effectValue": [
+					"-200",
+					"Enemy"
+				],
+				"effectLabel": "■【Counter】(Can be used during our defense step) One ship card on the opponent's side loses -200 power for this battle."
+			},
+			{
+				"triggerEvent": [
+					"Counter"
+				],
+				"condition": [
+					{
+						"conditionId": "CheckCardsInHand",
+						"conditionArgs": [
+							"EqualOrLess",
+							"1"
+						]
+					}
+				],
+				"duration": "CurrentBattle",
+				"effectId": "SelectAndGivePower",
+				"effectValue": [
+					"-100",
+					"Enemy"
+				],
+				"effectLabel": "After that, if you have 1 or fewer cards in hand, further reduce its power by -100."
 			}
 		],
 		"imageSrc": "SD03-014.png",
@@ -1439,7 +1692,37 @@
 		"name": "Firepower Suppression",
 		"effects": [
 			{
-				"effectLabel": "■【Counter】(Can be used during our defense step) One card on the opponent's side loses -400 power for this battle. After that, if our flagship's durability is 0, further reduce its power by -100."
+				"triggerEvent": [
+					"Counter"
+				],
+				"duration": "CurrentBattle",
+				"effectId": "SelectAndGivePower",
+				"effectValue": [
+					"-400",
+					"Enemy"
+				],
+				"effectLabel": "■【Counter】(Can be used during our defense step) One card on the opponent's side loses -400 power for this battle."
+			},
+			{
+				"triggerEvent": [
+					"Counter"
+				],
+				"condition": [
+					{
+						"conditionId": "CheckFlagshipDurability",
+						"conditionArgs": [
+							"EqualOrLess",
+							"0"
+						]
+					}
+				],
+				"duration": "CurrentBattle",
+				"effectId": "SelectAndGivePower",
+				"effectValue": [
+					"-100",
+					"Enemy"
+				],
+				"effectLabel": "After that, if our flagship's durability is 0, further reduce its power by -100."
 			}
 		],
 		"imageSrc": "SD03-015.png",
@@ -1818,7 +2101,7 @@
 		"name": "Denver",
 		"effects": [
 			{
-				"effectLabel": "■This card in the front row can attack the opponent's back row ship cards that are activated. ■This card gets +100 power in battles against the opponent's back row cards."
+				"effectLabel": "■This card in the front row can attack the opponent's back row ship cards that are active. ■This card gets +100 power in battles against the opponent's back row cards."
 			}
 		],
 		"imageSrc": "BP01-013.png",
@@ -1910,7 +2193,23 @@
 		"name": "Long Island",
 		"effects": [
 			{
-				"effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards) ■【When Attacking】【Once per turn】Reveal the top card of both decks, then place it at the bottom of the deck. If our revealed card's cost is greater than or equal to the opponent's revealed card's cost, turn this card into active state."
+				"triggerEvent": [
+					"WhenPlayedIntoBoard"
+				],
+				"condition": [
+					{
+						"conditionId": "OnBackRow"
+					}
+				],
+				"duration": "WhileOnBattlefield",
+				"effectId": "AddStatusEffect",
+				"effectValue": [
+					"RangedAttack"
+				],
+				"effectLabel": "■【Ranged】(This card in the back row can attack the opponent's back row cards)"
+			},
+			{
+				"effectLabel": "■【When Attacking】【Once per turn】Reveal the top card of both decks, then place it at the bottom of the deck. If our revealed card's cost is greater than or equal to the opponent's revealed card's cost, turn this card into active state."
 			}
 		],
 		"imageSrc": "BP01-017.png",

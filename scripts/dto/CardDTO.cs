@@ -34,6 +34,7 @@ public static class CardEffectDuration
 {
     public static readonly string WhileVisible = "WhileVisible"; // It is always active as soon the card is in hand or board
     public static readonly string WhileFaceDown = "WhileFaceDown"; // While the card is face down
+    public static readonly string UntilEndOfTurn = "UntilEndOfTurn";
 }
 
 public static class CardEffectCondition

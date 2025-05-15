@@ -92,6 +92,17 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         GD.Print($"[Condition - HasCubes] {cubes} {comparisonOperator} {valueToCompare} => {fulfillsCondition}");
         return fulfillsCondition;
     }
+    public bool CurrentPlayerPlayingTurn(CardEffectConditionDTO conditionDTO)
+    {
+        string whoShouldBePlaying = conditionDTO.conditionArgs[0];
+        bool fulfillsCondition = false;
+
+        if (whoShouldBePlaying == "Self") fulfillsCondition = matchManager.GetPlayerPlayingTurn() == ownerPlayer;
+        if (whoShouldBePlaying == "Enemy") fulfillsCondition = matchManager.GetPlayerPlayingTurn() != ownerPlayer;
+
+        GD.Print($"[Condition - CurrentPlayerPlayingTurn] {whoShouldBePlaying}: {ownerPlayer.Name} - {matchManager.GetPlayerPlayingTurn().Name} => {fulfillsCondition}");
+        return fulfillsCondition;
+    }
 
     // --- Effect ---
     public async Task GetPower(CardEffectDTO effectDTO)
@@ -233,6 +244,24 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         await Task.CompletedTask;
     }
 
+    async Task DiscardAndDrawCubeDown(CardEffectDTO effectDTO)
+    {
+        //TODO: 
+    }
+    async Task RestEnemy(CardEffectDTO effectDTO)
+    {
+        //TODO: 
+    }
+    async Task RestOrDestroyEnemy(CardEffectDTO effectDTO)
+    {
+        //TODO: 
+    }
+
+    async Task Rush(CardEffectDTO effectDTO)
+    {
+        //TODO: 
+    }
+
     async Task ApplySelectEffectTargetAction(Board target, Board.CardEvent OnAfterSelect, AsyncHandler.SimpleCheck ConclusionCheck = null)
     {
         GD.Print($"[Effect - ApplySelectEffectTargetAction]");
@@ -250,6 +279,4 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             ConclusionCheck,
             -1);
     }
-
-
 }
