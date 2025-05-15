@@ -9,7 +9,7 @@ public partial class ALGameMatchManager : Node
     [Export]
     ALPlayer userPlayer, enemyPlayer;
     List<ALPlayer> orderedPlayers = [];
-    int playerIndexPlayingTurn = 0; // First to start
+    int playerIndexPlayingTurn = 1; // First to start
 
     // --- State ---
     ALCard attackerCard, attackedCard;
@@ -51,6 +51,8 @@ public partial class ALGameMatchManager : Node
 
         orderedPlayers.ForEach(player =>
         {
+            player.OnGameOver -= OnGameOverHandler;
+            player.OnGameOver += OnGameOverHandler;
             player.OnAttackStart -= OnAttackStartHandler;
             player.OnAttackStart += OnAttackStartHandler;
             player.OnAttackTargetAdquired -= OnAttackTargetAdquiredHandler;
@@ -85,8 +87,20 @@ public partial class ALGameMatchManager : Node
         await userPlayer.StartGameForPlayer();
         await enemyPlayer.StartGameForPlayer();
         Callable.From(GetPlayerPlayingTurn().StartTurn).CallDeferred();
+        if (!GetNextPlayer().GetIsControllerPlayer()) Callable.From(GetNextPlayer().GetPlayerAIController().StartTurn).CallDeferred();
     }
 
+    async Task OnGameOverHandler(Player losingPlayer)
+    {
+        bool isVictory = !losingPlayer.GetIsControllerPlayer();
+        await playerUI.ShowGameOverUI(isVictory);
+        await ExitMatch();
+    }
+    async Task ExitMatch()
+    {
+        this.ChangeScene($"{ALMain.ALSceneRootPath}/main.tscn");
+        await Task.CompletedTask;
+    }
 
     async Task OnAttackStartHandler(Player attackingPlayer, Card card)
     {
@@ -175,6 +189,7 @@ public partial class ALGameMatchManager : Node
             ALPlayer playingPlayer = GetPlayerPlayingTurn();
             GD.Print($"[OnTurnEndHandler] {playingPlayer.Name} Turn ended!");
             PickNextPlayer().StartTurn();
+            if (!GetPlayerPlayingTurn().GetIsControllerPlayer()) _ = GetPlayerPlayingTurn().GetPlayerAIController().StartTurn();
         });
     }
 

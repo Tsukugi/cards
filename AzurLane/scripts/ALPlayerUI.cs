@@ -5,7 +5,8 @@ public partial class ALPlayerUI : Control
 {
     ALPlayer attachedPlayer;
     ALSelectedCardUI selectedCardUI, triggerCardUI, attackerUI, attackedUI;
-    Label playStateLabel, phaseLabel;
+    Label playStateLabel, phaseLabel, gameOverLabel;
+    Panel gameOverPanel;
     TextureRect selectedCardImage;
     [Export]
     MenuButton matchMenuBtn, debugMenuBtn;
@@ -23,6 +24,8 @@ public partial class ALPlayerUI : Control
         triggerCardUI = GetNode<ALSelectedCardUI>("TriggerCardUI");
         attackerUI = GetNode<ALSelectedCardUI>("AttackerUI");
         attackedUI = GetNode<ALSelectedCardUI>("AttackedUI");
+        gameOverPanel = GetNode<Panel>("GameOverPanel");
+        gameOverLabel = gameOverPanel.GetNode<Label>("GameOverLabel");
     }
 
     public override void _Process(double delta)
@@ -41,6 +44,14 @@ public partial class ALPlayerUI : Control
             selectedCardUI.Visible = CanShowCardDetailsUI;
         }
         else { selectedCardUI.Visible = false; }
+    }
+
+    public async Task ShowGameOverUI(bool isVictory)
+    {
+        gameOverPanel.Visible = true;
+        gameOverLabel.Text = isVictory ? "Victory" : "Defeat";
+        await this.Wait(2f);
+        gameOverPanel.Visible = false;
     }
 
     public async Task OnSettleBattleUI(ALCard attacker, ALCard attacked, bool isAttackSuccessful)

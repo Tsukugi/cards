@@ -14,6 +14,7 @@ public partial class ALPlayer : Player
     public event ProvideCardInteractionEvent OnGuardProvided;
     public event ProvideCardInteractionEvent OnRetaliation;
     public event InteractionEvent OnRetaliationCancel;
+    public event InteractionEvent OnGameOver;
 
     // --- Events ---
     public event Action OnTurnEnd;
@@ -90,14 +91,13 @@ public partial class ALPlayer : Player
         await DrawCardToHand(5);
         SelectBoard(hand);
         hand.SelectCardField(this, Vector2I.Zero);
-        ApplyFlagshipDurability(); // Manual says that this step is after drawing hand cards
+        await ApplyFlagshipDurability(); // Manual says that this step is after drawing hand cards
     }
 
     // Turn and Phases
     public void StartTurn()
     {
         GD.Print($"[StartTurn] Start turn for player {Name}");
-        if (!GetIsControllerPlayer()) _ = ai.StartTurn();
         phaseManager.StartTurn();
     }
 
@@ -280,6 +280,7 @@ public partial class ALPlayer : Player
         if (durabilityCardInBoard is null)
         {
             GD.PrintErr($"[OnDurabilityDamageHandler] Game over for {Name}");
+            if (OnGameOver is not null) await OnGameOver(this);
             return;
         }
         // "Draw" the card to hand 
@@ -442,7 +443,7 @@ public partial class ALPlayer : Player
         AddCardToDeck(cardToAdd, deckSet.retreatDeck, retreatField, false);
     }
 
-    void ApplyFlagshipDurability()
+    async Task ApplyFlagshipDurability()
     {
         int durability = flagshipField.GetAttributes<ALCardDTO>().durability;
         GD.Print($"[{Name}.ApplyFlagshipDurability] {durability}");
@@ -452,6 +453,7 @@ public partial class ALPlayer : Player
             ALCardDTO cardToDraw = DrawCard(deckSet.deck, deckField);
             durabilityList[i].UpdateAttributes(cardToDraw);
             durabilityList[i].IsInputSelectable = true;
+            await this.Wait(0.5f);
         }
     }
     public async Task TryToExpireCardsModifierDuration(string duration)
@@ -573,7 +575,7 @@ public partial class ALPlayer : Player
         }
     }
 
-
+    public ALBasicAI GetPlayerAIController() => ai;
 }
 
 public enum EALTurnPhase
