@@ -42,24 +42,20 @@ public class ALBasicAI
 
     public async Task SkipAttackGuards()
     {
-        var asyncHandler = player.GetAsyncHandler();
-        await actions.WaitUntilPhase(EALTurnPhase.Battle);
-        await asyncHandler.AwaitForCheck(() =>
+        GD.Print($"[SkipAttackGuards] ----- {player.Name}");
+        var asyncHandler = new AsyncHandler(player);
+        await asyncHandler.AwaitForCheck(null,
+        () =>
         {
             var state = player.GetInteractionState();
-            if (state == ALInteractionState.SelectGuardingUnit
-              || state == ALInteractionState.SelectRetaliationUnit)
-            {
-                GD.Print($"[SkipAttackGuards] {state}");
-                player.TriggerAction(InputAction.Cancel, player);
-            }
-        }, () =>
-        {
-            var state = player.GetInteractionState();
+            // GD.PrintErr($"[SkipAttackGuards] {state} => {state == ALInteractionState.SelectGuardingUnit || state == ALInteractionState.SelectRetaliationUnit}");
             return state == ALInteractionState.SelectGuardingUnit || state == ALInteractionState.SelectRetaliationUnit;
-        }, -1);
-
-        await player.GetPlayerAsyncHandler().AwaitBefore(SkipAttackGuards, 1f);
+        },
+        -1,
+        500);
+        player.TriggerAction(InputAction.Cancel, player);
+        await player.Wait(1f);
+        await SkipAttackGuards();
     }
     public async Task StartTurn()
     {

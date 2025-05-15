@@ -13,6 +13,7 @@ public partial class ALPlayer : Player
     public event InteractionEvent OnAttackGuardEnd;
     public event ProvideCardInteractionEvent OnGuardProvided;
     public event ProvideCardInteractionEvent OnRetaliation;
+    public event InteractionEvent OnRetaliationCancel;
 
     // --- Events ---
     public event Action OnTurnEnd;
@@ -134,19 +135,12 @@ public partial class ALPlayer : Player
 
     public async Task OnCostPlayCardStartHandler(Card cardToPlay)
     {
-        var currentPhase = phaseManager.GetCurrentPhase();
-        if (currentPhase != EALTurnPhase.Main)
-        {
-            GD.PrintErr($"[OnCostPlayCardStartHandler] Cannot place cards outside main phase");
-            return;
-        }
-
         ALCard card = cardToPlay.CastToALCard();
         ALCardDTO attributes = card.GetAttributes<ALCardDTO>();
 
         if (attributes.cardType == ALCardType.Event)
         {
-            await TryToPlayEventCard(card, (ALHand)card.GetBoard(), CardEffectTrigger.WhenPlayed);
+            await TryToPlayEventCard(card, (ALHand)card.GetBoard(), CardEffectTrigger.WhenPlayedFromHand);
             return;
         }
 
@@ -269,7 +263,7 @@ public partial class ALPlayer : Player
         CardEffectDTO[] effects = effectManager.GetEffectsByTrigger(trigger);
 
         bool canTrigger = effects.Length == 0 || Array.Find(effects, effectManager.CheckCanTriggerEffect) is not null;
-        if (!canTrigger) { GD.PrintErr($"[TryToPlayEventCard] Effect condittions not fullfilled {effects.Length}"); return; }
+        if (!canTrigger) { GD.PrintErr($"[TryToPlayEventCard] Effect condittions not fullfilled. Effects with {trigger}: {effects.Length}"); return; }
         bool cubesSpent = TryToSpendCubes(attrs.cost);
         if (!cubesSpent) { GD.PrintErr($"[TryToPlayEventCard] Not enough cubes {attrs.cost}"); return; }
         GD.Print("[TryToPlayEventCard] After effect");
@@ -294,7 +288,8 @@ public partial class ALPlayer : Player
         durabilityCardInBoard.DestroyCard(); // Destroy card from board
         await TryToTriggerOnAllCards(ALCardEffectTrigger.OnDamageReceived);
         GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown()).Count}/{durabilityCards.Count}");
-        if (OnRetaliation is not null) await OnRetaliation(this, durabilityCardInHand);
+        bool canTriggerRetaliationPhase = durabilityCardInHand.GetEffectManager<ALEffectManager>().GetEffectsByTrigger(ALCardEffectTrigger.Retaliation).Length > 0;
+        if (OnRetaliation is not null && canTriggerRetaliationPhase) await OnRetaliation(this, durabilityCardInHand);
     }
 
     // Actions 
@@ -308,7 +303,6 @@ public partial class ALPlayer : Player
         }
 
         if (OnAttackStart is not null) await OnAttackStart(this, attacker);
-        await SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackTarget);
     }
 
     // Limitations on attack
@@ -388,18 +382,19 @@ public partial class ALPlayer : Player
 
     public async Task CancelAttack(Player player)
     {
-        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackTarget);
+        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackerUnit);
     }
 
     public virtual async Task CancelSelectEffectState(Player player)
     {
-        GD.Print($"[CancelSelectEffectState]");
+        GD.Print($"[CancelSelectEffectState]");//TODO add tracking of last state
         await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectEffectTarget);
     }
 
     public async Task CancelRetaliation(Player player)
     {
-        await player.SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
+        GD.Print($"[CancelRetaliation]");
+        if (OnRetaliationCancel is not null) await OnRetaliationCancel(player);
     }
 
     static async Task DestroyUnitCard(ALCard card)

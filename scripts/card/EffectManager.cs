@@ -7,7 +7,7 @@ public class EffectManager(Card _card, List<CardEffectDTO> _activeStatusEffects,
     protected Card card = _card;
     protected List<CardEffectDTO> activeStatusEffects = _activeStatusEffects;
     protected Player ownerPlayer = _ownerPlayer;
-    protected AsyncHandler asyncHandler = _ownerPlayer.GetAsyncHandler();
+    protected AsyncHandler asyncHandler = new(_ownerPlayer);
 
     protected bool CheckCondition(CardEffectConditionDTO condition)
     {

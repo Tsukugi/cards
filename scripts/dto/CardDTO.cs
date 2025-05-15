@@ -44,7 +44,8 @@ public static class CardEffectCondition
 
 public static class CardEffectTrigger
 {
-    public static readonly string WhenPlayed = "WhenPlayed"; // Every time this card is played into the board
+    public static readonly string WhenPlayedIntoBoard = "WhenPlayedIntoBoard"; // Every time this card is played into the board
+    public static readonly string WhenPlayedFromHand = "WhenPlayedFromHand"; // Every time this card is taken FROM the hand 
     public static readonly string EnemyTurnStart = "EnemyTurnStart";
     public static readonly string OnVisible = "OnVisible"; // When the card is visible in board or hand
     public static readonly string AnyCardPlayed = "AnyCardPlayed"; // When ANY card is placed in the board

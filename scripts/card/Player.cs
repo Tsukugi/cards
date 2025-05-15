@@ -95,6 +95,7 @@ public partial class Player : Node3D
     {
         GD.Print($"[OnPlayCardStartHandler] Card to play {cardToPlay} {cardToPlay.GetAttributes<CardDTO>().name}");
         board.CardToPlace = cardToPlay;
+        await cardToPlay.TryToTriggerCardEffect(CardEffectTrigger.WhenPlayedFromHand);
         cardToPlay.SetIsEmptyField(true);
         await SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectBoardFieldToPlaceCard);
         SelectBoard(board);
@@ -129,9 +130,10 @@ public partial class Player : Node3D
         if (selectedBoard is not null)
         {
             UnassignBoardEvents(selectedBoard);
-            if (selectedBoard.GetSelectedCard<ALCard>(this) is ALCard card) selectedBoard.ClearSelectionForPlayer(this); // Clear selection for old board
+            if (selectedBoard.GetSelectedCard<Card>(this) is ALCard card) selectedBoard.ClearSelectionForPlayer(this); // Clear selection for old board
         }
         selectedBoard = board;
+        if (selectedBoard.GetSelectedCard<ALCard>(this) is null) selectedBoard.SelectCardField(this, Vector2I.Zero); // Select default field if none
         selectedBoardIndex = orderedBoards.FindIndex((board) => board == selectedBoard);
         axisInputHandler.SetInverted(selectedBoard.GetIsEnemyBoard()); // An enemy board should have its axis inverted as it is inverted in the editor
         if (selectedBoard is not null) AssignBoardEvents(selectedBoard);

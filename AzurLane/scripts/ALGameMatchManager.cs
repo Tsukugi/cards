@@ -67,6 +67,8 @@ public partial class ALGameMatchManager : Node
             player.OnTurnEnd += OnTurnEndHandler;
             player.OnRetaliation -= OnRetaliationHandler;
             player.OnRetaliation += OnRetaliationHandler;
+            player.OnRetaliationCancel -= OnRetaliationCancel;
+            player.OnRetaliationCancel += OnRetaliationCancel;
             player.Phase.OnPhaseChange -= OnPhaseChangeHandler;
             player.Phase.OnPhaseChange += OnPhaseChangeHandler;
             player.GetPlayerBoard<ALBoard>().OnInputAction -= interaction.OnBoardInputActionHandler;
@@ -86,11 +88,12 @@ public partial class ALGameMatchManager : Node
     }
 
 
-    async Task OnAttackStartHandler(Player guardingPlayer, Card card)
+    async Task OnAttackStartHandler(Player attackingPlayer, Card card)
     {
         attackerCard = card.CastToALCard();
         await GetAttackerCard().TryToTriggerCardEffect(ALCardEffectTrigger.StartsAttack);
         GD.Print($"[OnAttackStartHandler] {GetAttackerCard().Name} starts an attack!");
+        await attackingPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackTarget);
     }
 
     async Task OnAttackTargetAdquiredHandler(Player guardingPlayer, Card card)
@@ -130,6 +133,11 @@ public partial class ALGameMatchManager : Node
         await retaliatingCard.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
 
         await GetNextPlayer((ALPlayer)damagedPlayer).SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
+    }
+    async Task OnRetaliationCancel(Player damagedPlayer)
+    {
+        await damagedPlayer.SetPlayState(EPlayState.Wait);
+        await GetNextPlayer((ALPlayer)damagedPlayer).SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackerUnit);
     }
 
     async Task OnGuardProvidedHandler(Player guardingPlayer, Card card)

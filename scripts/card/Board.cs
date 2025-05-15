@@ -109,7 +109,7 @@ public partial class Board : Node3D
             return;
         }
         selectedCard[playerName] = foundCard;
-        GD.Print($"[SelectCardField] {player.Name}.{Name} - {foundCard.Name}");
+        //GD.Print($"[SelectCardField] {player.Name}.{Name} - {foundCard.Name}");
         foundCard.UpdatePlayerSelectedColor(player);
         foundCard.SetIsSelected(true);
     }
@@ -131,7 +131,7 @@ public partial class Board : Node3D
     {
         string playerName = player.Name.ToString();
         var res = selectedCard.TryGetValue(playerName, out Card value) ? value as T : null;
-        if (value is not T && value is not null) GD.PrintErr($"[GetSelectedCard] Value exists but is not of type {typeof(T)} => {value.GetType()}");
+        if (value is not T && value is not null) GD.PushError($"[GetSelectedCard] Value exists but is not of type {typeof(T)} => {value.GetType()}");
         return res;
     }
     public void ClearSelectionForPlayer(Player player)
