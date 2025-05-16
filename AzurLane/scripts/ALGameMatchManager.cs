@@ -46,8 +46,8 @@ public partial class ALGameMatchManager : Node
         userPlayer.AssignEnemyBoards(enemyHand, enemyBoard);
         enemyPlayer.AssignEnemyBoards(userHand, userBoard);
 
-        userPlayer.AssignDeck(BuildDeckSet("SD01"));
-        enemyPlayer.AssignDeck(BuildDeckSet("SD02"));
+        userPlayer.AssignDeck(BuildDeckSet("SD02"));
+        enemyPlayer.AssignDeck(BuildDeckSet("SD03"));
 
         orderedPlayers.ForEach(player =>
         {

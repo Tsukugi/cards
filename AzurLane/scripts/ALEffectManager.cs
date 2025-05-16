@@ -42,7 +42,33 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         }
     }
 
-    // --- Condition ---
+    async Task ApplySelectEffectTargetAction(Board target, Board.CardEvent OnAfterSelect, AsyncHandler.SimpleCheck ConclusionCheck = null)
+    {
+        GD.Print($"[Effect - ApplySelectEffectTargetAction]");
+        PlayState oldPlayState = ownerPlayer.GetPlayState();
+        await ownerPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectEffectTarget);
+        target.OnCardEffectTargetSelected -= OnAfterSelect;
+        target.OnCardEffectTargetSelected += OnAfterSelect;
+
+        var safeConclusionCheck = ConclusionCheck is null ? () => true : ConclusionCheck;
+        await asyncHandler.AwaitForCheck(
+            () =>
+            {
+                target.OnCardEffectTargetSelected -= OnAfterSelect;
+            },
+            () =>
+            safeConclusionCheck() && ownerPlayer.GetPlayState() == oldPlayState,
+            -1);
+    }
+
+    protected override List<Card> GetCardListBasedOnArgs(string boardType, string scope)
+    {
+        ALPlayer player = (ALPlayer)GetPlayerBasedOnScope(scope);
+        if (boardType == ALBoardType.CubeDeckArea) return [.. player.GetCubesInBoard()];
+        return base.GetCardListBasedOnArgs(boardType, scope);
+    }
+
+    // * --- Condition --- *
     public bool CheckCardsInBoard(CardEffectConditionDTO conditionDTO)
     {
         string scope = conditionDTO.conditionArgs[0] ?? PlayerType.Self; // Enemy, Self
@@ -50,7 +76,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         string comparator = conditionDTO.conditionArgs[2] ?? "LessThan";
         int value = (conditionDTO.conditionArgs[3] ?? "0").ToInt();
 
-        Board targetBoard = GetBoardBasedOnScope(scope);
+        Board targetBoard = GetPlayerBasedOnScope(scope).GetPlayerBoard<ALBoard>();
 
         bool fulfillsCondition = targetBoard.GetCardsInTree().FindAll((field) =>
         {
@@ -71,7 +97,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         string comparator = conditionDTO.conditionArgs[2] ?? "LessThan";
         int value = (conditionDTO.conditionArgs[3] ?? "0").ToInt();
 
-        Board targetBoard = GetBoardBasedOnScope(scope);
+        Board targetBoard = GetPlayerBasedOnScope(scope).GetPlayerBoard<ALBoard>();
 
         bool fulfillsCondition = targetBoard.GetCardsInTree().FindAll((field) =>
         {
@@ -146,7 +172,10 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         return fulfillsCondition;
     }
 
-    // --- Effect ---
+
+
+
+    // * --- Effects --- *
     public async Task GetPower(CardEffectDTO effectDTO)
     {
         GD.Print($"[Effect - GetPower]");
@@ -179,7 +208,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             isFinished = true;
         }
 
-        Board targetBoard = GetBoardBasedOnScope(scope);
+        Board targetBoard = GetPlayerBasedOnScope(scope).GetPlayerBoard<ALBoard>();
         await ApplySelectEffectTargetAction(
                targetBoard,
                OnAfterSelectAndGivePower,
@@ -364,24 +393,5 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         GD.Print($"[Effect - Rush]");
         activeStatusEffects.Remove(ALCardStatusEffects.BattlefieldDelayImpl);
         await Task.CompletedTask;
-    }
-
-    async Task ApplySelectEffectTargetAction(Board target, Board.CardEvent OnAfterSelect, AsyncHandler.SimpleCheck ConclusionCheck = null)
-    {
-        GD.Print($"[Effect - ApplySelectEffectTargetAction]");
-        PlayState oldPlayState = ownerPlayer.GetPlayState();
-        await ownerPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectEffectTarget);
-        target.OnCardEffectTargetSelected -= OnAfterSelect;
-        target.OnCardEffectTargetSelected += OnAfterSelect;
-
-        var safeConclusionCheck = ConclusionCheck is null ? () => true : ConclusionCheck;
-        await asyncHandler.AwaitForCheck(
-            () =>
-            {
-                target.OnCardEffectTargetSelected -= OnAfterSelect;
-            },
-            () =>
-            safeConclusionCheck() && ownerPlayer.GetPlayState() == oldPlayState,
-            -1);
     }
 }

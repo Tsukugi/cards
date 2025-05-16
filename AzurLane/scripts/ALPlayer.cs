@@ -528,6 +528,9 @@ public partial class ALPlayer : Player
     public List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.GetIsEmptyField());
     public List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.GetIsEmptyField());
+    public List<ALCardDTO> GetCubeDeckCardList() => deckSet.cubeDeck;
+    public List<ALCardDTO> GetDeckCardList() => deckSet.deck;
+    public List<ALCardDTO> GetRetreatDeckCardList() => deckSet.retreatDeck;
 
     public bool IsAwaitingBattleGuard() =>
         phaseManager.GetCurrentPhase() == EALTurnPhase.Battle

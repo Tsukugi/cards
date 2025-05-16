@@ -35,22 +35,16 @@ public class EffectManager(Card _card, List<CardEffectDTO> _activeStatusEffects,
     }
     public CardEffectDTO? TryGetStatusEffect(string name) => activeStatusEffects.Find(effect => effect.effectValue[0] == name);
 
-    protected PlayerBoard GetBoardBasedOnScope(string scope)
+    protected Player GetPlayerBasedOnScope(string scope)
     {
-        PlayerBoard targetBoard = ownerPlayer.GetPlayerBoard<PlayerBoard>();
-        if (scope == PlayerType.Enemy) targetBoard = ownerPlayer.GetEnemyPlayerBoard<PlayerBoard>();
-        return targetBoard;
+        if (scope == PlayerType.Self) return ownerPlayer;
+        if (scope == PlayerType.Enemy) return ownerPlayer.GetEnemyPlayerBoard<PlayerBoard>().TryFindParentNodeOfType<Player>();
+        return null;
     }
-    protected PlayerHand GetHandBasedOnScope(string scope)
+    protected virtual List<Card> GetCardListBasedOnArgs(string nodeType, string scope)
     {
-        PlayerHand targetBoard = ownerPlayer.GetPlayerHand<PlayerHand>();
-        if (scope == PlayerType.Enemy) targetBoard = ownerPlayer.GetEnemyPlayerHand<PlayerHand>();
-        return targetBoard;
-    }
-    protected Board GetBoardBasedOnArgs(string boardType, string scope)
-    {
-        if (boardType == BoardType.Hand) return GetHandBasedOnScope(scope);
-        if (boardType == BoardType.Board) return GetBoardBasedOnScope(scope);
+        if (nodeType == BoardType.Hand) return GetPlayerBasedOnScope(scope).GetPlayerHand<PlayerHand>().GetCardsInTree();
+        if (nodeType == BoardType.Board) return GetPlayerBasedOnScope(scope).GetPlayerBoard<PlayerBoard>().GetCardsInTree();
         GD.PrintErr("[GetBoardBasedOnType] No valid type provided");
         return null;
     }
@@ -63,10 +57,10 @@ public class EffectManager(Card _card, List<CardEffectDTO> _activeStatusEffects,
         string comparator = conditionDTO.conditionArgs[2];
         int value = conditionDTO.conditionArgs[3].ToInt();
 
-        Board board = GetBoardBasedOnArgs(boardType, scope);
+        List<Card> cardList = GetCardListBasedOnArgs(boardType, scope);
 
-        bool fulfillsCondition = LogicUtils.ApplyComparison(board.GetCardsInTree().Count, comparator, value);
-        GD.Print($"[CheckCardCount] {scope} {boardType} {board.GetCardsInTree().Count} {comparator} {value} => {fulfillsCondition}");
+        bool fulfillsCondition = LogicUtils.ApplyComparison(cardList.Count, comparator, value);
+        GD.Print($"[CheckCardCount] {scope} {boardType} {cardList.Count} {comparator} {value} => {fulfillsCondition}");
         return fulfillsCondition;
     }
 }

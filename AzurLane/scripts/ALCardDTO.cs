@@ -109,9 +109,13 @@ public static class ALCardStatusEffects
     public static readonly string BattlefieldDelay = "BattlefieldDelay"; // Cannot attack the turn that joins the battlefield
     public static readonly CardEffectDTO BattlefieldDelayImpl = new()
     {
-        effectId = ALCardStatusEffects.BattlefieldDelay,
+        effectId = BattlefieldDelay,
         duration = CardEffectDuration.UntilEndOfTurn,
         effectLabel = "This unit cannot attack the turn that joins the battlefield",
         effectValue = [BattlefieldDelay]
     };
+}
+public static class ALBoardType
+{
+    public static readonly string CubeDeckArea = "CubeDeckArea";
 }

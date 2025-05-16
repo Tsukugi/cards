@@ -1,9 +1,10 @@
-[gd_scene load_steps=14 format=3 uid="uid://bo7v3ce1ltqf4"]
+[gd_scene load_steps=15 format=3 uid="uid://bo7v3ce1ltqf4"]
 
 [ext_resource type="Script" uid="uid://d0oqxn7lieahc" path="res://AzurLane/scripts/ALSelectedCardUI.cs" id="1_b2va0"]
 [ext_resource type="Shader" uid="uid://6vual11gqb6h" path="res://shaders/roundedCorners.gdshader" id="1_gjpc5"]
 [ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="2_b2va0"]
 [ext_resource type="Texture2D" uid="uid://diulp7rb2y70x" path="res://AzurLane/res/BP01-026.png" id="3_wmudh"]
+[ext_resource type="FontFile" uid="uid://c384itiyh5itg" path="res://fonts/Montserrat-Regular.ttf" id="5_gjpc5"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_b2va0"]
 shader = ExtResource("1_gjpc5")
@@ -17,7 +18,7 @@ outline_color = Color(0.649063, 0.677992, 0.718958, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_qholi"]
 line_spacing = 0.0
-font = ExtResource("2_b2va0")
+font = ExtResource("5_gjpc5")
 font_size = 14
 
 [sub_resource type="LabelSettings" id="LabelSettings_takk7"]

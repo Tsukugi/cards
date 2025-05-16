@@ -1,8 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://dp7bqacq615oo"]
+[gd_scene load_steps=12 format=3 uid="uid://dp7bqacq615oo"]
 
 [ext_resource type="Script" uid="uid://u4loqtnkjdnn" path="res://AzurLane/scripts/ALCard.cs" id="1_hunl0"]
 [ext_resource type="BoxMesh" uid="uid://dn563cjoh3wan" path="res://Material/cardBack.tres" id="2_2htw4"]
 [ext_resource type="FontFile" uid="uid://bvu0bohfv0eq1" path="res://fonts/Xolonium-Regular-MSDF-Mipmaps.ttf" id="2_y1cnb"]
+[ext_resource type="FontFile" uid="uid://c384itiyh5itg" path="res://fonts/Montserrat-Regular.ttf" id="3_65hh2"]
 [ext_resource type="BoxMesh" uid="uid://m6c665niqt0s" path="res://Material/cardFront.tres" id="3_l2p5i"]
 [ext_resource type="Material" uid="uid://4svxf0fbins" path="res://AzurLane/shader/AzurLaneCardSelect.tres" id="5_47pfy"]
 
@@ -57,12 +58,11 @@ outline_size = 50
 
 [node name="Skills" type="Label3D" parent="UI"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -1.82841, 0.236098, 0.677139)
-texture_filter = 1
 modulate = Color(0.977595, 0.981628, 1, 1)
 outline_modulate = Color(0.309508, 0.335157, 0.438212, 1)
 text = "adawdaw dwad awd awdad awdawda dawdawdawdawdawd awd awdaw dawd aw dawdawd awdawdawda da dwadad wadawdaa wad awdadwad awd wa dwaa a
 "
-font = ExtResource("2_y1cnb")
+font = ExtResource("3_65hh2")
 font_size = 28
 outline_size = 2
 horizontal_alignment = 0

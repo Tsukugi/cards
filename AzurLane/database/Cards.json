@@ -805,7 +805,7 @@
 						"conditionId": "CheckCardCount",
 						"conditionArgs": [
 							"Self",
-							"CubeDeck",
+							"CubeDeckArea",
 							"EqualOrMore",
 							"1"
 						]
@@ -856,7 +856,7 @@
 						"conditionId": "CheckCardCount",
 						"conditionArgs": [
 							"Self",
-							"CubeDeck",
+							"CubeDeckArea",
 							"EqualOrMore",
 							"1"
 						]
@@ -1267,7 +1267,7 @@
 						"conditionId": "CheckCardCount",
 						"conditionArgs": [
 							"Self",
-							"CubeDeck",
+							"CubeDeckArea",
 							"EqualOrMore",
 							1
 						]
