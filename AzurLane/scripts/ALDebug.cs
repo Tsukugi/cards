@@ -32,4 +32,11 @@ public partial class ALDebug
         var player = matchManager.GetPlayerPlayingTurn();
         await player.ApplyDurabilityDamage(player.GetPlayerBoard<ALBoard>().GetFlagship());
     }
+    public async Task TestRetaliation()
+    {
+        GD.Print($"[Debug.TestRetaliation]");
+        var player = matchManager.GetPlayerPlayingTurn();
+        await player.AddDurabilityCard(matchManager.GetDatabase().cards["SD01-016"]);
+        await InflictDamage();
+    }
 }

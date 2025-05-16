@@ -447,15 +447,26 @@ public partial class ALPlayer : Player
     {
         int durability = flagshipField.GetAttributes<ALCardDTO>().durability;
         GD.Print($"[{Name}.ApplyFlagshipDurability] {durability}");
-        List<ALCard> durabilityList = durabilityArea.TryGetAllChildOfType<ALCard>();
         for (int i = 0; i < durability; i++)
         {
-            ALCardDTO cardToDraw = DrawCard(deckSet.deck, deckField);
-            durabilityList[i].UpdateAttributes(cardToDraw);
-            durabilityList[i].IsInputSelectable = true;
-            await this.Wait(0.5f);
+            await AddDurabilityCard();
         }
     }
+
+    public async Task AddDurabilityCard(ALCardDTO card = null)
+    {
+        ALCard emptyDurability = durabilityArea.TryGetAllChildOfType<ALCard>().Find(card => card.GetIsEmptyField());
+        if (emptyDurability is null)
+        {
+            GD.PrintErr("[AddDurabilityCard] Cannot add more durability to the board");
+            return;
+        }
+        ALCardDTO cardToDraw = card is null ? DrawCard(deckSet.deck, deckField) : card;
+        emptyDurability.UpdateAttributes(cardToDraw);
+        emptyDurability.IsInputSelectable = true;
+        await this.Wait(0.5f);
+    }
+
     public async Task TryToExpireCardsModifierDuration(string duration)
     {
         var boardCards = GetPlayerBoard<ALBoard>().GetCardsInTree();

@@ -108,6 +108,9 @@ public partial class ALPlayerUI : Control
             case 3:
                 attachedPlayer.GetMatchManager().GetDebug().InflictDamage();
                 break;
+            case 4:
+                attachedPlayer.GetMatchManager().GetDebug().TestRetaliation();
+                break;
             // Add more cases as needed
             default:
                 GD.PrintErr("Unknown item selected");
