@@ -122,7 +122,11 @@ public partial class Card : CardField
         await effect.TryToApplyEffects(triggerEvent);
     }
 
-    public T GetEffectManager<T>() where T : EffectManager => effect as T;
+    public T GetEffectManager<T>() where T : EffectManager
+    {
+        if (effect is null) { GD.PrintErr($"[GetEffectManager] The effect manager has not been initialized"); return default; }
+        return effect as T;
+    }
 
     public int GetAttributeWithModifiers<T>(string attributeName) where T : CardDTO
     {

@@ -88,7 +88,6 @@ public partial class Player : Node3D
         GD.Print($"[OnPlaceCardEndHandler]");
         hand.RemoveCardFromHand(this, cardPlaced);
         await SetPlayState(EPlayState.SelectCardToPlay);
-        SelectBoard(hand);
     }
 
     public async Task OnPlayCardStartHandler(Card cardToPlay)

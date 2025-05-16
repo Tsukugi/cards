@@ -104,6 +104,14 @@ public static class ALCardEffectTrigger
 
 public static class ALCardStatusEffects
 {
-    public static readonly string LimitBattleSupport = "LimitBattleSupport";
-    public static readonly string RangedAttack = "RangedAttack";
+    public static readonly string LimitBattleSupport = "LimitBattleSupport"; // Cannot support specific field types
+    public static readonly string RangedAttack = "RangedAttack"; // Can attack the back row
+    public static readonly string BattlefieldDelay = "BattlefieldDelay"; // Cannot attack the turn that joins the battlefield
+    public static readonly CardEffectDTO BattlefieldDelayImpl = new()
+    {
+        effectId = ALCardStatusEffects.BattlefieldDelay,
+        duration = CardEffectDuration.UntilEndOfTurn,
+        effectLabel = "This unit cannot attack the turn that joins the battlefield",
+        effectValue = [BattlefieldDelay]
+    };
 }

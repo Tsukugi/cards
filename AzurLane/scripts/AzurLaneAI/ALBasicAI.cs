@@ -57,7 +57,7 @@ public class ALBasicAI
         await player.Wait(1f);
         await SkipAttackGuards();
     }
-    public async Task StartTurn()
+    public async void StartTurn()
     {
         GD.Print($"[StartTurn] AI playing turn for player {player.Name}");
         _ = SkipAttackGuards();

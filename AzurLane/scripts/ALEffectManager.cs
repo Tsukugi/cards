@@ -165,8 +165,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         string scope = effectDTO.effectValue[1] ?? PlayerType.Self;
 
         bool isFinished = false;
-        EPlayState previousState = ownerPlayer.GetInputPlayState();
-        string previousInteractionState = ownerPlayer.GetInteractionState();
+
         async Task OnAfterSelectAndGivePower(Card selectedTarget)
         {
             GD.Print($"[Effect - OnAfterSelectAndGivePower]");
@@ -190,7 +189,12 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
 
     public async Task AddStatusEffect(CardEffectDTO effectDTO)
     {
-        string effectName = effectDTO.effectValue[0];
+        string effectName = effectDTO.effectValue[0] ?? effectDTO.effectId;
+        if (effectName is null)
+        {
+            GD.PrintErr($"[Effect - AddEffect] An effectValue[0] is required with the name of the effect");
+            return;
+        }
         if (activeStatusEffects.Contains(effectDTO) && !effectDTO.stackableEffect)
         {
             GD.PrintErr($"[Effect - AddEffect] Effect {effectName} already exists");
@@ -208,8 +212,6 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         string comparator = effectDTO.effectValue[1] ?? "LessThan";
         string value = effectDTO.effectValue[2] ?? "0";
 
-        EPlayState previousState = ownerPlayer.GetInputPlayState();
-        string previousInteractionState = ownerPlayer.GetInteractionState();
         async Task OnAfterSelectReturningCard(Card selectedTarget)
         {
             var board = ownerPlayer.GetPlayerBoard<ALBoard>();
@@ -284,8 +286,6 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     {
         GD.Print($"[Effect - DiscardAndDrawCubeDown]");
 
-        EPlayState previousState = ownerPlayer.GetInputPlayState();
-        string previousInteractionState = ownerPlayer.GetInteractionState();
         async Task OnSelectToDiscardCard(Card selectedTarget)
         {
             ALPlayer player = (ALPlayer)ownerPlayer;
@@ -311,8 +311,6 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     {
         GD.Print($"[Effect - RestEnemy]");
 
-        EPlayState previousState = ownerPlayer.GetInputPlayState();
-        string previousInteractionState = ownerPlayer.GetInteractionState();
         async Task OnSelectToRestCard(Card selectedTarget)
         {
             if (selectedTarget is ALCard target && target.IsCardUnit() && target.GetIsInActiveState())
@@ -334,8 +332,6 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     {
         GD.Print($"[Effect - RestOrDestroyEnemy]");
 
-        EPlayState previousState = ownerPlayer.GetInputPlayState();
-        string previousInteractionState = ownerPlayer.GetInteractionState();
         async Task OnSelectToRestOrDestroyCard(Card selectedTarget)
         {
             if (selectedTarget is ALCard target && target.IsCardUnit())
@@ -365,7 +361,9 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
 
     public async Task Rush(CardEffectDTO effectDTO)
     {
-        //TODO: 
+        GD.Print($"[Effect - Rush]");
+        activeStatusEffects.Remove(ALCardStatusEffects.BattlefieldDelayImpl);
+        await Task.CompletedTask;
     }
 
     async Task ApplySelectEffectTargetAction(Board target, Board.CardEvent OnAfterSelect, AsyncHandler.SimpleCheck ConclusionCheck = null)

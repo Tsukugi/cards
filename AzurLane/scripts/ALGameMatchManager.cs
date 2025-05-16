@@ -191,7 +191,7 @@ public partial class ALGameMatchManager : Node
         PickNextPlayer().StartTurn();
         await playingPlayer.TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
         await GetNextPlayer().TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
-        if (!GetPlayerPlayingTurn().GetIsControllerPlayer()) _ = GetPlayerPlayingTurn().GetPlayerAIController().StartTurn();
+        if (!GetPlayerPlayingTurn().GetIsControllerPlayer()) GetPlayerPlayingTurn().GetPlayerAIController().StartTurn();
     }
 
     ALPlayer PickNextPlayer()

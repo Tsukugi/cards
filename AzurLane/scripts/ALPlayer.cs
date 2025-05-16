@@ -185,6 +185,7 @@ public partial class ALPlayer : Player
         ALCard cardToPlace = fieldToPlace.CastToALCard();
         ALBoard board = GetPlayerBoard<ALBoard>();
         ALCard fieldBeingPlaced = board.GetSelectedCard<ALCard>(this);
+        if (!fieldBeingPlaced.CanPlayerPlaceInThisField()) { GD.PrintErr("[PlaceCardInBoardFromHand] This card place is not placeable!"); return; }
         if (fieldBeingPlaced.GetIsAFlagship())
         {
             GD.PrintErr($"[OnALPlaceCardStartHandler] You cannot place cards in a flagship field");
@@ -197,7 +198,10 @@ public partial class ALPlayer : Player
             AddToRetreatAreaOnTop(existingCard);
         }
         await OnPlaceCardStartHandler(cardToPlace);
+        await fieldBeingPlaced.GetEffectManager<ALEffectManager>().AddStatusEffect(ALCardStatusEffects.BattlefieldDelayImpl);
         await OnPlaceCardEndHandler(cardToPlace);
+
+
     }
 
     public void EndGuardPhase()
@@ -332,9 +336,15 @@ public partial class ALPlayer : Player
 
     public async Task StartBattle(ALCard attacker)
     {
+        var attrs = attacker.GetAttributes<ALCardDTO>();
         if (attacker.GetBoard() != GetPlayerBoard<ALBoard>() || !attacker.GetIsInActiveState())
         {
-            GD.PrintErr($"[StartBattle] You must start an attack from your board and with an active card - Attacker: {attacker.GetAttributes<ALCardDTO>().name}");
+            GD.PrintErr($"[StartBattle] You must start an attack from your board and with an active card - Attacker: {attrs.name}");
+            return;
+        }
+        if (attacker.GetEffectManager<ALEffectManager>().HasActiveEffect(ALCardStatusEffects.BattlefieldDelay))
+        {
+            GD.PrintErr($"[StartBattle] This card cannot attack the turn that joins the battlefield - Attacker: {attrs.name}");
             return;
         }
 

@@ -46,7 +46,7 @@ public class ALAIActions
     public async Task BattlePhaseAttack(OnTargetSelect targetSelect)
     {
         GD.Print($"[BattlePhaseAttack]");
-        List<ALCard> activeUnits = player.GetActiveUnitsInBoard();
+        List<ALCard> activeUnits = player.GetActiveUnitsInBoard().FindAll(card => !card.GetEffectManager<ALEffectManager>().HasActiveEffect(ALCardStatusEffects.BattlefieldDelay)); // Also filter recently placed cards
         if (activeUnits.Count == 0) return;
 
         List<Func<Task>> operations = [];

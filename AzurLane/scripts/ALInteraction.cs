@@ -28,7 +28,7 @@ public class ALInteraction
             GD.PrintErr($"[OnBoardInputActionHandler] No valid card selected");
             return;
         }
-        GD.Print($"[OnBoardInputActionHandler] Phase:{currentPhase} InteractionState:{state} Player:{triggeringPlayer.Name} Board:{triggeringBoard.Name} Action:{action} Card:{card.Name}");
+        //GD.Print($"[OnBoardInputActionHandler] Phase:{currentPhase} InteractionState:{state} Player:{triggeringPlayer.Name} Board:{triggeringBoard.Name} Action:{action} Card:{card.Name}");
 
         // Main
 
@@ -85,7 +85,7 @@ public class ALInteraction
             GD.PrintErr($"[OnBoardInputActionHandler] No valid card selected");
             return;
         }
-        GD.Print($"[OnBoardInputActionHandler] Phase:{currentPhase} InteractionState:{state} Player:{triggeringPlayer.Name} Board:{triggeringBoard.Name} Action:{action} Card:{card.Name}");
+        //GD.Print($"[OnBoardInputActionHandler] Phase:{currentPhase} InteractionState:{state} Player:{triggeringPlayer.Name} Board:{triggeringBoard.Name} Action:{action} Card:{card.Name}");
 
         // Main
 
