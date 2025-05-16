@@ -6,6 +6,10 @@ using Godot;
 
 public partial class ALPlayer : Player
 {
+    // --- Params ---
+    float DrawDelay = 0.2f;
+    
+    // --- Events ---
     public event ProvideCardInteractionEvent OnAttackStart;
     public event ProvideCardInteractionEvent OnAttackTargetAdquired;
     public event InteractionEvent OnAttackEnd;
@@ -15,8 +19,6 @@ public partial class ALPlayer : Player
     public event ProvideCardInteractionEvent OnRetaliation;
     public event InteractionEvent OnRetaliationCancel;
     public event InteractionEvent OnGameOver;
-
-    // --- Events ---
     public event Action OnTurnEnd;
 
     // --- Refs ---
@@ -138,15 +140,19 @@ public partial class ALPlayer : Player
         ALCard card = cardToPlay.CastToALCard();
         ALCardDTO attributes = card.GetAttributes<ALCardDTO>();
 
+        GD.Print($"[OnCostPlayCardStartHandler] {card.Name}");
         if (attributes.cardType == ALCardType.Event)
         {
             await TryToPlayEventCard(card, (ALHand)card.GetBoard(), CardEffectTrigger.WhenPlayedFromHand);
             return;
         }
 
-        GD.Print($"[OnCostPlayCardStartHandler] {card.Name}");
-        bool cubesSpent = TryToSpendCubes(attributes.cost);
-        if (cubesSpent) await OnPlayCardStartHandler(card);
+        if (attributes.cardType == ALCardType.Ship)
+        {
+            bool cubesSpent = TryToSpendCubes(attributes.cost);
+            if (cubesSpent) await OnPlayCardStartHandler(card);
+            return;
+        }
     }
 
     public async Task OnCostPlaceCardCancelHandler(Card cardToRestore)
@@ -190,6 +196,18 @@ public partial class ALPlayer : Player
     {
         GD.PrintErr($"[EndGuardPhase]");
         if (OnAttackGuardEnd is not null) OnAttackGuardEnd(this);
+    }
+    // Retaliation
+    public async Task PlayCardInRetaliationPhase(ALCard selectedCard)
+    {
+        GD.PrintErr($"[PlayCardInRetaliationPhase]");
+        var attrs = selectedCard.GetAttributes<ALCardDTO>();
+        if (!attrs.HasEffectWithTrigger(ALCardEffectTrigger.Retaliation))
+        {
+            GD.PrintErr($"[PlayCardInRetaliationPhase] This card is not playable on a Retaliation Phase");
+            return;
+        }
+        await OnCostPlayCardStartHandler(selectedCard);
     }
 
     // You can guard cards from field and hand
@@ -464,7 +482,7 @@ public partial class ALPlayer : Player
         ALCardDTO cardToDraw = card is null ? DrawCard(deckSet.deck, deckField) : card;
         emptyDurability.UpdateAttributes(cardToDraw);
         emptyDurability.IsInputSelectable = true;
-        await this.Wait(0.5f);
+        await this.Wait(DrawDelay);
     }
 
     public async Task TryToExpireCardsModifierDuration(string duration)
@@ -554,7 +572,7 @@ public partial class ALPlayer : Player
     {
         ALHand hand = GetPlayerHand<ALHand>();
         await hand.AddCardToHand(card);
-        await this.Wait(0.5f);
+        await this.Wait(DrawDelay);
     }
 
     public void SetBoardCardsAsActive()

@@ -1,9 +1,13 @@
+using System;
+
 public class CardDTO : BaseDTO
 {
     public string name;
     public string imageSrc;
     public string backImageSrc;
     public CardEffectDTO[] effects = [];
+
+    public bool HasEffectWithTrigger(string trigger) => effects.Length > 0 && Array.Find(effects, (effect) => Array.Find(effect.triggerEvent, (triggerEvent) => triggerEvent == trigger) is not null) is not null;
 }
 
 

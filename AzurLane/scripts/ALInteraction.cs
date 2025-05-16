@@ -23,58 +23,54 @@ public class ALInteraction
             await OnPhaseBtnActionHandler(player, phaseButton, action);
             return;
         }
-        if (card is not ALCard selectedCard)
+        if (card is not ALCard selectedCardInBoard)
         {
             GD.PrintErr($"[OnBoardInputActionHandler] No valid card selected");
             return;
         }
         GD.Print($"[OnBoardInputActionHandler] Phase:{currentPhase} InteractionState:{state} Player:{triggeringPlayer.Name} Board:{triggeringBoard.Name} Action:{action} Card:{card.Name}");
-        switch (currentPhase)
-        {
-            case EALTurnPhase.Main:
 
-                if (player.GetInteractionState() == ALInteractionState.SelectBoardFieldToPlaceCard)
-                {
-                    if (action == InputAction.Ok) await player.OnALPlaceCardStartHandler(board.CardToPlace);
-                    if (action == InputAction.Cancel) await player.OnCostPlaceCardCancelHandler(board.CardToPlace);
-                }
-                if (player.GetPlayState() == EPlayState.SelectCardToPlay && player.GetInteractionState() == ALInteractionState.None)
-                {
-                    if (action == InputAction.Ok) await board.TriggerCardEffectOnTargetSelected(selectedCard);
-                }
-                if (player.GetInteractionState() == ALInteractionState.SelectEffectTarget)
-                {
-                    if (action == InputAction.Ok) await board.TriggerCardEffectOnTargetSelected(selectedCard);
-                    if (action == InputAction.Cancel) await player.CancelSelectEffectState(player);
-                }
-                break;
-            case EALTurnPhase.Battle:
-                if (player.GetInteractionState() == ALInteractionState.SelectAttackerUnit)
-                {
-                    if (action == InputAction.Ok) await player.StartBattle(selectedCard);
-                }
-                if (player.GetInteractionState() == ALInteractionState.SelectAttackTarget)
-                {
-                    if (action == InputAction.Ok) player.AttackCard(manager.GetAttackerCard(), selectedCard);
-                    if (action == InputAction.Cancel) await player.CancelAttack(player);
-                }
-                if (player.GetInteractionState() == ALInteractionState.SelectGuardingUnit)
-                {
-                    if (action == InputAction.Ok) await player.PlayCardAsGuard(selectedCard);
-                    if (action == InputAction.Cancel) player.EndGuardPhase();
-                }
-                if (player.GetInteractionState() == ALInteractionState.SelectEffectTarget)
-                {
-                    if (action == InputAction.Ok) await board.TriggerCardEffectOnTargetSelected(selectedCard);
-                    if (action == InputAction.Cancel) await player.CancelSelectEffectState(player);
-                }
-                if (player.GetInteractionState() == ALInteractionState.SelectRetaliationUnit)
-                {
-                    if (action == InputAction.Cancel) await player.CancelRetaliation(player);
-                }
-                break;
+        // Main
+
+        if (currentPhase == EALTurnPhase.Main && state == ALInteractionState.SelectBoardFieldToPlaceCard)
+        {
+            if (action == InputAction.Ok) await player.OnALPlaceCardStartHandler(board.CardToPlace);
+            if (action == InputAction.Cancel) await player.OnCostPlaceCardCancelHandler(board.CardToPlace);
         }
-        await Task.CompletedTask;
+        else if (currentPhase == EALTurnPhase.Main && player.GetPlayState() == EPlayState.SelectCardToPlay && state == ALInteractionState.None)
+        {
+            if (action == InputAction.Ok) await board.TriggerCardEffectOnTargetSelected(selectedCardInBoard);
+        }
+
+        // Battle
+
+        else if (currentPhase == EALTurnPhase.Battle && state == ALInteractionState.SelectAttackerUnit)
+        {
+            if (action == InputAction.Ok) await player.StartBattle(selectedCardInBoard);
+        }
+        else if (currentPhase == EALTurnPhase.Battle && state == ALInteractionState.SelectAttackTarget)
+        {
+            if (action == InputAction.Ok) player.AttackCard(manager.GetAttackerCard(), selectedCardInBoard);
+            if (action == InputAction.Cancel) await player.CancelAttack(player);
+        }
+        else if (currentPhase == EALTurnPhase.Battle && state == ALInteractionState.SelectGuardingUnit)
+        {
+            if (action == InputAction.Ok) await player.PlayCardAsGuard(selectedCardInBoard);
+            if (action == InputAction.Cancel) player.EndGuardPhase();
+        }
+        else if (currentPhase == EALTurnPhase.Battle && state == ALInteractionState.SelectRetaliationUnit)
+        {
+            if (action == InputAction.Cancel) await player.CancelRetaliation(player);
+        }
+
+        // Generic
+
+        else if (state == ALInteractionState.SelectEffectTarget)
+        {
+            if (action == InputAction.Ok) await board.TriggerCardEffectOnTargetSelected(selectedCardInBoard);
+            if (action == InputAction.Cancel) await player.CancelSelectEffectState(player);
+        }
+
     }
     public async Task OnHandInputActionHandler(Player triggeringPlayer, Board triggeringBoard, InputAction action)
     {
@@ -84,40 +80,40 @@ public class ALInteraction
         string state = player.GetInteractionState();
 
         Card card = hand.GetSelectedCard<Card>(player);
-        if (card is not ALCard selectedCard)
+        if (card is not ALCard selectedCardInHand)
         {
             GD.PrintErr($"[OnBoardInputActionHandler] No valid card selected");
             return;
         }
         GD.Print($"[OnBoardInputActionHandler] Phase:{currentPhase} InteractionState:{state} Player:{triggeringPlayer.Name} Board:{triggeringBoard.Name} Action:{action} Card:{card.Name}");
-        switch (currentPhase)
+
+        // Main
+
+        if (currentPhase == EALTurnPhase.Main && player.GetPlayState() == EPlayState.SelectCardToPlay && state == ALInteractionState.None)
         {
-            case EALTurnPhase.Main:
-                if (player.GetPlayState() == EPlayState.SelectCardToPlay && state == ALInteractionState.None)
-                {
-                    if (action == InputAction.Ok) await player.OnCostPlayCardStartHandler(selectedCard);
-                    if (action == InputAction.Cancel) await player.OnCostPlaceCardCancelHandler(selectedCard);
-                }
-                break;
-            case EALTurnPhase.Battle:
-                if (state == ALInteractionState.SelectGuardingUnit)
-                {
-                    if (action == InputAction.Ok) await player.PlayCardAsGuard(selectedCard);
-                    if (action == InputAction.Cancel) player.EndGuardPhase();
-                }
-                if (state == ALInteractionState.SelectEffectTarget)
-                {
-                    if (action == InputAction.Cancel) await player.CancelSelectEffectState(player);
-                }
-                if (state == ALInteractionState.SelectRetaliationUnit)
-                {
-                    if (action == InputAction.Ok) await hand.TriggerCardEffectOnTargetSelected(selectedCard);
-                    if (action == InputAction.Cancel) await player.CancelRetaliation(player);
-                }
-                break;
+            if (action == InputAction.Ok) await player.OnCostPlayCardStartHandler(selectedCardInHand);
+            if (action == InputAction.Cancel) await player.OnCostPlaceCardCancelHandler(selectedCardInHand);
         }
 
-        await Task.CompletedTask;
+        // Battle
+
+        else if (currentPhase == EALTurnPhase.Battle && state == ALInteractionState.SelectGuardingUnit)
+        {
+            if (action == InputAction.Ok) await player.PlayCardAsGuard(selectedCardInHand);
+            if (action == InputAction.Cancel) player.EndGuardPhase();
+        }
+        else if (currentPhase == EALTurnPhase.Battle && state == ALInteractionState.SelectRetaliationUnit)
+        {
+            if (action == InputAction.Ok) await player.PlayCardInRetaliationPhase(selectedCardInHand);
+            if (action == InputAction.Cancel) await player.CancelRetaliation(player);
+        }
+
+        // Generic
+        else if (state == ALInteractionState.SelectEffectTarget)
+        {
+            if (action == InputAction.Ok) await hand.TriggerCardEffectOnTargetSelected(selectedCardInHand);
+            if (action == InputAction.Cancel) await player.CancelSelectEffectState(player);
+        }
     }
 
     public async Task OnPhaseBtnActionHandler(ALPlayer player, ALPhaseButton phaseButton, InputAction action)
@@ -131,7 +127,7 @@ public class ALInteraction
         if (matchPhase == EALTurnPhase.Battle)
         {
             if (player.GetPlayState() == EPlayState.SelectTarget && player.GetInteractionState() == ALInteractionState.SelectAttackerUnit) player.Phase.PlayNextPhase();
-            if (state == ALInteractionState.SelectGuardingUnit) player.EndGuardPhase(); 
+            if (state == ALInteractionState.SelectGuardingUnit) player.EndGuardPhase();
             if (state == ALInteractionState.SelectRetaliationUnit) await player.CancelRetaliation(player);
         }
         await Task.CompletedTask;
