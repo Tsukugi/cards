@@ -182,15 +182,16 @@ public partial class ALGameMatchManager : Node
         matchCurrentPhase = phase;
     }
 
-    void OnTurnEndHandler()
+    async void OnTurnEndHandler()
     {
-        _ = this.Wait(1f, () =>
-        {
-            ALPlayer playingPlayer = GetPlayerPlayingTurn();
-            GD.Print($"[OnTurnEndHandler] {playingPlayer.Name} Turn ended!");
-            PickNextPlayer().StartTurn();
-            if (!GetPlayerPlayingTurn().GetIsControllerPlayer()) _ = GetPlayerPlayingTurn().GetPlayerAIController().StartTurn();
-        });
+        await this.Wait(1f);
+        ALPlayer playingPlayer = GetPlayerPlayingTurn();
+        GD.Print($"[OnTurnEndHandler] {playingPlayer.Name} Turn ended!");
+
+        PickNextPlayer().StartTurn();
+        await playingPlayer.TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
+        await GetNextPlayer().TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
+        if (!GetPlayerPlayingTurn().GetIsControllerPlayer()) _ = GetPlayerPlayingTurn().GetPlayerAIController().StartTurn();
     }
 
     ALPlayer PickNextPlayer()

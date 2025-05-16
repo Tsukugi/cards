@@ -143,14 +143,13 @@ public partial class Player : Node3D
     {
         EPlayState oldState = playState;
         string oldInteractionState = interactionState;
-        await boardInputAsync.AwaitBefore(() => // This delay allows to avoid trigering different EPlayState events on the same frame
-            {
-                playState = state;
-                string newInteraction = providedInteractionState is null ? ALInteractionState.None : providedInteractionState;
-                interactionState = newInteraction;
-                GD.Print($"[SetPlayState] {oldInteractionState} -> {newInteraction}");
-                GD.Print($"[SetPlayState] {oldState} -> {playState}");
-            }, 0.1f);
+        await boardInputAsync.AwaitBefore(() => { }, 0.1f); // This delay allows to avoid trigering different EPlayState events on the same frame
+        playState = state;
+        string newInteraction = providedInteractionState is null ? ALInteractionState.None : providedInteractionState;
+        interactionState = newInteraction;
+        GD.Print($"[SetPlayState] {oldInteractionState} -> {newInteraction}");
+        GD.Print($"[SetPlayState] {oldState} -> {playState}");
+        await TryToExpireCardsModifierDuration(CardEffectDuration.CurrentInteraction);
     }
 
     protected static T DrawCard<T>(List<T> deck)
@@ -165,6 +164,37 @@ public partial class Player : Node3D
     }
 
     // Public API
+
+    public async Task TryToExpireCardsModifierDuration(string duration)
+    {
+        var boardCards = GetPlayerBoard<PlayerBoard>().GetCardsInTree();
+        var handCards = GetPlayerHand<PlayerHand>().GetCardsInTree();
+
+        foreach (var card in boardCards)
+        {
+            card.TryToExpireEffectOrModifier(duration);
+        }
+        foreach (var card in handCards)
+        {
+            card.TryToExpireEffectOrModifier(duration);
+        }
+        await Task.CompletedTask;
+    }
+
+    public async Task TryToTriggerOnAllCards(string triggerEvent)
+    {
+        var boardCards = GetPlayerBoard<PlayerBoard>().GetCardsInTree();
+        var handCards = GetPlayerHand<PlayerHand>().GetCardsInTree();
+
+        foreach (var card in boardCards)
+        {
+            await card.TryToTriggerCardEffect(triggerEvent);
+        }
+        foreach (var card in handCards)
+        {
+            await card.TryToTriggerCardEffect(triggerEvent);
+        }
+    }
     public void AssignEnemyBoards(PlayerHand _hand, PlayerBoard _board)
     {
         enemyBoard = _board;

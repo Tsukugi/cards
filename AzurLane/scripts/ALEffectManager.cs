@@ -43,10 +43,53 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     }
 
     // --- Condition ---
+    public bool CheckCardsInBoard(CardEffectConditionDTO conditionDTO)
+    {
+        string scope = conditionDTO.conditionArgs[0] ?? PlayerType.Self; // Enemy, Self
+        string attributeToCompare = conditionDTO.conditionArgs[1] ?? "Cost";
+        string comparator = conditionDTO.conditionArgs[2] ?? "LessThan";
+        int value = (conditionDTO.conditionArgs[3] ?? "0").ToInt();
+
+        Board targetBoard = GetBoardBasedOnScope(scope);
+
+        bool fulfillsCondition = targetBoard.GetCardsInTree().FindAll((field) =>
+        {
+            if (field is not ALCard card) return false;
+            if (!card.IsCardUnit()) return false;
+            int attr = card.GetAttributeWithModifiers<ALCardDTO>(attributeToCompare);
+            return LogicUtils.ApplyComparison(attr, comparator, value);
+        }).Count > 0;
+
+        GD.Print($"[Condition - CheckCardsInBoard] {scope} {attributeToCompare} {comparator} {value} => {fulfillsCondition}");
+        return fulfillsCondition;
+    }
+
+    public bool CheckCardsInHand(CardEffectConditionDTO conditionDTO)
+    {
+        string scope = conditionDTO.conditionArgs[0] ?? PlayerType.Self; // Enemy, Self
+        string attributeToCompare = conditionDTO.conditionArgs[1] ?? "Cost";
+        string comparator = conditionDTO.conditionArgs[2] ?? "LessThan";
+        int value = (conditionDTO.conditionArgs[3] ?? "0").ToInt();
+
+        Board targetBoard = GetBoardBasedOnScope(scope);
+
+        bool fulfillsCondition = targetBoard.GetCardsInTree().FindAll((field) =>
+        {
+            if (field is not ALCard card) return false;
+            if (!card.IsCardUnit()) return false;
+            int attr = card.GetAttributeWithModifiers<ALCardDTO>(attributeToCompare);
+            return LogicUtils.ApplyComparison(attr, comparator, value);
+        }).Count > 0;
+
+        GD.Print($"[Condition - CheckCardsInBoard] {scope} {attributeToCompare} {comparator} {value} => {fulfillsCondition}");
+        return fulfillsCondition;
+    }
 
     public bool IsSpecificCardOnField(CardEffectConditionDTO conditionDTO)
     {
         string cardId = conditionDTO.conditionArgs[0];
+
+        if (cardId is null) return false;
 
         List<ALCard> units = ((ALPlayer)ownerPlayer).GetUnitsInBoard();
         ALCardDTO attrs = card.GetAttributes<ALCardDTO>();
@@ -62,17 +105,17 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         return fulfillsCondition;
     }
 
-    public bool OnBackRow(CardEffectConditionDTO conditionDTO)
+    public bool IsPlacedOnBackRow(CardEffectConditionDTO conditionDTO)
     {
         bool fulfillsCondition = card.CastToALCard().GetAttackFieldType() == EAttackFieldType.BackRow;
-        GD.Print($"[Condition - OnBackRow] {fulfillsCondition} - {card.CastToALCard().GetAttackFieldType()}");
+        GD.Print($"[Condition - IsPlacedOnBackRow] {fulfillsCondition} - {card.CastToALCard().GetAttackFieldType()}");
         return fulfillsCondition;
     }
 
     public bool CheckFlagshipDurability(CardEffectConditionDTO conditionDTO)
     {
-        string comparisonOperator = conditionDTO.conditionArgs[0];
-        string valueToCompare = conditionDTO.conditionArgs[1];
+        string comparisonOperator = conditionDTO.conditionArgs[0] ?? "LessThan";
+        string valueToCompare = conditionDTO.conditionArgs[1] ?? "0";
 
         int durability = ((ALPlayer)ownerPlayer).GetDurabilityCards().Count;
 
@@ -83,8 +126,8 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
 
     public bool HasCubes(CardEffectConditionDTO conditionDTO)
     {
-        string comparisonOperator = conditionDTO.conditionArgs[0];
-        string valueToCompare = conditionDTO.conditionArgs[1];
+        string comparisonOperator = conditionDTO.conditionArgs[0] ?? "LessThan";
+        string valueToCompare = conditionDTO.conditionArgs[1] ?? "0";
 
         int cubes = ((ALPlayer)ownerPlayer).GetActiveCubesInBoard().Count;
 
@@ -94,11 +137,11 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     }
     public bool CurrentPlayerPlayingTurn(CardEffectConditionDTO conditionDTO)
     {
-        string whoShouldBePlaying = conditionDTO.conditionArgs[0];
+        string whoShouldBePlaying = conditionDTO.conditionArgs[0] ?? PlayerType.Self;
         bool fulfillsCondition = false;
 
-        if (whoShouldBePlaying == "Self") fulfillsCondition = matchManager.GetPlayerPlayingTurn() == ownerPlayer;
-        if (whoShouldBePlaying == "Enemy") fulfillsCondition = matchManager.GetPlayerPlayingTurn() != ownerPlayer;
+        if (whoShouldBePlaying == PlayerType.Self) fulfillsCondition = matchManager.GetPlayerPlayingTurn() == ownerPlayer;
+        else if (whoShouldBePlaying == PlayerType.Enemy) fulfillsCondition = matchManager.GetPlayerPlayingTurn() != ownerPlayer;
 
         GD.Print($"[Condition - CurrentPlayerPlayingTurn] {whoShouldBePlaying}: {ownerPlayer.Name} - {matchManager.GetPlayerPlayingTurn().Name} => {fulfillsCondition}");
         return fulfillsCondition;
@@ -119,8 +162,8 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     public async Task SelectAndGivePower(CardEffectDTO effectDTO)
     {
         GD.Print($"[Effect - SelectAndGivePower]");
-        int amount = effectDTO.effectValue[0].ToInt();
-        string scope = effectDTO.effectValue[1];
+        int amount = (effectDTO.effectValue[0] ?? "0").ToInt();
+        string scope = effectDTO.effectValue[1] ?? PlayerType.Self;
 
         bool isFinished = false;
         EPlayState previousState = ownerPlayer.GetPlayState();
@@ -138,13 +181,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             isFinished = true;
         }
 
-        Board targetBoard = ownerPlayer.GetPlayerBoard<ALBoard>();
-        switch (scope)
-        {
-            case "Ally": targetBoard = ownerPlayer.GetPlayerBoard<ALBoard>(); break;
-            case "Enemy": targetBoard = ownerPlayer.GetEnemyPlayerBoard<ALBoard>(); break;
-        }
-
+        Board targetBoard = GetBoardBasedOnScope(scope);
         await ApplySelectEffectTargetAction(
                targetBoard,
                OnAfterSelectAndGivePower,
@@ -154,13 +191,13 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
 
     public async Task AddStatusEffect(CardEffectDTO effectDTO)
     {
-        activeStatusEffects.Add(effectDTO);
         string effectName = effectDTO.effectValue[0];
-        if (activeStatusEffects.Contains(effectDTO) && !effectDTO.effectValue.Contains(ALCardReservedEffectValues.StackableEffect))
+        if (activeStatusEffects.Contains(effectDTO) && !effectDTO.stackableEffect)
         {
             GD.PrintErr($"[Effect - AddEffect] Effect {effectName} already exists");
             return;
         }
+        activeStatusEffects.Add(effectDTO);
         GD.Print($"[Effect - AddEffect] {effectName} to {card.GetAttributes<ALCardDTO>().name}, ActiveEffects: {activeStatusEffects.Count}");
         await Task.CompletedTask;
     }
@@ -168,9 +205,9 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     public async Task ReturnEnemyToHand(CardEffectDTO effectDTO)
     {
         GD.Print($"[Effect - ReturnEnemyToHand]");
-        string attributeToCompare = effectDTO.effectValue[0];
-        string comparator = effectDTO.effectValue[1];
-        string value = effectDTO.effectValue[2];
+        string attributeToCompare = effectDTO.effectValue[0] ?? "Cost";
+        string comparator = effectDTO.effectValue[1] ?? "LessThan";
+        string value = effectDTO.effectValue[2] ?? "0";
 
         EPlayState previousState = ownerPlayer.GetPlayState();
         string previousInteractionState = ownerPlayer.GetInteractionState();
@@ -238,26 +275,96 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         card.AddModifier(new AttributeModifier()
         {
             AttributeName = "Cost",
-            Duration = ALCardEffectDuration.CurrentInteraction,
+            Duration = CardEffectDuration.CurrentInteraction,
             Amount = -card.GetAttributes<ALCardDTO>().cost, // I want it to be 0
         });
         await Task.CompletedTask;
     }
 
-    async Task DiscardAndDrawCubeDown(CardEffectDTO effectDTO)
+    public async Task DiscardAndDrawCubeDown(CardEffectDTO effectDTO)
     {
-        //TODO: 
+        GD.Print($"[Effect - DiscardAndDrawCubeDown]");
+
+        EPlayState previousState = ownerPlayer.GetPlayState();
+        string previousInteractionState = ownerPlayer.GetInteractionState();
+        async Task OnSelectToDiscardCard(Card selectedTarget)
+        {
+            ALPlayer player = (ALPlayer)ownerPlayer;
+            var hand = player.GetPlayerHand<PlayerHand>();
+            GD.Print($"[Effect - OnAfterSelectReturningCard]");
+            // Discard card from hand
+            var attrs = selectedTarget.GetAttributes<ALCardDTO>();
+            player.AddToRetreatAreaOnTop(attrs);
+            hand.RemoveCardFromHand(player, selectedTarget);
+            // Draw cube
+            await player.TryDrawCubeToBoard();
+
+            await ownerPlayer.SetPlayState(previousState, previousInteractionState);
+            GD.Print($"[OnAfterSelectReturningCard] Discarding: {attrs.name}");
+        }
+
+        await ApplySelectEffectTargetAction(
+                ownerPlayer.GetPlayerHand<PlayerHand>(),
+                OnSelectToDiscardCard
+            );
     }
-    async Task RestEnemy(CardEffectDTO effectDTO)
+    public async Task RestEnemy(CardEffectDTO effectDTO)
     {
-        //TODO: 
+        GD.Print($"[Effect - RestEnemy]");
+
+        EPlayState previousState = ownerPlayer.GetPlayState();
+        string previousInteractionState = ownerPlayer.GetInteractionState();
+        async Task OnSelectToRestCard(Card selectedTarget)
+        {
+            if (selectedTarget is ALCard target && target.IsCardUnit() && target.GetIsInActiveState())
+            {
+                target.SetIsInActiveState(false);
+                GD.Print($"[OnSelectToRestCard] Resting: {target.GetAttributes<CardDTO>().name}");
+                await ownerPlayer.SetPlayState(previousState, previousInteractionState);
+                return;
+            }
+            GD.PrintErr($"[OnSelectToRestCard] Select a valid target to rest");
+        }
+
+        await ApplySelectEffectTargetAction(
+                ownerPlayer.GetEnemyPlayerBoard<PlayerBoard>(),
+                OnSelectToRestCard
+            );
     }
-    async Task RestOrDestroyEnemy(CardEffectDTO effectDTO)
+    public async Task RestOrDestroyEnemy(CardEffectDTO effectDTO)
     {
-        //TODO: 
+        GD.Print($"[Effect - RestOrDestroyEnemy]");
+
+        EPlayState previousState = ownerPlayer.GetPlayState();
+        string previousInteractionState = ownerPlayer.GetInteractionState();
+        async Task OnSelectToRestOrDestroyCard(Card selectedTarget)
+        {
+            if (selectedTarget is ALCard target && target.IsCardUnit())
+            {
+                // If active, rest it. If resting, destroy it.
+                if (target.GetIsInActiveState())
+                {
+                    target.SetIsInActiveState(false);
+                    GD.Print($"[OnSelectToRestCard] Resting: {target.GetAttributes<CardDTO>().name}");
+                }
+                else
+                {
+                    target.DestroyCard();
+                    GD.Print($"[OnSelectToRestCard] Destroying: {target.GetAttributes<CardDTO>().name}");
+                }
+                await ownerPlayer.SetPlayState(previousState, previousInteractionState);
+                return;
+            }
+            GD.PrintErr($"[OnSelectToRestCard] Select a valid target to rest");
+        }
+
+        await ApplySelectEffectTargetAction(
+                ownerPlayer.GetEnemyPlayerBoard<PlayerBoard>(),
+                OnSelectToRestOrDestroyCard
+            );
     }
 
-    async Task Rush(CardEffectDTO effectDTO)
+    public async Task Rush(CardEffectDTO effectDTO)
     {
         //TODO: 
     }

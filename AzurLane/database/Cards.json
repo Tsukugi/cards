@@ -345,7 +345,7 @@
 				],
 				"condition": [
 					{
-						"conditionId": "OnBackRow"
+						"conditionId": "IsPlacedOnBackRow"
 					}
 				],
 				"duration": "WhileOnBattlefield",
@@ -392,7 +392,7 @@
 				],
 				"condition": [
 					{
-						"conditionId": "OnBackRow"
+						"conditionId": "IsPlacedOnBackRow"
 					}
 				],
 				"duration": "WhileOnBattlefield",
@@ -428,7 +428,7 @@
 				],
 				"condition": [
 					{
-						"conditionId": "OnBackRow"
+						"conditionId": "IsPlacedOnBackRow"
 					}
 				],
 				"duration": "WhileOnBattlefield",
@@ -441,6 +441,17 @@
 			{
 				"triggerEvent": [
 					"WhenPlayedIntoBoard"
+				],
+				"condition": [
+					{
+						"conditionId": "CheckCardsInBoard",
+						"conditionArgs": [
+							"Enemy",
+							"Cost",
+							"EqualOrLess",
+							2
+						]
+					}
 				],
 				"effectId": "ReturnEnemyToHand",
 				"effectValue": [
@@ -478,7 +489,7 @@
 				"effectId": "SelectAndGivePower",
 				"effectValue": [
 					"200",
-					"Ally"
+					"Self"
 				],
 				"effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +200 power for this battle."
 			},
@@ -521,7 +532,7 @@
 				"effectId": "SelectAndGivePower",
 				"effectValue": [
 					"400",
-					"Ally"
+					"Self"
 				],
 				"effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +400 power for this battle."
 			},
@@ -531,7 +542,13 @@
 				],
 				"condition": [
 					{
-						"conditionId": "EmptyHand"
+						"conditionId": "CheckCardCount",
+						"conditionArgs": [
+							"Self",
+							"Hand",
+							"Equal",
+							"0"
+						]
 					}
 				],
 				"duration": "CurrentBattle",
@@ -571,6 +588,17 @@
 			{
 				"triggerEvent": [
 					"WhenPlayedFromHand"
+				],
+				"condition": [
+					{
+						"conditionId": "CheckCardsInBoard",
+						"conditionArgs": [
+							"Enemy",
+							"Cost",
+							"EqualOrLess",
+							2
+						]
+					}
 				],
 				"effectId": "ReturnEnemyToHand",
 				"effectValue": [
@@ -763,6 +791,26 @@
 				"triggerEvent": [
 					"WhenPlayedIntoBoard"
 				],
+				"condition": [
+					{
+						"conditionId": "CheckCardCount",
+						"conditionArgs": [
+							"Self",
+							"Hand",
+							"EqualOrMore",
+							"1"
+						]
+					},
+					{
+						"conditionId": "CheckCardCount",
+						"conditionArgs": [
+							"Self",
+							"CubeDeck",
+							"EqualOrMore",
+							"1"
+						]
+					}
+				],
 				"effectId": "DiscardAndDrawCubeDown",
 				"effectValue": [
 					"1",
@@ -793,6 +841,26 @@
 			{
 				"triggerEvent": [
 					"WhenPlayedIntoBoard"
+				],
+				"condition": [
+					{
+						"conditionId": "CheckCardCount",
+						"conditionArgs": [
+							"Self",
+							"Hand",
+							"EqualOrMore",
+							"1"
+						]
+					},
+					{
+						"conditionId": "CheckCardCount",
+						"conditionArgs": [
+							"Self",
+							"CubeDeck",
+							"EqualOrMore",
+							"1"
+						]
+					}
 				],
 				"effectId": "DiscardAndDrawCubeDown",
 				"effectValue": [
@@ -844,6 +912,17 @@
 				"triggerEvent": [
 					"WhenPlayedIntoBoard"
 				],
+				"condition": [
+					{
+						"conditionId": "CheckCardsInBoard",
+						"conditionArgs": [
+							"Enemy",
+							"Cost",
+							"EqualOrLess",
+							4
+						]
+					}
+				],
 				"effectId": "RestEnemy",
 				"effectValue": [
 					"Cost",
@@ -878,7 +957,7 @@
 				],
 				"condition": [
 					{
-						"conditionId": "OnBackRow"
+						"conditionId": "IsPlacedOnBackRow"
 					}
 				],
 				"duration": "WhileOnBattlefield",
@@ -925,7 +1004,7 @@
 				],
 				"condition": [
 					{
-						"conditionId": "OnBackRow"
+						"conditionId": "IsPlacedOnBackRow"
 					}
 				],
 				"duration": "WhileOnBattlefield",
@@ -961,7 +1040,7 @@
 				],
 				"condition": [
 					{
-						"conditionId": "OnBackRow"
+						"conditionId": "IsPlacedOnBackRow"
 					}
 				],
 				"duration": "WhileOnBattlefield",
@@ -974,6 +1053,17 @@
 			{
 				"triggerEvent": [
 					"WhenPlayedIntoBoard"
+				],
+				"condition": [
+					{
+						"conditionId": "CheckCardsInBoard",
+						"conditionArgs": [
+							"Enemy",
+							"Cost",
+							"EqualOrLess",
+							4
+						]
+					}
 				],
 				"effectId": "RestOrDestroyEnemy",
 				"effectValue": [
@@ -1009,7 +1099,7 @@
 				],
 				"condition": [
 					{
-						"conditionId": "OnBackRow"
+						"conditionId": "IsPlacedOnBackRow"
 					}
 				],
 				"duration": "WhileOnBattlefield",
@@ -1022,6 +1112,17 @@
 			{
 				"triggerEvent": [
 					"WhenPlayedIntoBoard"
+				],
+				"condition": [
+					{
+						"conditionId": "CheckCardsInBoard",
+						"conditionArgs": [
+							"Enemy",
+							"Cost",
+							"EqualOrLess",
+							4
+						]
+					}
 				],
 				"effectId": "RestOrDestroyEnemy",
 				"effectValue": [
@@ -1059,7 +1160,7 @@
 				"effectId": "SelectAndGivePower",
 				"effectValue": [
 					"200",
-					"Ally"
+					"Self"
 				],
 				"effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +200 power for this battle."
 			},
@@ -1107,7 +1208,7 @@
 				"effectId": "SelectAndGivePower",
 				"effectValue": [
 					"600",
-					"Ally"
+					"Self"
 				],
 				"effectLabel": "■【Counter】(Can be used during our defense step) One card on our side gets +600 power for this battle."
 			},
@@ -1160,6 +1261,17 @@
 			{
 				"triggerEvent": [
 					"WhenPlayedFromHand"
+				],
+				"condition": [
+					{
+						"conditionId": "CheckCardCount",
+						"conditionArgs": [
+							"Self",
+							"CubeDeck",
+							"EqualOrMore",
+							1
+						]
+					}
 				],
 				"effectId": "DrawCubeDown",
 				"effectValue": [
@@ -1572,7 +1684,7 @@
 				],
 				"condition": [
 					{
-						"conditionId": "OnBackRow"
+						"conditionId": "IsPlacedOnBackRow"
 					}
 				],
 				"duration": "WhileOnBattlefield",
@@ -1608,7 +1720,7 @@
 				],
 				"condition": [
 					{
-						"conditionId": "OnBackRow"
+						"conditionId": "IsPlacedOnBackRow"
 					}
 				],
 				"duration": "WhileOnBattlefield",
@@ -1656,8 +1768,10 @@
 				],
 				"condition": [
 					{
-						"conditionId": "CheckCardsInHand",
+						"conditionId": "CheckCardCount",
 						"conditionArgs": [
+							"Self",
+							"Hand",
 							"EqualOrLess",
 							"1"
 						]
@@ -2198,7 +2312,7 @@
 				],
 				"condition": [
 					{
-						"conditionId": "OnBackRow"
+						"conditionId": "IsPlacedOnBackRow"
 					}
 				],
 				"duration": "WhileOnBattlefield",

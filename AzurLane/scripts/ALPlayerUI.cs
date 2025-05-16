@@ -91,25 +91,27 @@ public partial class ALPlayerUI : Control
                 break;
         }
     }
-    public void OnDebugMenuItemSelected(long itemIndex)
+    public async void OnDebugMenuItemSelected(long itemIndex)
     {
         GD.Print($"[OnDebugMenuItemSelected] index: {itemIndex}");
+        var debug = attachedPlayer.GetMatchManager().GetDebug();
         switch (itemIndex)
         {
             case 0:
-                attachedPlayer.GetMatchManager().GetDebug().ToggleIgnoreCosts();
+                debug.ToggleIgnoreCosts();
+                debugMenuBtn.GetPopup().SetItemChecked((int)itemIndex, !debug.GetIgnoreCosts());
                 break;
             case 1:
-                attachedPlayer.GetMatchManager().GetDebug().DrawCard();
+                await debug.DrawCard();
                 break;
             case 2:
-                attachedPlayer.GetMatchManager().GetDebug().DrawCubeCard();
+                await debug.DrawCubeCard();
                 break;
             case 3:
-                attachedPlayer.GetMatchManager().GetDebug().InflictDamage();
+                await debug.InflictDamage();
                 break;
             case 4:
-                attachedPlayer.GetMatchManager().GetDebug().TestRetaliation();
+                await debug.TestRetaliation();
                 break;
             // Add more cases as needed
             default:

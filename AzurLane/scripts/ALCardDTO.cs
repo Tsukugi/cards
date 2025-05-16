@@ -81,7 +81,6 @@ public static class ALCardEffectDuration
     public static readonly string MainPhase = "MainPhase"; // While in the main phase
     public static readonly string BattlePhase = "BattlePhase"; // While in the battle phase
     public static readonly string CurrentBattle = "CurrentBattle"; // While in a battle
-    public static readonly string CurrentInteraction = "CurrentInteraction"; // Expires if we change either the playState or the interationState
 }
 
 public static class ALCardEffectCondition
@@ -107,8 +106,4 @@ public static class ALCardStatusEffects
 {
     public static readonly string LimitBattleSupport = "LimitBattleSupport";
     public static readonly string RangedAttack = "RangedAttack";
-}
-public static class ALCardReservedEffectValues
-{
-    public static readonly string StackableEffect = "StackableEffect";
 }

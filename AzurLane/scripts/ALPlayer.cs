@@ -8,7 +8,7 @@ public partial class ALPlayer : Player
 {
     // --- Params ---
     float DrawDelay = 0.2f;
-    
+
     // --- Events ---
     public event ProvideCardInteractionEvent OnAttackStart;
     public event ProvideCardInteractionEvent OnAttackTargetAdquired;
@@ -106,6 +106,7 @@ public partial class ALPlayer : Player
     public async Task EndTurn()
     {
         await TryToTriggerOnAllCards(ALCardEffectTrigger.EndOfTurn);
+        await TryToExpireCardsModifierDuration(CardEffectDuration.UntilEndOfTurn);
         if (OnTurnEnd is not null) OnTurnEnd();
     }
 
@@ -139,8 +140,16 @@ public partial class ALPlayer : Player
     {
         ALCard card = cardToPlay.CastToALCard();
         ALCardDTO attributes = card.GetAttributes<ALCardDTO>();
+        int cost = card.GetAttributeWithModifiers<ALCardDTO>("Cost");
 
         GD.Print($"[OnCostPlayCardStartHandler] {card.Name}");
+        bool cubesSpent = TryToSpendCubes(cost);
+        if (!cubesSpent)
+        {
+            GD.PrintErr($"[OnCostPlayCardStartHandler] Not enough cubes {cost}");
+            return;
+        }
+
         if (attributes.cardType == ALCardType.Event)
         {
             await TryToPlayEventCard(card, (ALHand)card.GetBoard(), CardEffectTrigger.WhenPlayedFromHand);
@@ -149,8 +158,7 @@ public partial class ALPlayer : Player
 
         if (attributes.cardType == ALCardType.Ship)
         {
-            bool cubesSpent = TryToSpendCubes(attributes.cost);
-            if (cubesSpent) await OnPlayCardStartHandler(card);
+            await OnPlayCardStartHandler(card);
             return;
         }
     }
@@ -231,6 +239,7 @@ public partial class ALPlayer : Player
         }
 
         ALCardDTO attrs = cardToGuard.GetAttributes<ALCardDTO>();
+
         if (selectedGuard is ALBoard guardingBoard)
         {
             if (attrs.supportScope == ALSupportScope.Hand)
@@ -249,8 +258,17 @@ public partial class ALPlayer : Player
             }
             cardToGuard.SetIsInActiveState(false);
         }
+
         if (selectedGuard is ALHand guardingHand)
         {
+            int cost = cardToGuard.GetAttributeWithModifiers<ALCardDTO>("Cost");
+
+            bool cubesSpent = TryToSpendCubes(cost);
+            if (!cubesSpent)
+            {
+                GD.PrintErr($"[TryToPlayEventCard] Not enough cubes {cost}");
+                return;
+            }
             if (!cardToGuard.IsCardUnit())
             {
                 if (attrs.cardType == ALCardType.Event) // Events are a special card that has its own process
@@ -282,8 +300,7 @@ public partial class ALPlayer : Player
 
         bool canTrigger = effects.Length == 0 || Array.Find(effects, effectManager.CheckCanTriggerEffect) is not null;
         if (!canTrigger) { GD.PrintErr($"[TryToPlayEventCard] Effect condittions not fullfilled. Effects with {trigger}: {effects.Length}"); return; }
-        bool cubesSpent = TryToSpendCubes(attrs.cost);
-        if (!cubesSpent) { GD.PrintErr($"[TryToPlayEventCard] Not enough cubes {attrs.cost}"); return; }
+
         GD.Print("[TryToPlayEventCard] After effect");
         eventCard.SetIsEmptyField(true);
         await eventCard.TryToTriggerCardEffect(trigger);
@@ -399,22 +416,6 @@ public partial class ALPlayer : Player
         await phaseManager.EndBattlePhaseIfNoActiveCards();
     }
 
-    public async Task CancelAttack(Player player)
-    {
-        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackerUnit);
-    }
-
-    public virtual async Task CancelSelectEffectState(Player player)
-    {
-        GD.Print($"[CancelSelectEffectState]");//TODO add tracking of last state
-        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectEffectTarget);
-    }
-
-    public async Task CancelRetaliation(Player player)
-    {
-        GD.Print($"[CancelRetaliation]");
-        if (OnRetaliationCancel is not null) await OnRetaliationCancel(player);
-    }
 
     static async Task DestroyUnitCard(ALCard card)
     {
@@ -455,11 +456,6 @@ public partial class ALPlayer : Player
         if (deck.CardStack == 0) deck.SetIsEmptyField(true);
     }
 
-    void AddToRetreatAreaOnTop(ALCardDTO cardToAdd)
-    {
-        // We add to the bottom as the deck works flipped down
-        AddCardToDeck(cardToAdd, deckSet.retreatDeck, retreatField, false);
-    }
 
     async Task ApplyFlagshipDurability()
     {
@@ -469,6 +465,29 @@ public partial class ALPlayer : Player
         {
             await AddDurabilityCard();
         }
+    }
+
+    // Public Player Actions 
+    public void AddToRetreatAreaOnTop(ALCardDTO cardToAdd)
+    {
+        // We add to the bottom as the deck works flipped down
+        AddCardToDeck(cardToAdd, deckSet.retreatDeck, retreatField, false);
+    }
+    public async Task CancelAttack(Player player)
+    {
+        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackerUnit);
+    }
+
+    public virtual async Task CancelSelectEffectState(Player player)
+    {
+        GD.Print($"[CancelSelectEffectState]");//TODO add tracking of last state
+        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectEffectTarget);
+    }
+
+    public async Task CancelRetaliation(Player player)
+    {
+        GD.Print($"[CancelRetaliation]");
+        if (OnRetaliationCancel is not null) await OnRetaliationCancel(player);
     }
 
     public async Task AddDurabilityCard(ALCardDTO card = null)
@@ -485,38 +504,6 @@ public partial class ALPlayer : Player
         await this.Wait(DrawDelay);
     }
 
-    public async Task TryToExpireCardsModifierDuration(string duration)
-    {
-        var boardCards = GetPlayerBoard<ALBoard>().GetCardsInTree();
-        var handCards = GetPlayerHand<ALHand>().GetCardsInTree();
-
-        foreach (var card in boardCards)
-        {
-            card.TryToExpireEffectOrModifier(duration);
-        }
-        foreach (var card in handCards)
-        {
-            card.TryToExpireEffectOrModifier(duration);
-        }
-        await Task.CompletedTask;
-    }
-
-    async Task TryToTriggerOnAllCards(string triggerEvent)
-    {
-        var boardCards = GetPlayerBoard<ALBoard>().GetCardsInTree();
-        var handCards = GetPlayerHand<ALHand>().GetCardsInTree();
-
-        foreach (var card in boardCards)
-        {
-            await card.TryToTriggerCardEffect(triggerEvent);
-        }
-        foreach (var card in handCards)
-        {
-            await card.TryToTriggerCardEffect(triggerEvent);
-        }
-    }
-
-    // Public Player Actions for AI 
     public ALPhase Phase => phaseManager;
     public AsyncHandler GetPlayerAsyncHandler()
     {

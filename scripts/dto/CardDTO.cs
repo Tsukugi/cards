@@ -19,6 +19,7 @@ public class CardEffectDTO
     public string effectId;
     public string effectLabel; // Card description or flavor text
     public string[] effectValue = []; // Any value passed for the logic
+    public bool stackableEffect = false;
 }
 
 public class CardEffectConditionDTO
@@ -39,19 +40,25 @@ public static class CardEffectDuration
     public static readonly string WhileVisible = "WhileVisible"; // It is always active as soon the card is in hand or board
     public static readonly string WhileFaceDown = "WhileFaceDown"; // While the card is face down
     public static readonly string UntilEndOfTurn = "UntilEndOfTurn";
-}
-
-public static class CardEffectCondition
-{
-    public static readonly string OncePerTurn = "OncePerTurn"; // Once per turn  
-    public static readonly string OncePerMatch = "OncePerMatch"; // Once for all match
+    public static readonly string CurrentInteraction = "CurrentInteraction"; // Expires if we change either the playState or the interationState
 }
 
 public static class CardEffectTrigger
 {
     public static readonly string WhenPlayedIntoBoard = "WhenPlayedIntoBoard"; // Every time this card is played into the board
     public static readonly string WhenPlayedFromHand = "WhenPlayedFromHand"; // Every time this card is taken FROM the hand 
-    public static readonly string EnemyTurnStart = "EnemyTurnStart";
     public static readonly string OnVisible = "OnVisible"; // When the card is visible in board or hand
     public static readonly string AnyCardPlayed = "AnyCardPlayed"; // When ANY card is placed in the board
+}
+
+public static class PlayerType
+{
+    public static readonly string Self = "Self";
+    public static readonly string Ally = "Ally";
+    public static readonly string Enemy = "Enemy";
+}
+public static class BoardType
+{
+    public static readonly string Hand = "Hand";
+    public static readonly string Board = "Board";
 }
