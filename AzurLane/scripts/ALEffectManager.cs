@@ -88,7 +88,6 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     public bool IsSpecificCardOnField(CardEffectConditionDTO conditionDTO)
     {
         string cardId = conditionDTO.conditionArgs[0];
-
         if (cardId is null) return false;
 
         List<ALCard> units = ((ALPlayer)ownerPlayer).GetUnitsInBoard();
@@ -166,7 +165,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         string scope = effectDTO.effectValue[1] ?? PlayerType.Self;
 
         bool isFinished = false;
-        EPlayState previousState = ownerPlayer.GetPlayState();
+        EPlayState previousState = ownerPlayer.GetInputPlayState();
         string previousInteractionState = ownerPlayer.GetInteractionState();
         async Task OnAfterSelectAndGivePower(Card selectedTarget)
         {
@@ -177,7 +176,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
                 Duration = effectDTO.duration,
                 Amount = amount,
             });
-            await ownerPlayer.SetPlayState(previousState, previousInteractionState);
+            await ownerPlayer.GoBackInHistoryState();
             isFinished = true;
         }
 
@@ -209,7 +208,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         string comparator = effectDTO.effectValue[1] ?? "LessThan";
         string value = effectDTO.effectValue[2] ?? "0";
 
-        EPlayState previousState = ownerPlayer.GetPlayState();
+        EPlayState previousState = ownerPlayer.GetInputPlayState();
         string previousInteractionState = ownerPlayer.GetInteractionState();
         async Task OnAfterSelectReturningCard(Card selectedTarget)
         {
@@ -227,7 +226,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
                 ALPlayer enemyPlayer = selectedTarget.GetOwnerPlayer<ALPlayer>();
                 await enemyPlayer.AddCardToHand(selectedTarget.GetAttributes<ALCardDTO>());
                 selectedTarget.DestroyCard();
-                await ownerPlayer.SetPlayState(previousState, previousInteractionState);
+                await ownerPlayer.GoBackInHistoryState();
                 return;
             }
             GD.PrintErr($"[OnAfterSelectReturningCard] Attribute: {attr} - {comparator} - Value: {value}");
@@ -285,7 +284,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     {
         GD.Print($"[Effect - DiscardAndDrawCubeDown]");
 
-        EPlayState previousState = ownerPlayer.GetPlayState();
+        EPlayState previousState = ownerPlayer.GetInputPlayState();
         string previousInteractionState = ownerPlayer.GetInteractionState();
         async Task OnSelectToDiscardCard(Card selectedTarget)
         {
@@ -299,7 +298,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             // Draw cube
             await player.TryDrawCubeToBoard();
 
-            await ownerPlayer.SetPlayState(previousState, previousInteractionState);
+            await ownerPlayer.GoBackInHistoryState();
             GD.Print($"[OnAfterSelectReturningCard] Discarding: {attrs.name}");
         }
 
@@ -312,7 +311,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     {
         GD.Print($"[Effect - RestEnemy]");
 
-        EPlayState previousState = ownerPlayer.GetPlayState();
+        EPlayState previousState = ownerPlayer.GetInputPlayState();
         string previousInteractionState = ownerPlayer.GetInteractionState();
         async Task OnSelectToRestCard(Card selectedTarget)
         {
@@ -320,7 +319,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             {
                 target.SetIsInActiveState(false);
                 GD.Print($"[OnSelectToRestCard] Resting: {target.GetAttributes<CardDTO>().name}");
-                await ownerPlayer.SetPlayState(previousState, previousInteractionState);
+                await ownerPlayer.GoBackInHistoryState();
                 return;
             }
             GD.PrintErr($"[OnSelectToRestCard] Select a valid target to rest");
@@ -335,7 +334,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     {
         GD.Print($"[Effect - RestOrDestroyEnemy]");
 
-        EPlayState previousState = ownerPlayer.GetPlayState();
+        EPlayState previousState = ownerPlayer.GetInputPlayState();
         string previousInteractionState = ownerPlayer.GetInteractionState();
         async Task OnSelectToRestOrDestroyCard(Card selectedTarget)
         {
@@ -352,7 +351,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
                     target.DestroyCard();
                     GD.Print($"[OnSelectToRestCard] Destroying: {target.GetAttributes<CardDTO>().name}");
                 }
-                await ownerPlayer.SetPlayState(previousState, previousInteractionState);
+                await ownerPlayer.GoBackInHistoryState();
                 return;
             }
             GD.PrintErr($"[OnSelectToRestCard] Select a valid target to rest");
@@ -372,18 +371,19 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     async Task ApplySelectEffectTargetAction(Board target, Board.CardEvent OnAfterSelect, AsyncHandler.SimpleCheck ConclusionCheck = null)
     {
         GD.Print($"[Effect - ApplySelectEffectTargetAction]");
-
+        PlayState oldPlayState = ownerPlayer.GetPlayState();
         await ownerPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectEffectTarget);
         target.OnCardEffectTargetSelected -= OnAfterSelect;
         target.OnCardEffectTargetSelected += OnAfterSelect;
 
-        if (ConclusionCheck is null) return;
+        var safeConclusionCheck = ConclusionCheck is null ? () => true : ConclusionCheck;
         await asyncHandler.AwaitForCheck(
             () =>
             {
                 target.OnCardEffectTargetSelected -= OnAfterSelect;
             },
-            ConclusionCheck,
+            () =>
+            safeConclusionCheck() && ownerPlayer.GetPlayState() == oldPlayState,
             -1);
     }
 }

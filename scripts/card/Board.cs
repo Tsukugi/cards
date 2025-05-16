@@ -117,7 +117,7 @@ public partial class Board : Node3D
     public virtual void OnInputAxisChange(Player player, Vector2I axis) => GD.Print($"[OnInputAxisChange] {player.Name}.{axis}");
     public virtual void OnActionHandler(Player player, InputAction action)
     {
-        EPlayState playState = player.GetPlayState();
+        EPlayState playState = player.GetInputPlayState();
         string interactionState = player.GetInteractionState();
         GD.Print($"[OnActionHandler] {player.Name} - Action: {action} - PlayState {playState} - InteractionState {interactionState}");
         if (OnInputAction is not null) OnInputAction(player, this, action);

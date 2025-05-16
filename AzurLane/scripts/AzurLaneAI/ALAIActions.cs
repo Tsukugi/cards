@@ -171,7 +171,7 @@ public class ALAIActions
             () =>
             {
                 //  GD.Print($"[WaitUntilPlayState] {asyncHandler} : {player.GetPlayState()} - {playState} : {player.GetInteractionState()} - {checkInteractionState}");
-                return player.GetPlayState() == playState && player.GetInteractionState() == checkInteractionState;
+                return player.GetInputPlayState() == playState && player.GetInteractionState() == checkInteractionState;
             },
             timeout);
         await Task.Delay(actionDelay);

@@ -475,13 +475,14 @@ public partial class ALPlayer : Player
     }
     public async Task CancelAttack(Player player)
     {
-        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackerUnit);
+        GD.Print($"[CancelAttack]");
+        await player.GoBackInHistoryState();
     }
 
     public virtual async Task CancelSelectEffectState(Player player)
     {
-        GD.Print($"[CancelSelectEffectState]");//TODO add tracking of last state
-        await player.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectEffectTarget);
+        GD.Print($"[CancelSelectEffectState]");
+        await player.GoBackInHistoryState();
     }
 
     public async Task CancelRetaliation(Player player)
@@ -520,7 +521,7 @@ public partial class ALPlayer : Player
 
     public bool IsAwaitingBattleGuard() =>
         phaseManager.GetCurrentPhase() == EALTurnPhase.Battle
-        && GetPlayState() == EPlayState.Wait
+        && GetInputPlayState() == EPlayState.Wait
         && GetInteractionState() == ALInteractionState.AwaitOtherPlayerInteraction
         && matchManager.IsAttackInProgress();
 

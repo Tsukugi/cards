@@ -37,7 +37,7 @@ public class ALInteraction
             if (action == InputAction.Ok) await player.OnALPlaceCardStartHandler(board.CardToPlace);
             if (action == InputAction.Cancel) await player.OnCostPlaceCardCancelHandler(board.CardToPlace);
         }
-        else if (currentPhase == EALTurnPhase.Main && player.GetPlayState() == EPlayState.SelectCardToPlay && state == ALInteractionState.None)
+        else if (currentPhase == EALTurnPhase.Main && player.GetInputPlayState() == EPlayState.SelectCardToPlay && state == ALInteractionState.None)
         {
             if (action == InputAction.Ok) await board.TriggerCardEffectOnTargetSelected(selectedCardInBoard);
         }
@@ -89,7 +89,7 @@ public class ALInteraction
 
         // Main
 
-        if (currentPhase == EALTurnPhase.Main && player.GetPlayState() == EPlayState.SelectCardToPlay && state == ALInteractionState.None)
+        if (currentPhase == EALTurnPhase.Main && player.GetInputPlayState() == EPlayState.SelectCardToPlay && state == ALInteractionState.None)
         {
             if (action == InputAction.Ok) await player.OnCostPlayCardStartHandler(selectedCardInHand);
             if (action == InputAction.Cancel) await player.OnCostPlaceCardCancelHandler(selectedCardInHand);
@@ -126,7 +126,7 @@ public class ALInteraction
         if (currentPhase == EALTurnPhase.Main) player.Phase.PlayNextPhase();
         if (matchPhase == EALTurnPhase.Battle)
         {
-            if (player.GetPlayState() == EPlayState.SelectTarget && player.GetInteractionState() == ALInteractionState.SelectAttackerUnit) player.Phase.PlayNextPhase();
+            if (player.GetInputPlayState() == EPlayState.SelectTarget && player.GetInteractionState() == ALInteractionState.SelectAttackerUnit) player.Phase.PlayNextPhase();
             if (state == ALInteractionState.SelectGuardingUnit) player.EndGuardPhase();
             if (state == ALInteractionState.SelectRetaliationUnit) await player.CancelRetaliation(player);
         }

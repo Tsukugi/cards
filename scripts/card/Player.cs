@@ -26,8 +26,8 @@ public partial class Player : Node3D
     int selectedBoardIndex = 0;
 
     // PlayState
-    EPlayState playState = EPlayState.Wait; // Play state refers to the Player actions and what they can do via input --- Pressing Cancel, OK or Waiting for something
-    string interactionState = ALInteractionState.None; // Interaction state refers to what specifically each player action should be attached to --- Pressing OK is to play a card in the main phase or to select a target for an effect
+    float playStateChangeDelay = 0.2f;
+    readonly PlayStateManager playStateManager = new();
 
     public override void _Ready()
     {
@@ -141,14 +141,15 @@ public partial class Player : Node3D
 
     public async Task SetPlayState(EPlayState state, string providedInteractionState = null)
     {
-        EPlayState oldState = playState;
-        string oldInteractionState = interactionState;
-        await boardInputAsync.AwaitBefore(() => { }, 0.1f); // This delay allows to avoid trigering different EPlayState events on the same frame
-        playState = state;
-        string newInteraction = providedInteractionState is null ? ALInteractionState.None : providedInteractionState;
-        interactionState = newInteraction;
-        GD.Print($"[SetPlayState] {oldInteractionState} -> {newInteraction}");
-        GD.Print($"[SetPlayState] {oldState} -> {playState}");
+        PlayState oldState = playStateManager.GetPlayState();
+        await boardInputAsync.AwaitBefore(() => { }, playStateChangeDelay); // This delay allows to avoid trigering different EPlayState events on the same frame
+        playStateManager.SetPlayState(new()
+        {
+            state = state,
+            interactionState = providedInteractionState is null ? ALInteractionState.None : providedInteractionState
+        });
+        PlayState newState = playStateManager.GetPlayState();
+        GD.Print($"[SetPlayState] PlayState: {oldState.state} -> {newState.state} --- InteractionState: {oldState.interactionState} -> {newState.interactionState}");
         await TryToExpireCardsModifierDuration(CardEffectDuration.CurrentInteraction);
     }
 
@@ -221,8 +222,10 @@ public partial class Player : Node3D
         player.GetSelectedBoard().OnActionHandler(this, action);
     }
 
-    public EPlayState GetPlayState() => playState;
-    public string GetInteractionState() => interactionState;
+    public async Task GoBackInHistoryState() => await boardInputAsync.AwaitBefore(playStateManager.GoBackInHistory, playStateChangeDelay);
+    public PlayState GetPlayState() => playStateManager.GetPlayState();
+    public EPlayState GetInputPlayState() => playStateManager.GetPlayState().state;
+    public string GetInteractionState() => playStateManager.GetPlayState().interactionState;
     public bool GetIsControllerPlayer() => isControlledPlayer;
     public Color GetPlayerColor() => playerColor;
     public Board GetSelectedBoard() => orderedBoards[selectedBoardIndex];

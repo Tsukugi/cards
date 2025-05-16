@@ -150,8 +150,8 @@ public partial class ALGameMatchManager : Node
     }
     async Task OnRetaliationCancel(Player damagedPlayer)
     {
-        await damagedPlayer.SetPlayState(EPlayState.Wait);
-        await GetNextPlayer((ALPlayer)damagedPlayer).SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackerUnit);
+        await damagedPlayer.GoBackInHistoryState();
+        await GetNextPlayer((ALPlayer)damagedPlayer).GoBackInHistoryState();
     }
 
     async Task OnGuardProvidedHandler(Player guardingPlayer, Card card)
