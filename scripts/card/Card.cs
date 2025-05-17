@@ -95,12 +95,16 @@ public partial class Card : CardField
     public void AddModifier(AttributeModifier modifier)
     {
         GD.Print($"[AddModifier] {Name} {modifier.AttributeName} {modifier.Amount} {modifier.Duration}");
-        if (activeModifiers.Contains(modifier) && !modifier.StackableModifier)
+        if (activeModifiers.Find(mod => mod.Id == modifier.Id) is not null && !modifier.StackableModifier)
         {
-            GD.PrintErr($"[AddModifier] Modifier already exists and it is not marked as stackable");
+            GD.PrintErr($"[AddModifier] Modifier {modifier.Id} already exists and it is not marked as stackable");
             return;
         }
         activeModifiers.Add(modifier);
+        foreach (var mod in activeModifiers)
+        {
+            GD.Print($"[AddModifier] List: {mod.Id} {mod.AttributeName} {mod.Amount} {mod.Duration}");
+        }
     }
     public void RemoveModifier(AttributeModifier modifier)
     {

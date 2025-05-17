@@ -19,7 +19,7 @@ public partial class ALCard : Card
     EAttackFieldType attackFieldType = EAttackFieldType.CantAttackHere;
     [Export]
     // AzurLane TCG: If this field/card is a flagship
-    bool isFlagship = false;
+    bool isFlagshipField = false;
     public override void _Ready()
     {
         base._Ready();
@@ -81,13 +81,13 @@ public partial class ALCard : Card
 
     // --- API ---
     public bool CanShowStackCount() => !GetIsEmptyField() && CardStack > 1;
-    public bool CanShowCardDetailsUI() => !GetIsEmptyField() && !isDeck && !(isFlagship && GetIsFaceDown()) && !GetIsFaceDown();
+    public bool CanShowCardDetailsUI() => !GetIsEmptyField() && !isDeck && !(GetIsAFlagship() && GetIsFaceDown()) && !GetIsFaceDown();
     public bool CanShowPowerLabel() => IsCardUnit();
     public bool IsCardUnit()
     {
         var attrs = GetAttributes<ALCardDTO>();
         return !GetIsEmptyField() && !isResource && !isDeck
-           && (attrs.cardType == ALCardType.Ship || attrs.cardType == ALCardType.Flagship || attrs.cardType == ALCardType.FlagshipAwakened); // Refers to a placed card that is a ship or flagship
+           && (attrs.cardType == ALCardType.Ship || GetIsAFlagship()); // Refers to a placed card that is a ship or flagship
     }
     public string GetFormattedEffectMini()
     // TODO : Add colors for duration and condition
@@ -154,7 +154,7 @@ public partial class ALCard : Card
     }
     public EAttackFieldType GetAttackFieldType() => attackFieldType;
     public EAttackFieldType SetAttackFieldType(EAttackFieldType value) => attackFieldType = value;
-    public bool GetIsAFlagship() => isFlagship;
+    public bool GetIsAFlagship() => isFlagshipField && (GetAttributes<ALCardDTO>().cardType == ALCardType.Flagship || GetAttributes<ALCardDTO>().cardType == ALCardType.FlagshipAwakened);
     public void TakeDurabilityDamage()
     {
         if (OnDurabilityDamage is not null) OnDurabilityDamage(this);

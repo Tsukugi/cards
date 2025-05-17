@@ -53,7 +53,6 @@ isEmptyField = true
 
 [node name="Flagship" parent="Units" instance=ExtResource("2_6xv5f")]
 attackFieldType = 1
-isFlagship = true
 PositionInBoard = Vector2i(1, 1)
 IsPlayerPlaceable = false
 

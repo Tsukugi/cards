@@ -158,9 +158,11 @@ public partial class ALGameMatchManager : Node
     {
         GetAttackedCard().AddModifier(new AttributeModifier()
         {
+            Id = "Guard",
             AttributeName = "Power",
             Duration = ALCardEffectDuration.CurrentBattle,
             Amount = card.GetAttributes<ALCardDTO>().supportValue,
+            StackableModifier = true
         });
         await GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsBattleSupported);
         GD.Print($"[OnGuardProvidedHandler] Add Guard Modifier for {GetAttackedCard().GetAttributes<ALCardDTO>().name}");

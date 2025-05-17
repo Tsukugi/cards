@@ -69,7 +69,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     }
 
     // * --- Condition --- *
-    public bool CheckCardsInBoard(CardEffectConditionDTO conditionDTO)
+    public bool CheckShipsInBoard(CardEffectConditionDTO conditionDTO)
     {
         string scope = conditionDTO.conditionArgs[0] ?? PlayerType.Self; // Enemy, Self
         string attributeToCompare = conditionDTO.conditionArgs[1] ?? "Cost";
@@ -82,11 +82,12 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         {
             if (field is not ALCard card) return false;
             if (!card.IsCardUnit()) return false;
+            if (card.GetIsAFlagship()) return false; // ONLY Ships
             int attr = card.GetAttributeWithModifiers<ALCardDTO>(attributeToCompare);
             return LogicUtils.ApplyComparison(attr, comparator, value);
         }).Count > 0;
 
-        GD.Print($"[Condition - CheckCardsInBoard] {scope} {attributeToCompare} {comparator} {value} => {fulfillsCondition}");
+        GD.Print($"[Condition - CheckShipsInBoard] {scope} {attributeToCompare} {comparator} {value} => {fulfillsCondition}");
         return fulfillsCondition;
     }
 
@@ -181,6 +182,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         GD.Print($"[Effect - GetPower]");
         card.AddModifier(new AttributeModifier()
         {
+            Id = $"{effectDTO.effectId}",
             AttributeName = "Power",
             Duration = ALCardEffectDuration.CurrentBattle,
             Amount = effectDTO.effectValue[0].ToInt(),
@@ -200,6 +202,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             GD.Print($"[Effect - OnAfterSelectAndGivePower]");
             selectedTarget.AddModifier(new AttributeModifier()
             {
+                Id = $"{card.Name}-{effectDTO.effectId}",
                 AttributeName = "Power",
                 Duration = effectDTO.duration,
                 Amount = amount,
@@ -304,6 +307,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         GD.Print($"[Effect - Retaliation]");
         card.AddModifier(new AttributeModifier()
         {
+            Id = $"{effectDTO.effectId}",
             AttributeName = "Cost",
             Duration = CardEffectDuration.CurrentInteraction,
             Amount = -card.GetAttributes<ALCardDTO>().cost, // I want it to be 0

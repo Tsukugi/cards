@@ -13,6 +13,7 @@ public class PlayStateManager
 
     public void SetPlayState(PlayState newState)
     {
+        if (newState.state == currentPlayState.state && newState.interactionState == currentPlayState.interactionState) return;
         history.Add(currentPlayState);
         currentPlayState = newState;
     }
