@@ -1,0 +1,55 @@
+using System;
+using Godot;
+
+public partial class ALLobbyUI : Control
+{
+    [Export]
+    Lobby lobby;
+    [Export]
+    Button cancelBtn;
+    [Export]
+    ItemList playersList;
+
+    public event Action OnExitLobby;
+
+    public override void _Ready()
+    {
+        base._Ready();
+        lobby.PlayerConnected += OnPlayerConnected;
+        lobby.PlayerDisconnected += OnPlayerDisconnected;
+        cancelBtn.Pressed += OnCancelHandler;
+    }
+
+    public Error JoinGame(string address = "")
+    {
+        return lobby.JoinGame(address);
+    }
+
+    public Error CreateGame()
+    {
+        return lobby.CreateGame();
+    }
+
+    public void OnCancelHandler()
+    {
+        playersList.Clear();
+        lobby.CloseConnection();
+        if (OnExitLobby is not null) OnExitLobby();
+    }
+
+    public void OnPlayerConnected(int peerId, Godot.Collections.Dictionary<string, string> playerInfo)
+    {
+        GD.Print(playerInfo);
+        var name = playerInfo.TryGetValue("Name", out string value) ? value : null;
+        playersList.AddItem($"{peerId} - {name}");
+        playersList.SortItemsByText();
+    }
+
+    public void OnPlayerDisconnected(int peerId)
+    {
+        for (int i = 0; i < playersList.GetItemCount(); i++)
+        {
+            if (playersList.GetItemText(i).Contains(peerId.ToString())) playersList.RemoveItem(i);
+        }
+    }
+}

@@ -1,5 +1,5 @@
 {
-    "dotnet.server.useOmnisharp": true,
+    "dotnet.server.useOmnisharp": false,
     "workbench.colorCustomizations": {
         "activityBar.background": "#293105",
         "titleBar.activeBackground": "#394407",

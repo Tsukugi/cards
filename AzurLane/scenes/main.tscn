@@ -1,8 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://dwehtg5qp6rru"]
+[gd_scene load_steps=7 format=3 uid="uid://dwehtg5qp6rru"]
 
 [ext_resource type="Script" uid="uid://3sefuh1epk1p" path="res://AzurLane/scripts/MainScene/ALMain.cs" id="1_pa05j"]
 [ext_resource type="Shader" uid="uid://dr7xse5usy45k" path="res://shaders/hex.gdshader" id="2_evx30"]
 [ext_resource type="Theme" uid="uid://da83adtsk1ikk" path="res://Material/UITheme.tres" id="2_skdpf"]
+[ext_resource type="Script" uid="uid://vd1cb2ebhy7e" path="res://scripts/card/Lobby.cs" id="4_ij33g"]
+[ext_resource type="Script" uid="uid://bb8pb2ugqvowr" path="res://AzurLane/scripts/ALLobbyUI.cs" id="4_spqid"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_p83fu"]
 shader = ExtResource("2_evx30")
@@ -15,7 +17,7 @@ shader_parameter/animation_speed = 0.03
 shader_parameter/time_multiplier = 1.0
 shader_parameter/pixel_size = 512.0
 
-[node name="Main" type="Control" node_paths=PackedStringArray("startBtn", "optionsBtn", "exitBtn")]
+[node name="Main" type="Control" node_paths=PackedStringArray("startBtn", "optionsBtn", "exitBtn", "createGameBtn", "joinBtn")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -26,28 +28,27 @@ script = ExtResource("1_pa05j")
 startBtn = NodePath("Panel/Vert/Start")
 optionsBtn = NodePath("Panel/Vert/Options")
 exitBtn = NodePath("Panel/Vert/Exit")
+createGameBtn = NodePath("Panel/Vert/CreateGame")
+joinBtn = NodePath("Panel/Vert/JoinGame")
 
 [node name="Panel" type="Panel" parent="."]
 material = SubResource("ShaderMaterial_p83fu")
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
+anchors_preset = 4
 anchor_top = 0.5
-anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -89.0
-offset_top = -85.0
-offset_right = 84.0
-offset_bottom = 127.345
-grow_horizontal = 2
+offset_left = 75.0
+offset_top = -167.0
+offset_right = 350.0
+offset_bottom = 162.0
 grow_vertical = 2
 
 [node name="Vert" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
-offset_left = 18.75
-offset_top = 9.19
-offset_right = 155.245
-offset_bottom = 203.19
+offset_left = 19.0
+offset_top = 17.0
+offset_right = 255.0
+offset_bottom = 311.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -57,6 +58,24 @@ size_flags_vertical = 3
 focus_neighbor_bottom = NodePath("../Options")
 theme = ExtResource("2_skdpf")
 text = "Start Match"
+
+[node name="CreateGame" type="Button" parent="Panel/Vert"]
+layout_mode = 2
+size_flags_vertical = 3
+focus_neighbor_top = NodePath("../Start")
+focus_neighbor_bottom = NodePath("../Exit")
+theme = ExtResource("2_skdpf")
+text = "Create Game
+"
+
+[node name="JoinGame" type="Button" parent="Panel/Vert"]
+layout_mode = 2
+size_flags_vertical = 3
+focus_neighbor_top = NodePath("../Start")
+focus_neighbor_bottom = NodePath("../Exit")
+theme = ExtResource("2_skdpf")
+text = "Join Game
+"
 
 [node name="Options" type="Button" parent="Panel/Vert"]
 layout_mode = 2
@@ -72,3 +91,44 @@ size_flags_vertical = 3
 focus_neighbor_top = NodePath("../Options")
 theme = ExtResource("2_skdpf")
 text = "Exit"
+
+[node name="LobbyManager" type="Panel" parent="." node_paths=PackedStringArray("lobby", "cancelBtn", "playersList")]
+material = SubResource("ShaderMaterial_p83fu")
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 366.0
+offset_top = -163.0
+offset_right = 909.0
+offset_bottom = 159.0
+grow_vertical = 2
+script = ExtResource("4_spqid")
+lobby = NodePath("Lobby")
+cancelBtn = NodePath("Cancel")
+playersList = NodePath("ItemList")
+
+[node name="ItemList" type="ItemList" parent="LobbyManager"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 18.0
+offset_right = -124.0
+offset_bottom = -17.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Cancel" type="Button" parent="LobbyManager"]
+offset_left = 431.0
+offset_top = 17.0
+offset_right = 524.0
+offset_bottom = 56.0
+size_flags_vertical = 3
+focus_neighbor_top = NodePath("../Options")
+theme = ExtResource("2_skdpf")
+text = "Cancel"
+
+[node name="Lobby" type="Node" parent="LobbyManager"]
+script = ExtResource("4_ij33g")

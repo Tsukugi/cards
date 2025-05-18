@@ -15,10 +15,13 @@ run/main_scene="uid://dwehtg5qp6rru"
 config/features=PackedStringArray("4.4", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[debug]
+
+file_logging/enable_file_logging=true
+
 [display]
 
-window/size/viewport_width=1920
-window/size/viewport_height=1080
+window/size/always_on_top=true
 
 [dotnet]
 
