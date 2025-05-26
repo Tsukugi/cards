@@ -46,9 +46,6 @@ public partial class ALGameMatchManager : Node
         userPlayer.AssignEnemyBoards(enemyHand, enemyBoard);
         enemyPlayer.AssignEnemyBoards(userHand, userBoard);
 
-        userPlayer.AssignDeck(BuildDeckSet("SD02"));
-        enemyPlayer.AssignDeck(BuildDeckSet("SD03"));
-
         orderedPlayers.ForEach(player =>
         {
             player.OnGameOver -= OnGameOverHandler;
@@ -78,12 +75,12 @@ public partial class ALGameMatchManager : Node
             player.GetPlayerHand<ALHand>().OnInputAction -= interaction.OnHandInputActionHandler;
             player.GetPlayerHand<ALHand>().OnInputAction += interaction.OnHandInputActionHandler;
         });
-
         Callable.From(StartMatchForPlayer).CallDeferred();
     }
 
     async void StartMatchForPlayer()
     {
+        await ProvideDeckSetToNetwork();
         await userPlayer.StartGameForPlayer();
         await enemyPlayer.StartGameForPlayer();
         Callable.From(GetPlayerPlayingTurn().StartTurn).CallDeferred();
@@ -210,6 +207,17 @@ public partial class ALGameMatchManager : Node
         return orderedPlayers[GetNextPlayerIndex(FindIndexForPlayer(currentPlayer))];
     }
 
+    async Task ProvideDeckSetToNetwork()
+    {
+        var userPlayerDeckSetId = "SD03";
+        userPlayer.AssignDeck(BuildDeckSet(userPlayerDeckSetId));
+        Network.Instance.Rpc(ALNetwork.MethodName.PlayerReadyForMatch, [userPlayerDeckSetId]);
+        foreach (var player in orderedPlayers)
+        {
+            await player.GetAsyncHandler().AwaitForCheck(null, userPlayer.HasValidDeck, -1);
+        }
+    }
+
     // ----- API -----
     public ALPlayerUI GetPlayerUI() => playerUI;
     public ALPlayer GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
@@ -256,5 +264,10 @@ public partial class ALGameMatchManager : Node
         return cardList;
     }
 
+    public void OnEnemyDeckSetProvided(string enemyDeckId)
+    {
+        GD.Print($"[OnEnemyDeckSetProvided] {enemyDeckId}");
+        enemyPlayer.AssignDeck(BuildDeckSet(enemyDeckId));
+    }
     public ALDebug GetDebug() => debug;
 }

@@ -1,10 +1,10 @@
 using System;
+using System.Threading.Tasks;
 using Godot;
 
 public partial class ALLobbyUI : Control
 {
-    [Export]
-    Lobby lobby;
+    ALNetwork network;
     [Export]
     Button cancelBtn;
     [Export]
@@ -15,25 +15,26 @@ public partial class ALLobbyUI : Control
     public override void _Ready()
     {
         base._Ready();
-        lobby.PlayerConnected += OnPlayerConnected;
-        lobby.PlayerDisconnected += OnPlayerDisconnected;
+        network = GetNode<ALNetwork>("/root/Network");
+        network.PlayerConnected += OnPlayerConnected;
+        network.PlayerDisconnected += OnPlayerDisconnected;
         cancelBtn.Pressed += OnCancelHandler;
     }
 
     public Error JoinGame(string address = "")
     {
-        return lobby.JoinGame(address);
+        return network.JoinGame(address);
     }
 
     public Error CreateGame()
     {
-        return lobby.CreateGame();
+        return network.CreateGame();
     }
 
     public void OnCancelHandler()
     {
         playersList.Clear();
-        lobby.CloseConnection();
+        network.CloseConnection();
         if (OnExitLobby is not null) OnExitLobby();
     }
 
@@ -51,5 +52,10 @@ public partial class ALLobbyUI : Control
         {
             if (playersList.GetItemText(i).Contains(peerId.ToString())) playersList.RemoveItem(i);
         }
+    }
+
+    public static void StartMatch(string path)
+    {
+        Network.Instance.Rpc(Network.MethodName.StartMatch, [path]);
     }
 }

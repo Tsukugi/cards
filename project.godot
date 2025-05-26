@@ -15,6 +15,10 @@ run/main_scene="uid://dwehtg5qp6rru"
 config/features=PackedStringArray("4.4", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+Network="*res://AzurLane/scripts/ALNetwork.cs"
+
 [debug]
 
 file_logging/enable_file_logging=true

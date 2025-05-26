@@ -1,9 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://dwehtg5qp6rru"]
+[gd_scene load_steps=6 format=3 uid="uid://dwehtg5qp6rru"]
 
 [ext_resource type="Script" uid="uid://3sefuh1epk1p" path="res://AzurLane/scripts/MainScene/ALMain.cs" id="1_pa05j"]
 [ext_resource type="Shader" uid="uid://dr7xse5usy45k" path="res://shaders/hex.gdshader" id="2_evx30"]
 [ext_resource type="Theme" uid="uid://da83adtsk1ikk" path="res://Material/UITheme.tres" id="2_skdpf"]
-[ext_resource type="Script" uid="uid://vd1cb2ebhy7e" path="res://scripts/card/Lobby.cs" id="4_ij33g"]
 [ext_resource type="Script" uid="uid://bb8pb2ugqvowr" path="res://AzurLane/scripts/ALLobbyUI.cs" id="4_spqid"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_p83fu"]
@@ -92,7 +91,8 @@ focus_neighbor_top = NodePath("../Options")
 theme = ExtResource("2_skdpf")
 text = "Exit"
 
-[node name="LobbyManager" type="Panel" parent="." node_paths=PackedStringArray("lobby", "cancelBtn", "playersList")]
+[node name="LobbyManager" type="Panel" parent="." node_paths=PackedStringArray("cancelBtn", "playersList")]
+visible = false
 material = SubResource("ShaderMaterial_p83fu")
 layout_mode = 1
 anchors_preset = 4
@@ -104,7 +104,6 @@ offset_right = 909.0
 offset_bottom = 159.0
 grow_vertical = 2
 script = ExtResource("4_spqid")
-lobby = NodePath("Lobby")
 cancelBtn = NodePath("Cancel")
 playersList = NodePath("ItemList")
 
@@ -121,6 +120,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Cancel" type="Button" parent="LobbyManager"]
+layout_mode = 0
 offset_left = 431.0
 offset_top = 17.0
 offset_right = 524.0
@@ -129,6 +129,3 @@ size_flags_vertical = 3
 focus_neighbor_top = NodePath("../Options")
 theme = ExtResource("2_skdpf")
 text = "Cancel"
-
-[node name="Lobby" type="Node" parent="LobbyManager"]
-script = ExtResource("4_ij33g")

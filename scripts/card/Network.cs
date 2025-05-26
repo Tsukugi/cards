@@ -1,8 +1,9 @@
+using System.Threading.Tasks;
 using Godot;
 
-public partial class Lobby : Node
+public partial class Network : Node
 {
-    public static Lobby Instance { get; private set; }
+    public static Network Instance { get; private set; }
     // These signals can be connected to by a UI lobby scene or the game scene.
     [Signal]
     public delegate void PlayerConnectedEventHandler(int peerId, Godot.Collections.Dictionary<string, string> playerInfo);
@@ -87,10 +88,11 @@ public partial class Lobby : Node
     }
 
     // When the server decides to start the game from a UI scene,
-    // do Rpc(Lobby.MethodName.LoadGame, filePath);
+    // do Rpc(Lobby.MethodName.StartMatch, filePath);
     [Rpc(CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-    private void LoadGame(string gameScenePath)
+    private void StartMatch(string gameScenePath)
     {
+        if (!CheckConnection()) return;
         GetTree().ChangeSceneToFile(gameScenePath);
     }
 
@@ -144,5 +146,27 @@ public partial class Lobby : Node
         CloseConnection();
         _players.Clear();
         EmitSignal(SignalName.ServerDisconnected);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    private void Ping()
+    {
+        int peerId = Multiplayer.GetRemoteSenderId();
+        GD.Print($"[{Multiplayer.GetUniqueId()}.Test] {peerId} sent a ping");
+    }
+    public async Task PollPing()
+    {
+        while (true)
+        {
+            Rpc(MethodName.Ping);
+            await this.Wait(1f);
+        }
+    }
+
+    protected bool CheckConnection()
+    {
+        var res = Multiplayer.MultiplayerPeer.GetConnectionStatus() == MultiplayerPeer.ConnectionStatus.Connected;
+        if (!res) GD.PrintErr($"[CheckConnection] Connection has encountered a problem. Connection Status: {Multiplayer.MultiplayerPeer.GetConnectionStatus()}");
+        return res;
     }
 }

@@ -25,7 +25,7 @@ public partial class ALMain : Control
 
     void OnStartPressed()
     {
-        this.ChangeScene($"{ALSceneRootPath}/match.tscn");
+        ALLobbyUI.StartMatch($"{ALSceneRootPath}/match.tscn");
     }
     void OnCreateGamePressed()
     {
@@ -36,6 +36,7 @@ public partial class ALMain : Control
     }
     void OnJoinPressed()
     {
+        startBtn.Disabled = true;
         createGameBtn.Disabled = true;
         joinBtn.Disabled = true;
         lobby.Visible = true;
@@ -49,6 +50,7 @@ public partial class ALMain : Control
 
     void OnExitLobbyHandler()
     {
+        startBtn.Disabled = false;
         createGameBtn.Disabled = false;
         joinBtn.Disabled = false;
         lobby.Visible = false;

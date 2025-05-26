@@ -22,7 +22,7 @@ public partial class ALPlayer : Player
     public event Action OnTurnEnd;
 
     // --- Refs ---
-    ALDeckSet deckSet = new();
+    ALDeckSet deckSet = null;
     ALGameMatchManager matchManager;
     // --- AI ---
     ALBasicAI ai;
@@ -74,7 +74,7 @@ public partial class ALPlayer : Player
     public void AssignDeck(ALDeckSet newDeckSet)
     {
         deckSet = newDeckSet;
-        GD.Print($"[AssignDeck] Deck size: {newDeckSet.deck.Count}");
+        GD.Print($"[AssignDeck] Name {newDeckSet.name} - Deck size: {newDeckSet.deck.Count}");
     }
 
     public async Task StartGameForPlayer()
@@ -235,7 +235,8 @@ public partial class ALPlayer : Player
         {
             GD.PrintErr($"[PlayCardAsGuard] Select an active card, selected: {cardToGuard.Name}");
             return;
-        };
+        }
+        ;
         if (cardToGuard.GetIsAFlagship())
         {
             GD.PrintErr($"[PlayCardAsGuard] You cannot guard with a flagship, selected: {cardToGuard.Name}");
@@ -531,6 +532,7 @@ public partial class ALPlayer : Player
     public List<ALCardDTO> GetCubeDeckCardList() => deckSet.cubeDeck;
     public List<ALCardDTO> GetDeckCardList() => deckSet.deck;
     public List<ALCardDTO> GetRetreatDeckCardList() => deckSet.retreatDeck;
+    public bool HasValidDeck() => deckSet is not null;
 
     public bool IsAwaitingBattleGuard() =>
         phaseManager.GetCurrentPhase() == EALTurnPhase.Battle
