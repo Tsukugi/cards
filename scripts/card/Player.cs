@@ -10,6 +10,8 @@ public partial class Player : Node3D
     public delegate Task InteractionEvent(Player playerStartingInteraction);
     public delegate Task ProvideCardInteractionEvent(Player playerStartingInteraction, Card card);
 
+    int multiplayerId;
+
     [Export]
     protected bool isControlledPlayer = false;
     protected readonly AxisInputHandler axisInputHandler = new();
@@ -28,6 +30,8 @@ public partial class Player : Node3D
     // PlayState
     float playStateChangeDelay = 0.2f;
     readonly PlayStateManager playStateManager = new();
+
+    public int MultiplayerId { get => multiplayerId; set => multiplayerId = value; }
 
     public override void _Ready()
     {
@@ -152,13 +156,14 @@ public partial class Player : Node3D
         await TryToExpireCardsModifierDuration(CardEffectDuration.CurrentInteraction);
     }
 
-    protected static T DrawCard<T>(List<T> deck)
+    protected static T DrawCard<T>(List<T> deck) where T : CardDTO
     {
         if (deck.Count <= 0)
         {
             throw new Exception($"[DrawCard] No cards available in deck {deck}");
         }
         T cardToDraw = deck[0];
+        Network.Instance.DrawCard(cardToDraw);
         deck.RemoveAt(0);
         return cardToDraw;
     }

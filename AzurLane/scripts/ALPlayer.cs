@@ -90,7 +90,10 @@ public partial class ALPlayer : Player
 
         // Player preparation
         ALHand hand = GetPlayerHand<ALHand>();
-        await DrawCardToHand(5);
+        for (int i = 0; i < 5; i++)
+        {
+            await DrawCardToHand();
+        }
         SelectBoard(hand);
         hand.SelectCardField(this, Vector2I.Zero);
         await ApplyFlagshipDurability(); // Manual says that this step is after drawing hand cards
@@ -562,13 +565,10 @@ public partial class ALPlayer : Player
         TriggerAction(InputAction.Ok, player);
     }
 
-    public async Task DrawCardToHand(int num = 1)
+    public async Task DrawCardToHand(ALCardDTO injectedCard = null)
     {
-        for (int i = 0; i < num; i++)
-        {
-            ALCardDTO cardToDraw = DrawCard(deckSet.deck, deckField);
-            await AddCardToHand(cardToDraw);
-        }
+        ALCardDTO cardToDraw = DrawCard(deckSet.deck, deckField);
+        await AddCardToHand(injectedCard is not null ? injectedCard : cardToDraw);
     }
 
     public async Task AddCardToHand(ALCardDTO card)

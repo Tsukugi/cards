@@ -16,11 +16,14 @@ public partial class ALGameMatchManager : Node
     ALPlayerUI playerUI;
     ALDebug debug;
     ALInteraction interaction;
+    ALNetwork network;
 
     public override void _Ready()
     {
         base._Ready();
 
+        network = GetNode<ALNetwork>("/root/Network");
+        network.OnMatchStart();
         debug = new(this);
         interaction = new(this);
 
@@ -30,7 +33,7 @@ public partial class ALGameMatchManager : Node
         database.LoadData();
 
         // --- Players --- 
-        orderedPlayers = [enemyPlayer, userPlayer]; // TODO add some shuffling, with a minigame
+        orderedPlayers = Multiplayer.IsServer() ? [userPlayer, enemyPlayer] : [enemyPlayer, userPlayer]; // TODO add some shuffling, with a minigame  also online
 
         ALHand userHand = userPlayer.GetPlayerHand<ALHand>();
         ALHand enemyHand = enemyPlayer.GetPlayerHand<ALHand>();
@@ -74,13 +77,22 @@ public partial class ALGameMatchManager : Node
             player.GetPlayerBoard<ALBoard>().OnInputAction += interaction.OnBoardInputActionHandler;
             player.GetPlayerHand<ALHand>().OnInputAction -= interaction.OnHandInputActionHandler;
             player.GetPlayerHand<ALHand>().OnInputAction += interaction.OnHandInputActionHandler;
+
         });
+        network.OnDrawCardEvent -= OnCardDrawSync;
+        network.OnDrawCardEvent += OnCardDrawSync;
+
         Callable.From(StartMatchForPlayer).CallDeferred();
     }
 
+    async void OnCardDrawSync(int id, ALCardDTO card)
+    {
+        GD.Print($"{id} - {card.name}");
+        await enemyPlayer.DrawCardToHand(card);
+    }
     async void StartMatchForPlayer()
     {
-        await ProvideDeckSetToNetwork();
+        await AssignDeckSet();
         await userPlayer.StartGameForPlayer();
         await enemyPlayer.StartGameForPlayer();
         Callable.From(GetPlayerPlayingTurn().StartTurn).CallDeferred();
@@ -207,19 +219,20 @@ public partial class ALGameMatchManager : Node
         return orderedPlayers[GetNextPlayerIndex(FindIndexForPlayer(currentPlayer))];
     }
 
-    async Task ProvideDeckSetToNetwork()
+    async Task AssignDeckSet()
     {
-        var userPlayerDeckSetId = "SD03";
+        var userPlayerDeckSetId = Multiplayer.IsServer() ? "SD03" : "SD02";
         userPlayer.AssignDeck(BuildDeckSet(userPlayerDeckSetId));
-        Network.Instance.Rpc(ALNetwork.MethodName.PlayerReadyForMatch, [userPlayerDeckSetId]);
+        network.SendDeckSet(userPlayerDeckSetId);
         foreach (var player in orderedPlayers)
         {
-            await player.GetAsyncHandler().AwaitForCheck(null, userPlayer.HasValidDeck, -1);
+            await player.GetAsyncHandler().AwaitForCheck(null, player.HasValidDeck, -1);
         }
     }
 
     // ----- API -----
     public ALPlayerUI GetPlayerUI() => playerUI;
+    public List<ALPlayer> GetOrderedPlayers() => orderedPlayers;
     public ALPlayer GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
     public ALPlayer GetControlledPlayer() => orderedPlayers.Find(player => player.GetIsControllerPlayer());
     public EALTurnPhase GetMatchPhase() => matchCurrentPhase;

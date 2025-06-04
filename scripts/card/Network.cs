@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Godot;
+using Newtonsoft.Json;
 
 public partial class Network : Node
 {
@@ -11,6 +12,11 @@ public partial class Network : Node
     public delegate void PlayerDisconnectedEventHandler(int peerId);
     [Signal]
     public delegate void ServerDisconnectedEventHandler();
+    public delegate void PlayerCardEvent(int peerId, CardDTO card);
+    public delegate void PlayerOrderEvent(int peerId, int order);
+
+    public event PlayerCardEvent OnDrawCardEvent;
+    public event PlayerOrderEvent OnSendPlayOrderEvent;
 
     private const int Port = 7000;
     private const string DefaultServerIP = "127.0.0.1"; // IPv4 localhost
@@ -75,6 +81,10 @@ public partial class Network : Node
         return Error.Ok;
     }
 
+    public void RequestStartMatch(string path) => Rpc(MethodName.StartMatch, [path]);
+    public void SendPlayOrder(int order) => Rpc(MethodName.OnSendPlayOrder, [order]);
+    public void DrawCard(CardDTO card) => Rpc(MethodName.OnDrawCard, [JsonConvert.SerializeObject(card)]);
+
     public void CloseConnection()
     {
         Multiplayer.MultiplayerPeer?.Close();
@@ -85,6 +95,18 @@ public partial class Network : Node
     {
         CloseConnection();
         _players.Clear();
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    private void OnSendPlayOrder(int order)
+    {
+        if (OnSendPlayOrderEvent is not null) OnSendPlayOrderEvent(Multiplayer.GetRemoteSenderId(), order);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    protected virtual void OnDrawCard(string data)
+    {
+        if (OnDrawCardEvent is not null) OnDrawCardEvent(Multiplayer.GetRemoteSenderId(), JsonConvert.DeserializeObject<CardDTO>(data));
     }
 
     // When the server decides to start the game from a UI scene,
@@ -154,6 +176,13 @@ public partial class Network : Node
         int peerId = Multiplayer.GetRemoteSenderId();
         GD.Print($"[{Multiplayer.GetUniqueId()}.Test] {peerId} sent a ping");
     }
+
+    public bool CheckConnection()
+    {
+        var res = Multiplayer.MultiplayerPeer.GetConnectionStatus() == MultiplayerPeer.ConnectionStatus.Connected;
+        if (!res) GD.PrintErr($"[CheckConnection] Connection has encountered a problem. Connection Status: {Multiplayer.MultiplayerPeer.GetConnectionStatus()}");
+        return res;
+    }
     public async Task PollPing()
     {
         while (true)
@@ -161,12 +190,5 @@ public partial class Network : Node
             Rpc(MethodName.Ping);
             await this.Wait(1f);
         }
-    }
-
-    protected bool CheckConnection()
-    {
-        var res = Multiplayer.MultiplayerPeer.GetConnectionStatus() == MultiplayerPeer.ConnectionStatus.Connected;
-        if (!res) GD.PrintErr($"[CheckConnection] Connection has encountered a problem. Connection Status: {Multiplayer.MultiplayerPeer.GetConnectionStatus()}");
-        return res;
     }
 }

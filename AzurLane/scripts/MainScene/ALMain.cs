@@ -25,7 +25,7 @@ public partial class ALMain : Control
 
     void OnStartPressed()
     {
-        ALLobbyUI.StartMatch($"{ALSceneRootPath}/match.tscn");
+        lobby.StartMatch($"{ALSceneRootPath}/match.tscn");
     }
     void OnCreateGamePressed()
     {

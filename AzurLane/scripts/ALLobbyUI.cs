@@ -54,8 +54,5 @@ public partial class ALLobbyUI : Control
         }
     }
 
-    public static void StartMatch(string path)
-    {
-        Network.Instance.Rpc(Network.MethodName.StartMatch, [path]);
-    }
+    public void StartMatch(string path) => network.RequestStartMatch(path);
 }
