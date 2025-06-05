@@ -86,7 +86,7 @@ transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -12.21
 [node name="Count" parent="EnemyPlayer/Board/CostArea" index="10"]
 transform = Transform3D(-1, 8.74228e-08, 3.82137e-15, 0, -4.37114e-08, 1, 8.74228e-08, 1, 4.37114e-08, -7.84487, 0.2, 4.92469)
 
-[node name="Control" type="Control" parent="." node_paths=PackedStringArray("matchMenuBtn")]
+[node name="Control" type="Control" parent="." node_paths=PackedStringArray("playStateLabel", "phaseLabel", "gameOverLabel", "peerIdLabel", "matchMenuBtn")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -94,6 +94,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("3_fntoq")
+playStateLabel = NodePath("PlayState")
+phaseLabel = NodePath("PhaseLabel")
+gameOverLabel = NodePath("GameOverPanel/GameOverLabel")
+peerIdLabel = NodePath("PeerId")
 matchMenuBtn = NodePath("MatchMenuBtn")
 
 [node name="DebugMenuBtn" type="MenuButton" parent="Control"]
@@ -187,7 +191,9 @@ visible = false
 layout_mode = 1
 anchors_preset = 4
 anchor_left = 0.0
+anchor_top = 0.5
 anchor_right = 0.0
+anchor_bottom = 0.5
 offset_left = 494.0
 offset_top = -443.0
 offset_right = 976.0
@@ -199,7 +205,9 @@ visible = false
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0
+anchor_top = 0.5
 anchor_right = 1.0
+anchor_bottom = 0.5
 offset_left = -976.0
 offset_top = -440.0
 offset_right = -494.0
@@ -243,6 +251,11 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "Victory"
 label_settings = SubResource("LabelSettings_fntoq")
+
+[node name="PeerId" type="Label" parent="Control"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
 
 [editable path="UserPlayer"]
 [editable path="UserPlayer/Board"]

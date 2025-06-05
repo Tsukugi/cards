@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Godot;
-using Newtonsoft.Json;
 
 public partial class Network : Node
 {
@@ -12,11 +11,13 @@ public partial class Network : Node
     public delegate void PlayerDisconnectedEventHandler(int peerId);
     [Signal]
     public delegate void ServerDisconnectedEventHandler();
-    public delegate void PlayerCardEvent(int peerId, CardDTO card);
+    public delegate void PlayerCardEvent(int peerId, string cardId);
     public delegate void PlayerOrderEvent(int peerId, int order);
+    public delegate void PlayerPlayStateEvent(int peerId, int state, string interactionState);
 
     public event PlayerCardEvent OnDrawCardEvent;
     public event PlayerOrderEvent OnSendPlayOrderEvent;
+    public event PlayerPlayStateEvent OnSendPlayStateEvent;
 
     private const int Port = 7000;
     private const string DefaultServerIP = "127.0.0.1"; // IPv4 localhost
@@ -83,7 +84,8 @@ public partial class Network : Node
 
     public void RequestStartMatch(string path) => Rpc(MethodName.StartMatch, [path]);
     public void SendPlayOrder(int order) => Rpc(MethodName.OnSendPlayOrder, [order]);
-    public void DrawCard(CardDTO card) => Rpc(MethodName.OnDrawCard, [JsonConvert.SerializeObject(card)]);
+    public void DrawCard(string cardId) => Rpc(MethodName.OnDrawCard, [cardId]);
+    public void SendPlayState(int state, string interactionState) => Rpc(MethodName.OnSendPlayState, [state, interactionState]);
 
     public void CloseConnection()
     {
@@ -97,16 +99,22 @@ public partial class Network : Node
         _players.Clear();
     }
 
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
     private void OnSendPlayOrder(int order)
     {
         if (OnSendPlayOrderEvent is not null) OnSendPlayOrderEvent(Multiplayer.GetRemoteSenderId(), order);
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    private void OnSendPlayState(int state, string interactionState)
+    {
+        if (OnSendPlayStateEvent is not null) OnSendPlayStateEvent(Multiplayer.GetRemoteSenderId(), state, interactionState);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
     protected virtual void OnDrawCard(string data)
     {
-        if (OnDrawCardEvent is not null) OnDrawCardEvent(Multiplayer.GetRemoteSenderId(), JsonConvert.DeserializeObject<CardDTO>(data));
+        if (OnDrawCardEvent is not null) OnDrawCardEvent(Multiplayer.GetRemoteSenderId(), data);
     }
 
     // When the server decides to start the game from a UI scene,

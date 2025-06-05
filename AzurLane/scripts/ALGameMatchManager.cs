@@ -33,7 +33,8 @@ public partial class ALGameMatchManager : Node
         database.LoadData();
 
         // --- Players --- 
-        orderedPlayers = Multiplayer.IsServer() ? [userPlayer, enemyPlayer] : [enemyPlayer, userPlayer]; // TODO add some shuffling, with a minigame  also online
+        orderedPlayers = [userPlayer, enemyPlayer]; // TODO add some shuffling, with a minigame  also online
+        playerIndexPlayingTurn = Multiplayer.IsServer() ? 0 : 1;
 
         ALHand userHand = userPlayer.GetPlayerHand<ALHand>();
         ALHand enemyHand = enemyPlayer.GetPlayerHand<ALHand>();
@@ -79,24 +80,65 @@ public partial class ALGameMatchManager : Node
             player.GetPlayerHand<ALHand>().OnInputAction += interaction.OnHandInputActionHandler;
 
         });
-        network.OnDrawCardEvent -= OnCardDrawSync;
-        network.OnDrawCardEvent += OnCardDrawSync;
+        network.OnSendMatchPhaseEvent -= HandleOnSendMatchPhaseEvent;
+        network.OnSendMatchPhaseEvent += HandleOnSendMatchPhaseEvent;
+        network.OnSendPlayStateEvent -= HandleOnSendPlayStateEvent;
+        network.OnSendPlayStateEvent += HandleOnSendPlayStateEvent;
+        network.OnDrawCardEvent -= HandleOnDrawCardEvent;
+        network.OnDrawCardEvent += HandleOnDrawCardEvent;
+        network.OnSyncFlagshipEvent -= HandleOnSyncFlagship;
+        network.OnSyncFlagshipEvent += HandleOnSyncFlagship;
 
         Callable.From(StartMatchForPlayer).CallDeferred();
     }
 
-    async void OnCardDrawSync(int id, ALCardDTO card)
+    async void HandleOnSendMatchPhaseEvent(int id, int phase)
     {
-        GD.Print($"{id} - {card.name}");
-        await enemyPlayer.DrawCardToHand(card);
+        ALPlayer affectedPlayer = (id == userPlayer.MultiplayerId) ? userPlayer : enemyPlayer;
+        GD.Print($"{id} - {phase}");
+        affectedPlayer.Phase.UpdatePhase((EALTurnPhase)phase, false); // Prevent infinite loop
+        await Task.CompletedTask;
+    }
+    async void HandleOnSendPlayStateEvent(int id, int state, string interactionState)
+    {
+        ALPlayer affectedPlayer = (id == userPlayer.MultiplayerId) ? userPlayer : enemyPlayer;
+        GD.Print($"{id} - {state} - {interactionState}");
+        await affectedPlayer.SetPlayState((EPlayState)state, interactionState);
+    }
+    async void HandleOnSyncFlagship(int id, string cardId)
+    {
+        ALCardDTO synchedCard = database.cards[cardId];
+        GD.Print($"{id} - {synchedCard.name}");
+        enemyPlayer.UpdateFlagship(synchedCard);
+        await Task.CompletedTask;
+    }
+    async void HandleOnDrawCardEvent(int id, string cardId, ALDrawType drawType)
+    {
+        ALCardDTO synchedCard = database.cards[cardId];
+        GD.Print($"{id} - {synchedCard.name} - {drawType}");
+        switch (drawType)
+        {
+            case ALDrawType.Deck:
+                enemyPlayer.DrawFromDeck();
+                await enemyPlayer.AddCardToHand(synchedCard);
+                break;
+            case ALDrawType.Cube:
+                enemyPlayer.DrawFromCubeDeck();
+                await enemyPlayer.PlaceCubeToBoard(synchedCard);
+                break;
+            case ALDrawType.Durability:
+                enemyPlayer.DrawFromDeck();
+                await enemyPlayer.PlaceDurabilityCard(synchedCard);
+                break;
+        }
     }
     async void StartMatchForPlayer()
     {
         await AssignDeckSet();
-        await userPlayer.StartGameForPlayer();
-        await enemyPlayer.StartGameForPlayer();
-        Callable.From(GetPlayerPlayingTurn().StartTurn).CallDeferred();
-        if (!GetNextPlayer().GetIsControllerPlayer()) Callable.From(GetNextPlayer().GetPlayerAIController().StartTurn).CallDeferred();
+        await userPlayer.StartGameForPlayer(userPlayer.GetDeckSet());
+        //await enemyPlayer.StartGameForPlayer(enemyPlayer.GetDeckSet());
+        if (Multiplayer.IsServer()) GetPlayerPlayingTurn().StartTurn();
+        // if (!GetNextPlayer().GetIsControllerPlayer()) Callable.From(GetNextPlayer().GetPlayerAIController().StartTurn).CallDeferred();
     }
 
     async Task OnGameOverHandler(Player losingPlayer)
@@ -199,7 +241,7 @@ public partial class ALGameMatchManager : Node
         ALPlayer playingPlayer = GetPlayerPlayingTurn();
         GD.Print($"[OnTurnEndHandler] {playingPlayer.Name} Turn ended!");
 
-        PickNextPlayer().StartTurn();
+        // PickNextPlayer().StartTurn();
         await playingPlayer.TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
         await GetNextPlayer().TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
         if (!GetPlayerPlayingTurn().GetIsControllerPlayer()) GetPlayerPlayingTurn().GetPlayerAIController().StartTurn();

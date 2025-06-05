@@ -145,14 +145,18 @@ public partial class Player : Node3D
     public async Task SetPlayState(EPlayState state, string providedInteractionState = null)
     {
         PlayState oldState = playStateManager.GetPlayState();
+
         await boardInputAsync.AwaitBefore(() => { }, playStateChangeDelay); // This delay allows to avoid trigering different EPlayState events on the same frame
+        var newInteractionState = providedInteractionState is null ? ALInteractionState.None : providedInteractionState;
+        if (oldState.state == state && oldState.interactionState == newInteractionState) return;
         playStateManager.SetPlayState(new()
         {
             state = state,
-            interactionState = providedInteractionState is null ? ALInteractionState.None : providedInteractionState
+            interactionState = newInteractionState
         });
         PlayState newState = playStateManager.GetPlayState();
-        GD.Print($"[SetPlayState] PlayState: {oldState.state} -> {newState.state} --- InteractionState: {oldState.interactionState} -> {newState.interactionState}");
+        Network.Instance.SendPlayState((int)newState.state, newState.interactionState);
+        //GD.Print($"[SetPlayState] PlayState: {oldState.state} -> {newState.state} --- InteractionState: {oldState.interactionState} -> {newState.interactionState}");
         await TryToExpireCardsModifierDuration(CardEffectDuration.CurrentInteraction);
     }
 
@@ -163,7 +167,6 @@ public partial class Player : Node3D
             throw new Exception($"[DrawCard] No cards available in deck {deck}");
         }
         T cardToDraw = deck[0];
-        Network.Instance.DrawCard(cardToDraw);
         deck.RemoveAt(0);
         return cardToDraw;
     }

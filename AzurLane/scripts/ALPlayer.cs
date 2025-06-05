@@ -77,7 +77,7 @@ public partial class ALPlayer : Player
         GD.Print($"[AssignDeck] Name {newDeckSet.name} - Deck size: {newDeckSet.deck.Count}");
     }
 
-    public async Task StartGameForPlayer()
+    public async Task StartGameForPlayer(ALDeckSet deckSet)
     {
         // Deck setup
         deckField.CardStack = deckSet.deck.Count; // Set it as deck size
@@ -86,7 +86,8 @@ public partial class ALPlayer : Player
         cubeDeckField.CardStack = deckSet.cubeDeck.Count; // Set it as deck size
         cubeDeckField.UpdateAttributes(deckSet.cubeDeck[^1]); // Use last card as template
         // Flagship setup
-        flagshipField.UpdateAttributes(deckSet.flagship);
+        UpdateFlagship(deckSet.flagship);
+        ALNetwork.Instance.SyncFlagship(deckSet.flagship.id);
 
         // Player preparation
         ALHand hand = GetPlayerHand<ALHand>();
@@ -465,7 +466,7 @@ public partial class ALPlayer : Player
 
     static void UpdateDeckStackSize(ALCard deck, int size)
     {
-        GD.Print($"[UpdateDeckStackSize] {deck.CardStack} -> {size}");
+        //GD.Print($"[UpdateDeckStackSize] {deck.CardStack} -> {size}");
         deck.CardStack = size;
         if (deck.CardStack == 0) deck.SetIsEmptyField(true);
     }
@@ -514,7 +515,14 @@ public partial class ALPlayer : Player
             return;
         }
         ALCardDTO cardToDraw = card is null ? DrawCard(deckSet.deck, deckField) : card;
-        emptyDurability.UpdateAttributes(cardToDraw);
+        ALNetwork.Instance.ALDrawCard(cardToDraw.id, ALDrawType.Durability);
+        await PlaceDurabilityCard(cardToDraw);
+    }
+
+    public async Task PlaceDurabilityCard(ALCardDTO card)
+    {
+        ALCard emptyDurability = durabilityArea.TryGetAllChildOfType<ALCard>().Find(card => card.GetIsEmptyField());
+        emptyDurability.UpdateAttributes(card);
         emptyDurability.IsInputSelectable = true;
         await this.Wait(DrawDelay);
     }
@@ -532,10 +540,11 @@ public partial class ALPlayer : Player
     public List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.GetIsEmptyField());
     public List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.GetIsEmptyField());
-    public List<ALCardDTO> GetCubeDeckCardList() => deckSet.cubeDeck;
-    public List<ALCardDTO> GetDeckCardList() => deckSet.deck;
-    public List<ALCardDTO> GetRetreatDeckCardList() => deckSet.retreatDeck;
+    public ALDeckSet GetDeckSet() => deckSet;
+    public ALCardDTO DrawFromDeck() => DrawCard(deckSet.deck, deckField);
+    public ALCardDTO DrawFromCubeDeck() => DrawCard(deckSet.cubeDeck, cubeDeckField);
     public bool HasValidDeck() => deckSet is not null;
+    public void UpdateFlagship(ALCardDTO card) => flagshipField.UpdateAttributes(card);
 
     public bool IsAwaitingBattleGuard() =>
         phaseManager.GetCurrentPhase() == EALTurnPhase.Battle
@@ -565,10 +574,11 @@ public partial class ALPlayer : Player
         TriggerAction(InputAction.Ok, player);
     }
 
-    public async Task DrawCardToHand(ALCardDTO injectedCard = null)
+    public async Task DrawCardToHand()
     {
         ALCardDTO cardToDraw = DrawCard(deckSet.deck, deckField);
-        await AddCardToHand(injectedCard is not null ? injectedCard : cardToDraw);
+        ALNetwork.Instance.ALDrawCard(cardToDraw.id, ALDrawType.Deck);
+        await AddCardToHand(cardToDraw);
     }
 
     public async Task AddCardToHand(ALCardDTO card)
@@ -587,16 +597,23 @@ public partial class ALPlayer : Player
 
     public async Task TryDrawCubeToBoard()
     {
+
+        ALCardDTO cardToDraw = DrawCard(deckSet.cubeDeck, cubeDeckField);
+        ALNetwork.Instance.ALDrawCard(cardToDraw.id, ALDrawType.Cube);
+        await PlaceCubeToBoard(cardToDraw);
+    }
+
+    public async Task PlaceCubeToBoard(ALCardDTO cube)
+    {
         try
         {
-            ALCardDTO cardToDraw = DrawCard(deckSet.cubeDeck, cubeDeckField);
             Card cubeField = PlayerBoard.FindLastEmptyFieldInRow(
-                costArea.TryGetAllChildOfType<Card>()
-            );
+                   costArea.TryGetAllChildOfType<Card>()
+               );
             cubeField.IsInputSelectable = true;
             GetPlayerBoard<ALBoard>()
                 .GetCardInPosition<ALCard>(this, cubeField.PositionInBoard)
-                .UpdateAttributes(cardToDraw);
+                .UpdateAttributes(cube);
 
             await TryToTriggerOnAllCards(ALCardEffectTrigger.OnMaxCubeCountChanged);
         }
@@ -608,6 +625,7 @@ public partial class ALPlayer : Player
     }
 
     public ALBasicAI GetPlayerAIController() => ai;
+
 }
 
 public enum EALTurnPhase

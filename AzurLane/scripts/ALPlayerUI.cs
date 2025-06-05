@@ -5,7 +5,8 @@ public partial class ALPlayerUI : Control
 {
     ALPlayer attachedPlayer;
     ALSelectedCardUI selectedCardUI, triggerCardUI, attackerUI, attackedUI;
-    Label playStateLabel, phaseLabel, gameOverLabel;
+    [Export]
+    Label playStateLabel, phaseLabel, gameOverLabel, peerIdLabel;
     Panel gameOverPanel;
     TextureRect selectedCardImage;
     [Export]
@@ -44,6 +45,7 @@ public partial class ALPlayerUI : Control
             selectedCardUI.Visible = CanShowCardDetailsUI;
         }
         else { selectedCardUI.Visible = false; }
+        peerIdLabel.Text = Multiplayer.GetUniqueId().ToString() + " " + (attachedPlayer.TryFindParentNodeOfType<ALGameMatchManager>().GetPlayerPlayingTurn() == attachedPlayer);
     }
 
     public async Task ShowGameOverUI(bool isVictory)

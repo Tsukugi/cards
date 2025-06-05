@@ -3,12 +3,25 @@ using Newtonsoft.Json;
 
 public partial class ALNetwork : Network
 {
-    public new delegate void PlayerCardEvent(int peerId, ALCardDTO card);
-    public new event PlayerCardEvent OnDrawCardEvent;
+    public static new ALNetwork Instance { get; private set; }
+    public delegate void ALPlayerDrawEvent(int peerId, string cardId, ALDrawType drawType);
+    public delegate void ALPlayerSyncCardEvent(int peerId, string cardId);
+    public delegate void PlayerMatchPhaseEvent(int peerId, int matchPhase);
+    public event PlayerMatchPhaseEvent OnSendMatchPhaseEvent;
+    public new event ALPlayerDrawEvent OnDrawCardEvent;
+    public event ALPlayerSyncCardEvent OnSyncFlagshipEvent;
     ALGameMatchManager matchManager;
+
+    public override void _Ready()
+    {
+        base._Ready();
+        Instance = this;
+    }
+
+    public void SendDeckSet(string userPlayerDeckSetId) => Rpc(MethodName.OnSendDeckSet, [userPlayerDeckSetId]);
     // When the server decides to start the game from a UI scene,
     // do Rpc(Lobby.MethodName.AfterStartMatch, filePath);
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
     private void OnSendDeckSet(string deckSetId)
     {
         int playerId = Multiplayer.GetRemoteSenderId();
@@ -16,12 +29,35 @@ public partial class ALNetwork : Network
         GD.Print($"[{playerId}.OnSendDeckSet] {deckSetId}");
     }
 
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-    protected override void OnDrawCard(string data)
+    public void ALDrawCard(string cardId, ALDrawType drawType) => Rpc(MethodName.OnALDrawCard, [cardId, (int)drawType]);
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.UnreliableOrdered)]
+    protected void OnALDrawCard(string data, ALDrawType drawType)
     {
-        if (OnDrawCardEvent is not null) OnDrawCardEvent(Multiplayer.GetRemoteSenderId(), JsonConvert.DeserializeObject<ALCardDTO>(data));
+        GD.Print($"[OnALDrawCard] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -------------> {data}");
+        if (OnDrawCardEvent is not null) OnDrawCardEvent(Multiplayer.GetRemoteSenderId(), data, drawType);
+    }
+
+    public void SyncFlagship(string cardId) => Rpc(MethodName.OnSyncFlagship, [cardId]);
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.UnreliableOrdered)]
+    protected void OnSyncFlagship(string cardId)
+    {
+        GD.Print($"[OnSyncFlagship] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -------------> {cardId}");
+        if (OnSyncFlagshipEvent is not null) OnSyncFlagshipEvent(Multiplayer.GetRemoteSenderId(), cardId);
+    }
+    public void SendMatchPhase(int matchPhase) => Rpc(MethodName.OnSendMatchPhase, [matchPhase]);
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.UnreliableOrdered)]
+    protected void OnSendMatchPhase(int matchPhase)
+    {
+        GD.Print($"[OnSyncFlagship] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -------------> {matchPhase}");
+        if (OnSendMatchPhaseEvent is not null) OnSendMatchPhaseEvent(Multiplayer.GetRemoteSenderId(), matchPhase);
     }
 
     public void OnMatchStart() => matchManager = GetNode<ALGameMatchManager>("/root/main");
-    public void SendDeckSet(string userPlayerDeckSetId) => Rpc(MethodName.OnSendDeckSet, [userPlayerDeckSetId]);
+}
+
+public enum ALDrawType
+{
+    Cube,
+    Deck,
+    Durability
 }
