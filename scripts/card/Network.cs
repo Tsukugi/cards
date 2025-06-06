@@ -20,7 +20,7 @@ public partial class Network : Node
     public event PlayerPlayStateEvent OnSendPlayStateEvent;
 
     private const int Port = 7000;
-    private const string DefaultServerIP = "127.0.0.1"; // IPv4 localhost
+    public const string DefaultServerIP = "127.0.0.1"; // IPv4 localhost
     private const int MaxConnections = 20;
 
     // This will contain player info for every player,

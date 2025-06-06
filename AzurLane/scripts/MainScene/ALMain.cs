@@ -28,7 +28,7 @@ public partial class ALMain : Control
         lobby.OnExitLobby -= OnExitLobbyHandler;
         lobby.OnExitLobby += OnExitLobbyHandler;
 
-        Callable.From(() => debug.AutoSyncStart()).CallDeferred();
+        Callable.From(debug.AutoSyncStart).CallDeferred();
     }
 
     public void OnStartPressed()
@@ -64,10 +64,12 @@ public partial class ALMain : Control
         joinBtn.Disabled = false;
         lobby.Visible = false;
         isGameCreated = false;
+        ExitLobby();
     }
 
+    public static void ExitLobby() => Network.Instance.CloseConnection();
     public static void StartMatch(string path) => Network.Instance.RequestStartMatch(path);
     public static void CheckConnection() => Network.Instance.CheckConnection();
-    public static Error JoinGame(string address = "") => Network.Instance.JoinGame(address);
+    public static Error JoinGame(string address = Network.DefaultServerIP) => Network.Instance.JoinGame(address);
     public static Error CreateGame() => Network.Instance.CreateGame();
 }
