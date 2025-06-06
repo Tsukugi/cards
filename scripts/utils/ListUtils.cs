@@ -88,4 +88,5 @@ public static class ListUtils
 
     public static T GetRandomFromList<T>(this List<T> list) => list[GetRandomInt(list.Count)];
     public static int GetRandomInt(int max) => new Random().Next(max);
+    public static float GetRandomFloat(float min = 0, float max = 1) => (float)(new Random().NextDouble() * (max - min) + min);
 }

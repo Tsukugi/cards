@@ -199,4 +199,6 @@ public partial class Network : Node
             await this.Wait(1f);
         }
     }
+
+    public int GetPlayerCount() => _playerInfo.Count;
 }

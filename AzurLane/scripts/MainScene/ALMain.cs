@@ -3,15 +3,21 @@ using System;
 
 public partial class ALMain : Control
 {
+    bool isGameCreated = false;
     [Export]
     Button startBtn, optionsBtn, exitBtn, createGameBtn, joinBtn;
     ALLobbyUI lobby = null;
 
+    ALMainDebug debug;
+
     public static string ALSceneRootPath = "res://AzurLane/scenes";
+
+    public bool IsGameCreated { get => isGameCreated; }
 
     public override void _Ready()
     {
         base._Ready();
+        debug = new(this);
         startBtn.Pressed += OnStartPressed;
         createGameBtn.Pressed += OnCreateGamePressed;
         joinBtn.Pressed += OnJoinPressed;
@@ -21,26 +27,29 @@ public partial class ALMain : Control
         lobby = GetNode<ALLobbyUI>("LobbyManager");
         lobby.OnExitLobby -= OnExitLobbyHandler;
         lobby.OnExitLobby += OnExitLobbyHandler;
+
+        Callable.From(() => debug.AutoSyncStart()).CallDeferred();
     }
 
-    void OnStartPressed()
+    public void OnStartPressed()
     {
-        lobby.StartMatch($"{ALSceneRootPath}/match.tscn");
+        StartMatch($"{ALSceneRootPath}/match.tscn");
     }
-    void OnCreateGamePressed()
+    public void OnCreateGamePressed()
     {
         createGameBtn.Disabled = true;
         joinBtn.Disabled = true;
         lobby.Visible = true;
-        lobby.CreateGame();
+        isGameCreated = true;
+        CreateGame();
     }
-    void OnJoinPressed()
+    public void OnJoinPressed()
     {
         startBtn.Disabled = true;
         createGameBtn.Disabled = true;
         joinBtn.Disabled = true;
         lobby.Visible = true;
-        lobby.JoinGame();
+        JoinGame();
     }
     void OnOptionsPressed()
     {
@@ -54,5 +63,11 @@ public partial class ALMain : Control
         createGameBtn.Disabled = false;
         joinBtn.Disabled = false;
         lobby.Visible = false;
+        isGameCreated = false;
     }
+
+    public static void StartMatch(string path) => Network.Instance.RequestStartMatch(path);
+    public static void CheckConnection() => Network.Instance.CheckConnection();
+    public static Error JoinGame(string address = "") => Network.Instance.JoinGame(address);
+    public static Error CreateGame() => Network.Instance.CreateGame();
 }
