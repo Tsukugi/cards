@@ -17,7 +17,16 @@ public partial class ALNetwork : Network
         base._Ready();
         Instance = this;
     }
-
+    public void RegisterMatchPlayer() => Rpc(MethodName.OnRegisterMatchPlayer, []);
+    // When the server decides to start the game from a UI scene,
+    // do Rpc(Lobby.MethodName.AfterStartMatch, filePath);
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    private void OnRegisterMatchPlayer()
+    {
+        int playerId = Multiplayer.GetRemoteSenderId();
+        matchManager.GetEnemyPlayer().MultiplayerId = playerId;
+        GD.Print($"[OnRegisterMatchPlayer] {Multiplayer.GetUniqueId()}: {playerId}");
+    }
     public void SendDeckSet(string userPlayerDeckSetId) => Rpc(MethodName.OnSendDeckSet, [userPlayerDeckSetId]);
     // When the server decides to start the game from a UI scene,
     // do Rpc(Lobby.MethodName.AfterStartMatch, filePath);
@@ -26,7 +35,7 @@ public partial class ALNetwork : Network
     {
         int playerId = Multiplayer.GetRemoteSenderId();
         matchManager.OnEnemyDeckSetProvided(deckSetId);
-        GD.Print($"[{playerId}.OnSendDeckSet] {deckSetId}");
+        GD.Print($"[OnSendDeckSet]{Multiplayer.GetUniqueId()} {playerId} - {deckSetId}");
     }
 
     public void ALDrawCard(string cardId, ALDrawType drawType) => Rpc(MethodName.OnALDrawCard, [cardId, (int)drawType]);
@@ -52,7 +61,11 @@ public partial class ALNetwork : Network
         if (OnSendMatchPhaseEvent is not null) OnSendMatchPhaseEvent(Multiplayer.GetRemoteSenderId(), matchPhase);
     }
 
-    public void OnMatchStart() => matchManager = GetNode<ALGameMatchManager>("/root/main");
+    public void OnMatchStart()
+    {
+        matchManager = GetNode<ALGameMatchManager>("/root/main");
+        RegisterMatchPlayer();
+    }
 }
 
 public enum ALDrawType

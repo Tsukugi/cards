@@ -85,7 +85,7 @@ public partial class Network : Node
     public void RequestStartMatch(string path) => Rpc(MethodName.StartMatch, [path]);
     public void SendPlayOrder(int order) => Rpc(MethodName.OnSendPlayOrder, [order]);
     public void DrawCard(string cardId) => Rpc(MethodName.OnDrawCard, [cardId]);
-    public void SendPlayState(int state, string interactionState) => Rpc(MethodName.OnSendPlayState, [state, interactionState]);
+    public void SendPlayState(int peerId, int state, string interactionState) => Rpc(MethodName.OnSendPlayState, [peerId, state, interactionState]);
 
     public void CloseConnection()
     {
@@ -106,9 +106,9 @@ public partial class Network : Node
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-    private void OnSendPlayState(int state, string interactionState)
+    private void OnSendPlayState(int playerMultiplayerId, int state, string interactionState)
     {
-        if (OnSendPlayStateEvent is not null) OnSendPlayStateEvent(Multiplayer.GetRemoteSenderId(), state, interactionState);
+        if (OnSendPlayStateEvent is not null) OnSendPlayStateEvent(playerMultiplayerId, state, interactionState);
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]

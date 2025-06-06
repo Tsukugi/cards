@@ -142,7 +142,7 @@ public partial class Player : Node3D
         if (selectedBoard is not null) AssignBoardEvents(selectedBoard);
     }
 
-    public async Task SetPlayState(EPlayState state, string providedInteractionState = null)
+    public async Task SetPlayState(EPlayState state, string providedInteractionState = null, bool online = true)
     {
         PlayState oldState = playStateManager.GetPlayState();
 
@@ -155,7 +155,7 @@ public partial class Player : Node3D
             interactionState = newInteractionState
         });
         PlayState newState = playStateManager.GetPlayState();
-        Network.Instance.SendPlayState((int)newState.state, newState.interactionState);
+        if (online) Network.Instance.SendPlayState(multiplayerId, (int)newState.state, newState.interactionState);
         //GD.Print($"[SetPlayState] PlayState: {oldState.state} -> {newState.state} --- InteractionState: {oldState.interactionState} -> {newState.interactionState}");
         await TryToExpireCardsModifierDuration(CardEffectDuration.CurrentInteraction);
     }

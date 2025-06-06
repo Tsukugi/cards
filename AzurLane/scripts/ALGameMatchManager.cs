@@ -16,14 +16,13 @@ public partial class ALGameMatchManager : Node
     ALPlayerUI playerUI;
     ALDebug debug;
     ALInteraction interaction;
-    ALNetwork network;
 
     public override void _Ready()
     {
         base._Ready();
 
-        network = GetNode<ALNetwork>("/root/Network");
-        network.OnMatchStart();
+        userPlayer.MultiplayerId = Network.Instance.Multiplayer.GetUniqueId();
+        ALNetwork.Instance.OnMatchStart();
         debug = new(this);
         interaction = new(this);
 
@@ -35,6 +34,7 @@ public partial class ALGameMatchManager : Node
         // --- Players --- 
         orderedPlayers = [userPlayer, enemyPlayer]; // TODO add some shuffling, with a minigame  also online
         playerIndexPlayingTurn = Multiplayer.IsServer() ? 0 : 1;
+        // ! Needs 
 
         ALHand userHand = userPlayer.GetPlayerHand<ALHand>();
         ALHand enemyHand = enemyPlayer.GetPlayerHand<ALHand>();
@@ -80,14 +80,14 @@ public partial class ALGameMatchManager : Node
             player.GetPlayerHand<ALHand>().OnInputAction += interaction.OnHandInputActionHandler;
 
         });
-        network.OnSendMatchPhaseEvent -= HandleOnSendMatchPhaseEvent;
-        network.OnSendMatchPhaseEvent += HandleOnSendMatchPhaseEvent;
-        network.OnSendPlayStateEvent -= HandleOnSendPlayStateEvent;
-        network.OnSendPlayStateEvent += HandleOnSendPlayStateEvent;
-        network.OnDrawCardEvent -= HandleOnDrawCardEvent;
-        network.OnDrawCardEvent += HandleOnDrawCardEvent;
-        network.OnSyncFlagshipEvent -= HandleOnSyncFlagship;
-        network.OnSyncFlagshipEvent += HandleOnSyncFlagship;
+        ALNetwork.Instance.OnSendMatchPhaseEvent -= HandleOnSendMatchPhaseEvent;
+        ALNetwork.Instance.OnSendMatchPhaseEvent += HandleOnSendMatchPhaseEvent;
+        ALNetwork.Instance.OnSendPlayStateEvent -= HandleOnSendPlayStateEvent;
+        ALNetwork.Instance.OnSendPlayStateEvent += HandleOnSendPlayStateEvent;
+        ALNetwork.Instance.OnDrawCardEvent -= HandleOnDrawCardEvent;
+        ALNetwork.Instance.OnDrawCardEvent += HandleOnDrawCardEvent;
+        ALNetwork.Instance.OnSyncFlagshipEvent -= HandleOnSyncFlagship;
+        ALNetwork.Instance.OnSyncFlagshipEvent += HandleOnSyncFlagship;
 
         Callable.From(StartMatchForPlayer).CallDeferred();
     }
@@ -95,27 +95,28 @@ public partial class ALGameMatchManager : Node
     async void HandleOnSendMatchPhaseEvent(int id, int phase)
     {
         ALPlayer affectedPlayer = (id == userPlayer.MultiplayerId) ? userPlayer : enemyPlayer;
-        GD.Print($"{id} - {phase}");
+        GD.Print($"[HandleOnSendMatchPhaseEvent] {id}: {phase}");
         affectedPlayer.Phase.UpdatePhase((EALTurnPhase)phase, false); // Prevent infinite loop
         await Task.CompletedTask;
     }
-    async void HandleOnSendPlayStateEvent(int id, int state, string interactionState)
+    async void HandleOnSendPlayStateEvent(int peerId, int state, string interactionState)
     {
-        ALPlayer affectedPlayer = (id == userPlayer.MultiplayerId) ? userPlayer : enemyPlayer;
-        GD.Print($"{id} - {state} - {interactionState}");
-        await affectedPlayer.SetPlayState((EPlayState)state, interactionState);
+        var currentPeerId = Network.Instance.Multiplayer.MultiplayerPeer.GetUniqueId();
+        ALPlayer affectedPlayer = orderedPlayers.Find(player => player.MultiplayerId == peerId);
+        GD.Print($"[HandleOnSendPlayStateEvent] {currentPeerId}: {peerId} - {state} - {interactionState}");
+        await affectedPlayer.SetPlayState((EPlayState)state, interactionState, false);
     }
     async void HandleOnSyncFlagship(int id, string cardId)
     {
         ALCardDTO synchedCard = database.cards[cardId];
-        GD.Print($"{id} - {synchedCard.name}");
+        GD.Print($"[HandleOnSyncFlagship] {id}: {synchedCard.name}");
         enemyPlayer.UpdateFlagship(synchedCard);
         await Task.CompletedTask;
     }
     async void HandleOnDrawCardEvent(int id, string cardId, ALDrawType drawType)
     {
         ALCardDTO synchedCard = database.cards[cardId];
-        GD.Print($"{id} - {synchedCard.name} - {drawType}");
+        GD.Print($"{id} -> {synchedCard.name} - {drawType}");
         switch (drawType)
         {
             case ALDrawType.Deck:
@@ -265,7 +266,7 @@ public partial class ALGameMatchManager : Node
     {
         var userPlayerDeckSetId = Multiplayer.IsServer() ? "SD03" : "SD02";
         userPlayer.AssignDeck(BuildDeckSet(userPlayerDeckSetId));
-        network.SendDeckSet(userPlayerDeckSetId);
+        ALNetwork.Instance.SendDeckSet(userPlayerDeckSetId);
         foreach (var player in orderedPlayers)
         {
             await player.GetAsyncHandler().AwaitForCheck(null, player.HasValidDeck, -1);
@@ -280,6 +281,8 @@ public partial class ALGameMatchManager : Node
     public EALTurnPhase GetMatchPhase() => matchCurrentPhase;
     public ALDatabase GetDatabase() => database;
     public bool IsAttackInProgress() => attackedCard is not null && attackerCard is not null;
+    public ALPlayer GetUserPlayer() => userPlayer;
+    public ALPlayer GetEnemyPlayer() => enemyPlayer;
     public ALCard GetAttackerCard()
     {
         if (attackerCard is not null) return attackerCard;
