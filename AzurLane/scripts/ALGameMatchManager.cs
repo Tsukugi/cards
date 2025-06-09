@@ -82,10 +82,10 @@ public partial class ALGameMatchManager : Node
         });
         ALNetwork.Instance.OnTurnEndEvent -= HandleOnTurnEndEvent;
         ALNetwork.Instance.OnTurnEndEvent += HandleOnTurnEndEvent;
-        ALNetwork.Instance.OnSyncPlaceCard -= HandleOnPlaceCardEvent;
-        ALNetwork.Instance.OnSyncPlaceCard += HandleOnPlaceCardEvent;
-        ALNetwork.Instance.OnSyncPlaceCardGuard -= HandleOnGuardEvent;
-        ALNetwork.Instance.OnSyncPlaceCardGuard += HandleOnGuardEvent;
+        // ALNetwork.Instance.OnSyncPlaceCard -= HandleOnPlaceCardEvent;
+        // ALNetwork.Instance.OnSyncPlaceCard += HandleOnPlaceCardEvent;
+        // ALNetwork.Instance.OnSyncPlaceCardGuard -= HandleOnGuardEvent;
+        // ALNetwork.Instance.OnSyncPlaceCardGuard += HandleOnGuardEvent;
         ALNetwork.Instance.OnSendMatchPhaseEvent -= HandleOnSendMatchPhaseEvent;
         ALNetwork.Instance.OnSendMatchPhaseEvent += HandleOnSendMatchPhaseEvent;
         ALNetwork.Instance.OnSendPlayStateEvent -= HandleOnSendPlayStateEvent;
@@ -94,6 +94,10 @@ public partial class ALGameMatchManager : Node
         ALNetwork.Instance.OnDrawCardEvent += HandleOnDrawCardEvent;
         ALNetwork.Instance.OnSyncFlagshipEvent -= HandleOnSyncFlagship;
         ALNetwork.Instance.OnSyncFlagshipEvent += HandleOnSyncFlagship;
+        ALNetwork.Instance.OnSendSelectCardEvent -= HandleOnCardSelectEvent;
+        ALNetwork.Instance.OnSendSelectCardEvent += HandleOnCardSelectEvent;
+        ALNetwork.Instance.OnSendInputActionEvent -= HandleOnInputActionEvent;
+        ALNetwork.Instance.OnSendInputActionEvent += HandleOnInputActionEvent;
 
         Callable.From(StartMatchForPlayer).CallDeferred();
     }
@@ -104,12 +108,12 @@ public partial class ALGameMatchManager : Node
         matchCurrentPhase = (EALTurnPhase)phase;
         await Task.CompletedTask;
     }
-    async void HandleOnSendPlayStateEvent(int peerId, int state, string interactionState)
+    async void HandleOnSendPlayStateEvent(int peerId, EPlayState state, string interactionState)
     {
         var currentPeerId = Network.Instance.Multiplayer.MultiplayerPeer.GetUniqueId();
         ALPlayer affectedPlayer = orderedPlayers.Find(player => player.MultiplayerId == peerId);
         GD.Print($"[HandleOnSendPlayStateEvent] {currentPeerId}: {peerId} - {state} - {interactionState}");
-        await affectedPlayer.SetPlayState((EPlayState)state, interactionState, false);
+        await affectedPlayer.SetPlayState(state, interactionState, false);
     }
     async void HandleOnSyncFlagship(int peerId, string cardId)
     {
@@ -152,9 +156,22 @@ public partial class ALGameMatchManager : Node
         board.SelectCardField(enemyPlayer, position);
         await enemyPlayer.PlayCardAsGuard(board.GetSelectedCard<ALCard>(enemyPlayer), false);
     }
-    async void HandleOnAttackEvent(int peerId, string cardId, Board board, Vector2I position)
+    async void HandleOnCardSelectEvent(int peerId, string boardName, bool isEnemyBoard, Vector2I position)
     {
-        // TODO
+        GD.Print($"[HandleOnCardSelectEvent] {peerId} -> {boardName} - {isEnemyBoard} - {position}");
+       // if (position == Vector2I.Zero) return;
+
+        ALPlayer affectedPlayer = isEnemyBoard ? userPlayer : enemyPlayer;
+        Board board = affectedPlayer.GetNode<Board>(boardName);
+        affectedPlayer.SelectBoard(board);
+        board.SelectCardField(affectedPlayer, position, false);
+        await Task.CompletedTask;
+    }
+    async void HandleOnInputActionEvent(int peerId, InputAction inputAction)
+    {
+        GD.Print($"[HandleOnInputActionEvent] {peerId} -> {inputAction}");
+        enemyPlayer.TriggerAction(inputAction, enemyPlayer);
+        await Task.CompletedTask;
     }
     async void HandleOnTurnEndEvent(int peerId)
     {

@@ -87,7 +87,7 @@ public partial class Board : Node3D
 
     // --- Public API---
     public Vector2I GetSelectedCardPosition() => selectedCardPosition;
-    public virtual void SelectCardField(Player player, Vector2I position)
+    public virtual void SelectCardField(Player player, Vector2I position, bool syncToNet = true)
     {
         string playerName = player.Name.ToString();
         selectedCardPosition = position;
@@ -112,6 +112,7 @@ public partial class Board : Node3D
         //GD.Print($"[SelectCardField] {player.Name}.{Name} - {foundCard.Name}");
         foundCard.UpdatePlayerSelectedColor(player);
         foundCard.SetIsSelected(true);
+        if (syncToNet) Network.Instance.SendSelectCardField(player.MultiplayerId, this, position);
     }
 
     public virtual void OnInputAxisChange(Player player, Vector2I axis) => GD.Print($"[OnInputAxisChange] {player.Name}.{axis}");

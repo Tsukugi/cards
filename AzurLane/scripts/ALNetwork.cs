@@ -8,7 +8,7 @@ public partial class ALNetwork : Network
     public delegate void ALPlayerMatchPhaseEvent(int peerId, int matchPhase);
     public delegate void ALPlayerSyncCardEvent(int peerId, string cardId);
     public delegate void ALPlayerDrawEvent(int peerId, string cardId, ALDrawType drawType);
-    public delegate void ALPlayerSyncPlaceCardEvent(int peerId, string cardId, Board board, Vector2I position);
+    public delegate void ALPlayerSyncPlaceCardEvent(int peerId, string cardId, string boardName, Vector2I position);
     public event ALPlayerMatchPhaseEvent OnSendMatchPhaseEvent;
     public new event ALPlayerDrawEvent OnDrawCardEvent;
     public event ALPlayerSyncCardEvent OnSyncFlagshipEvent;
@@ -65,19 +65,19 @@ public partial class ALNetwork : Network
         GD.Print($"[OnSyncFlagship] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -------------> {matchPhase}");
         if (OnSendMatchPhaseEvent is not null) OnSendMatchPhaseEvent(Multiplayer.GetRemoteSenderId(), matchPhase);
     }
-    public void SendALPlaceCard(string cardId, Board board, Vector2I position) => Rpc(MethodName.OnSendALPlaceCard, [cardId, board, position]);
+    public void SendALPlaceCard(string cardId, Board board, Vector2I position) => Rpc(MethodName.OnSendALPlaceCard, [cardId, board.Name, position]);
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.UnreliableOrdered)]
-    protected void OnSendALPlaceCard(string cardId, Board board, Vector2I position)
+    protected void OnSendALPlaceCard(string cardId, string boardName, Vector2I position)
     {
         GD.Print($"[OnSendALPlaceCard] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -------------> {cardId} - {position}");
-        if (OnSyncPlaceCard is not null) OnSyncPlaceCard(Multiplayer.GetRemoteSenderId(), cardId, board, position);
+        if (OnSyncPlaceCard is not null) OnSyncPlaceCard(Multiplayer.GetRemoteSenderId(), cardId, boardName, position);
     }
-    public void SendALPlaceCardGuard(string cardId, Board board, Vector2I position) => Rpc(MethodName.OnSendALPlaceCardGuard, [cardId, board, position]);
+    public void SendALPlaceCardGuard(string cardId, Board board, Vector2I position) => Rpc(MethodName.OnSendALPlaceCardGuard, [cardId, board.Name, position]);
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.UnreliableOrdered)]
-    protected void OnSendALPlaceCardGuard(string cardId, Board board, Vector2I position)
+    protected void OnSendALPlaceCardGuard(string cardId, string boardName, Vector2I position)
     {
         GD.Print($"[OnSendALPlaceCardGuard] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -------------> {cardId} - {position}");
-        if (OnSyncPlaceCardGuard is not null) OnSyncPlaceCardGuard(Multiplayer.GetRemoteSenderId(), cardId, board, position);
+        if (OnSyncPlaceCardGuard is not null) OnSyncPlaceCardGuard(Multiplayer.GetRemoteSenderId(), cardId, boardName, position);
     }
     public void SendTurnEnd() => Rpc(MethodName.OnSendTurnEnd, []);
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.UnreliableOrdered)]

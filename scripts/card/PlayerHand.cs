@@ -46,9 +46,9 @@ public partial class PlayerHand : Board
         SelectCardField(player, selectedCardPosition); // Try to select again on that position
     }
 
-    public override void SelectCardField(Player player, Vector2I position)
+    public override void SelectCardField(Player player, Vector2I position, bool syncToNet = true)
     {
-        base.SelectCardField(player, position);
+        base.SelectCardField(player, position, syncToNet);
         RepositionHandCards();
     }
 

@@ -11,13 +11,17 @@ public partial class Network : Node
     public delegate void PlayerDisconnectedEventHandler(int peerId);
     [Signal]
     public delegate void ServerDisconnectedEventHandler();
+    public delegate void PlayerInputActionEvent(int peerId, InputAction inputAction);
     public delegate void PlayerCardEvent(int peerId, string cardId);
+    public delegate void PlayerSelectCardEvent(int peerId, string boardType, bool isEnemyBoard, Vector2I position);
     public delegate void PlayerOrderEvent(int peerId, int order);
-    public delegate void PlayerPlayStateEvent(int peerId, int state, string interactionState);
+    public delegate void PlayerPlayStateEvent(int peerId, EPlayState state, string interactionState);
 
+    public event PlayerInputActionEvent OnSendInputActionEvent;
     public event PlayerCardEvent OnDrawCardEvent;
     public event PlayerOrderEvent OnSendPlayOrderEvent;
     public event PlayerPlayStateEvent OnSendPlayStateEvent;
+    public event PlayerSelectCardEvent OnSendSelectCardEvent;
 
     private const int Port = 7000;
     public const string DefaultServerIP = "127.0.0.1"; // IPv4 localhost
@@ -82,10 +86,12 @@ public partial class Network : Node
         return Error.Ok;
     }
 
+    public void SendInputAction(int peerId, InputAction action) => Rpc(MethodName.OnSendInput, [peerId, (int)action]);
     public void RequestStartMatch(string path) => Rpc(MethodName.StartMatch, [path]);
     public void SendPlayOrder(int order) => Rpc(MethodName.OnSendPlayOrder, [order]);
     public void DrawCard(string cardId) => Rpc(MethodName.OnDrawCard, [cardId]);
     public void SendPlayState(int peerId, int state, string interactionState) => Rpc(MethodName.OnSendPlayState, [peerId, state, interactionState]);
+    public void SendSelectCardField(int peerId, Board board, Vector2I position) => Rpc(MethodName.OnSendSelectCardField, [peerId, board.Name, board.GetIsEnemyBoard(), position]);
 
     public void CloseConnection()
     {
@@ -106,15 +112,27 @@ public partial class Network : Node
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-    private void OnSendPlayState(int playerMultiplayerId, int state, string interactionState)
+    private void OnSendPlayState(int peerId, int state, string interactionState)
     {
-        if (OnSendPlayStateEvent is not null) OnSendPlayStateEvent(playerMultiplayerId, state, interactionState);
+        if (OnSendPlayStateEvent is not null) OnSendPlayStateEvent(peerId, (EPlayState)state, interactionState);
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
     protected virtual void OnDrawCard(string data)
     {
         if (OnDrawCardEvent is not null) OnDrawCardEvent(Multiplayer.GetRemoteSenderId(), data);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    protected virtual void OnSendSelectCardField(int peerId, string boardName, bool isEnemyBoard, Vector2I position)
+    {
+        if (OnSendSelectCardEvent is not null) OnSendSelectCardEvent(peerId, boardName, isEnemyBoard, position);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    protected virtual void OnSendInput(int peerId, int inputAction)
+    {
+        if (OnSendInputActionEvent is not null) OnSendInputActionEvent(peerId, (InputAction)inputAction);
     }
 
     // When the server decides to start the game from a UI scene,
