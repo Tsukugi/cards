@@ -107,10 +107,11 @@ public partial class ALPlayer : Player
         phaseManager.StartTurn();
     }
 
-    public async Task EndTurn()
+    public async Task EndTurn(bool syncToNet = true)
     {
         await TryToTriggerOnAllCards(ALCardEffectTrigger.EndOfTurn);
         await TryToExpireCardsModifierDuration(CardEffectDuration.UntilEndOfTurn);
+        if (syncToNet) ALNetwork.Instance.SendTurnEnd();
         if (OnTurnEnd is not null) OnTurnEnd();
     }
 
@@ -184,7 +185,7 @@ public partial class ALPlayer : Player
         await OnPlaceCardCancelHandler(card);
     }
 
-    public async Task OnALPlaceCardStartHandler(Card fieldToPlace)
+    public async Task OnALPlaceCardStartHandler(Card fieldToPlace, bool syncToNet = true)
     {
         ALCard cardToPlace = fieldToPlace.CastToALCard();
         ALBoard board = GetPlayerBoard<ALBoard>();
@@ -204,8 +205,7 @@ public partial class ALPlayer : Player
         await OnPlaceCardStartHandler(cardToPlace);
         await fieldBeingPlaced.GetEffectManager<ALEffectManager>().AddStatusEffect(ALCardStatusEffects.BattlefieldDelayImpl);
         await OnPlaceCardEndHandler(cardToPlace);
-
-
+        if (syncToNet) ALNetwork.Instance.SendALPlaceCard(cardToPlace.GetAttributes<ALCardDTO>().id, board, board.GetSelectedCardPosition());
     }
 
     public void EndGuardPhase()
@@ -227,7 +227,7 @@ public partial class ALPlayer : Player
     }
 
     // You can guard cards from field and hand
-    public async Task PlayCardAsGuard(ALCard cardToGuard)
+    public async Task PlayCardAsGuard(ALCard cardToGuard, bool syncToNet = true)
     {
         var selectedGuard = cardToGuard.GetBoard();
         if (selectedGuard != GetPlayerBoard<ALBoard>() && selectedGuard != GetPlayerHand<ALHand>())
@@ -298,6 +298,7 @@ public partial class ALPlayer : Player
             guardingHand.RemoveCardFromHand(this, cardToGuard);
         }
         if (OnGuardProvided is not null) await OnGuardProvided(this, cardToGuard);
+        if (syncToNet) ALNetwork.Instance.SendALPlaceCardGuard(cardToGuard.GetAttributes<ALCardDTO>().id, selectedGuard, selectedGuard.GetSelectedCardPosition());
     }
 
     async Task TryToPlayEventCard(ALCard eventCard, ALHand hand, string trigger)

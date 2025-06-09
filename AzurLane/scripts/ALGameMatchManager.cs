@@ -80,6 +80,12 @@ public partial class ALGameMatchManager : Node
             player.GetPlayerHand<ALHand>().OnInputAction += interaction.OnHandInputActionHandler;
 
         });
+        ALNetwork.Instance.OnTurnEndEvent -= HandleOnTurnEndEvent;
+        ALNetwork.Instance.OnTurnEndEvent += HandleOnTurnEndEvent;
+        ALNetwork.Instance.OnSyncPlaceCard -= HandleOnPlaceCardEvent;
+        ALNetwork.Instance.OnSyncPlaceCard += HandleOnPlaceCardEvent;
+        ALNetwork.Instance.OnSyncPlaceCardGuard -= HandleOnGuardEvent;
+        ALNetwork.Instance.OnSyncPlaceCardGuard += HandleOnGuardEvent;
         ALNetwork.Instance.OnSendMatchPhaseEvent -= HandleOnSendMatchPhaseEvent;
         ALNetwork.Instance.OnSendMatchPhaseEvent += HandleOnSendMatchPhaseEvent;
         ALNetwork.Instance.OnSendPlayStateEvent -= HandleOnSendPlayStateEvent;
@@ -92,11 +98,10 @@ public partial class ALGameMatchManager : Node
         Callable.From(StartMatchForPlayer).CallDeferred();
     }
 
-    async void HandleOnSendMatchPhaseEvent(int id, int phase)
+    async void HandleOnSendMatchPhaseEvent(int peerId, int phase)
     {
-        ALPlayer affectedPlayer = (id == userPlayer.MultiplayerId) ? userPlayer : enemyPlayer;
-        GD.Print($"[HandleOnSendMatchPhaseEvent] {id}: {phase}");
-        affectedPlayer.Phase.UpdatePhase((EALTurnPhase)phase, false); // Prevent infinite loop
+        GD.Print($"[HandleOnSendMatchPhaseEvent] {peerId}: {phase}");
+        matchCurrentPhase = (EALTurnPhase)phase;
         await Task.CompletedTask;
     }
     async void HandleOnSendPlayStateEvent(int peerId, int state, string interactionState)
@@ -106,17 +111,17 @@ public partial class ALGameMatchManager : Node
         GD.Print($"[HandleOnSendPlayStateEvent] {currentPeerId}: {peerId} - {state} - {interactionState}");
         await affectedPlayer.SetPlayState((EPlayState)state, interactionState, false);
     }
-    async void HandleOnSyncFlagship(int id, string cardId)
+    async void HandleOnSyncFlagship(int peerId, string cardId)
     {
         ALCardDTO synchedCard = database.cards[cardId];
-        GD.Print($"[HandleOnSyncFlagship] {id}: {synchedCard.name}");
+        GD.Print($"[HandleOnSyncFlagship] {peerId}: {synchedCard.name}");
         enemyPlayer.UpdateFlagship(synchedCard);
         await Task.CompletedTask;
     }
-    async void HandleOnDrawCardEvent(int id, string cardId, ALDrawType drawType)
+    async void HandleOnDrawCardEvent(int peerId, string cardId, ALDrawType drawType)
     {
         ALCardDTO synchedCard = database.cards[cardId];
-        GD.Print($"{id} -> {synchedCard.name} - {drawType}");
+        GD.Print($"[HandleOnDrawCardEvent] {peerId} -> {synchedCard.name} - {drawType}");
         switch (drawType)
         {
             case ALDrawType.Deck:
@@ -133,6 +138,36 @@ public partial class ALGameMatchManager : Node
                 break;
         }
     }
+    async void HandleOnPlaceCardEvent(int peerId, string cardId, Board board, Vector2I position)
+    {
+        ALCardDTO synchedCard = database.cards[cardId];
+        GD.Print($"[HandleOnPlaceCardEvent] {peerId} -> {synchedCard.name}");
+        board.SelectCardField(enemyPlayer, position);
+        await enemyPlayer.OnALPlaceCardStartHandler(board.GetSelectedCard<ALCard>(enemyPlayer), false);
+    }
+    async void HandleOnGuardEvent(int peerId, string cardId, Board board, Vector2I position)
+    {
+        ALCardDTO synchedCard = database.cards[cardId];
+        GD.Print($"[HandleOnGuardEvent] {peerId} -> {synchedCard.name}");
+        board.SelectCardField(enemyPlayer, position);
+        await enemyPlayer.PlayCardAsGuard(board.GetSelectedCard<ALCard>(enemyPlayer), false);
+    }
+    async void HandleOnAttackEvent(int peerId, string cardId, Board board, Vector2I position)
+    {
+        // TODO
+    }
+    async void HandleOnTurnEndEvent(int peerId)
+    {
+        GD.Print($"[HandleOnTurnEndEvent] {peerId}");
+        if (GetPlayerPlayingTurn() == userPlayer)
+        {
+            GD.PushError("[HandleOnTurnEndEvent] Another peer is trying to end their turn");
+            return;
+        }
+        await enemyPlayer.EndTurn(false);
+    }
+
+    // Match
     async void StartMatchForPlayer()
     {
         await AssignDeckSet();
@@ -245,7 +280,7 @@ public partial class ALGameMatchManager : Node
         // PickNextPlayer().StartTurn();
         await playingPlayer.TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
         await GetNextPlayer().TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
-        if (!GetPlayerPlayingTurn().GetIsControllerPlayer()) GetPlayerPlayingTurn().GetPlayerAIController().StartTurn();
+        // if (!GetPlayerPlayingTurn().GetIsControllerPlayer()) GetPlayerPlayingTurn().GetPlayerAIController().StartTurn();
     }
 
     ALPlayer PickNextPlayer()

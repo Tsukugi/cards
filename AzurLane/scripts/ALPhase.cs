@@ -110,12 +110,12 @@ public class ALPhase
         asyncPhase.Debounce(() => _ = ApplyPhase(nextPhase));
     }
 
-    public void UpdatePhase(EALTurnPhase phase, bool syncToNetwork = true)
+    public void UpdatePhase(EALTurnPhase phase, bool syncToNet = true)
     {
         if (currentPhase == phase) return;
         GD.Print($"[UpdatePhase] {currentPhase} -> {phase}");
         currentPhase = phase;
-        if (syncToNetwork) ALNetwork.Instance.SendMatchPhase((int)phase);
+        if (syncToNet) ALNetwork.Instance.SendMatchPhase((int)phase);
         if (OnPhaseChange is not null) OnPhaseChange(phase);
     }
 
