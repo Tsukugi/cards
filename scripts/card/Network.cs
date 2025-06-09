@@ -86,7 +86,7 @@ public partial class Network : Node
         return Error.Ok;
     }
 
-    public void SendInputAction(int peerId, InputAction action) => Rpc(MethodName.OnSendInput, [peerId, (int)action]);
+    public void SendInputAction(InputAction action) => Rpc(MethodName.OnSendInput, [(int)action]);
     public void RequestStartMatch(string path) => Rpc(MethodName.StartMatch, [path]);
     public void SendPlayOrder(int order) => Rpc(MethodName.OnSendPlayOrder, [order]);
     public void DrawCard(string cardId) => Rpc(MethodName.OnDrawCard, [cardId]);
@@ -130,9 +130,9 @@ public partial class Network : Node
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-    protected virtual void OnSendInput(int peerId, int inputAction)
+    protected virtual void OnSendInput(int inputAction)
     {
-        if (OnSendInputActionEvent is not null) OnSendInputActionEvent(peerId, (InputAction)inputAction);
+        if (OnSendInputActionEvent is not null) OnSendInputActionEvent(Multiplayer.GetRemoteSenderId(), (InputAction)inputAction);
     }
 
     // When the server decides to start the game from a UI scene,

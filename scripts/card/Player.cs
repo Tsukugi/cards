@@ -39,7 +39,7 @@ public partial class Player : Node3D
         hand = GetNode<PlayerHand>("Hand");
         board = GetNode<PlayerBoard>("Board");
         orderedBoards = [hand, board];
-        SelectBoard(GetSelectedBoard());
+        SelectBoard(this, GetSelectedBoard());
     }
 
     public override void _Process(double delta)
@@ -72,14 +72,14 @@ public partial class Player : Node3D
         if (!isControlledPlayer) return;
         InputAction action = actionInputHandler.GetAction();
         if (action == InputAction.None) return;
-        boardInputAsync.Debounce(() => TriggerAction(action, this), 0.2f);
+        boardInputAsync.Debounce(() => TriggerAction(this, action), 0.2f);
     }
 
     protected async Task OnPlaceCardCancelHandler(Card cardPlaced)
     {
         cardPlaced.SetIsEmptyField(false);
         await SetPlayState(EPlayState.SelectCardToPlay);
-        SelectBoard(hand);
+        SelectBoard(this, hand);
     }
 
     protected async Task OnPlaceCardStartHandler(Card cardPlaced)
@@ -101,7 +101,7 @@ public partial class Player : Node3D
         await cardToPlay.TryToTriggerCardEffect(CardEffectTrigger.WhenPlayedFromHand);
         cardToPlay.SetIsEmptyField(true);
         await SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectBoardFieldToPlaceCard);
-        SelectBoard(board);
+        SelectBoard(this, board);
     }
 
     protected void OnBoardEdgeHandler(Board exitingBoard, Vector2I axis)
@@ -117,26 +117,26 @@ public partial class Player : Node3D
 
 
         Board newBoard = orderedBoards[newIndex];
-        SelectBoard(newBoard);
+        SelectBoard(this, newBoard);
         GD.Print($"[OnBoardEdgeHandler] {newBoard.Name} - {selectedBoardIndex} ");
     }
 
     protected void OnSelectFixedCardEdgeHandler(Board triggeringBoard, Card card)
     {
         Board newBoard = card.GetBoard();
-        SelectBoard(newBoard);
+        SelectBoard(this, newBoard);
         newBoard.SelectCardField(this, card.PositionInBoard); // Use the card's board to select itself, a referenced card can be from another board than the triggering one
     }
 
-    public void SelectBoard(Board board)
+    public void SelectBoard(Player player, Board board)
     {
         if (selectedBoard is not null)
         {
             UnassignBoardEvents(selectedBoard);
-            if (selectedBoard.GetSelectedCard<Card>(this) is ALCard card) selectedBoard.ClearSelectionForPlayer(this); // Clear selection for old board
+            if (selectedBoard.GetSelectedCard<Card>(player) is ALCard card) selectedBoard.ClearSelectionForPlayer(player); // Clear selection for old board
         }
         selectedBoard = board;
-        if (selectedBoard.GetSelectedCard<ALCard>(this) is null) selectedBoard.SelectCardField(this, Vector2I.Zero, false); // Select default field if none
+        if (selectedBoard.GetSelectedCard<ALCard>(player) is null) selectedBoard.SelectCardField(player, Vector2I.Zero, false); // Select default field if none
         selectedBoardIndex = orderedBoards.FindIndex((board) => board == selectedBoard);
         axisInputHandler.SetInverted(selectedBoard.GetIsEnemyBoard()); // An enemy board should have its axis inverted as it is inverted in the editor
         if (selectedBoard is not null) AssignBoardEvents(selectedBoard);
@@ -219,14 +219,15 @@ public partial class Player : Node3D
     {
         var foundBoard = orderedBoards.Find(orderedBoard => orderedBoard == card.GetBoard());
         if (foundBoard is null) GD.PrintErr($"[SelectAndTriggerCard] Board {card.GetBoard()} cannot be found ");
-        SelectBoard(foundBoard);
+        SelectBoard(this, foundBoard);
         foundBoard.SelectCardField(this, card.PositionInBoard);
-        TriggerAction(InputAction.Ok, this);
+        TriggerAction(this, InputAction.Ok);
     }
-    public void TriggerAction(InputAction action, Player player)
+    public void TriggerAction(Player player, InputAction action, bool syncToNet = true)
     {
         GD.Print($"[Action Triggered by player {Name}] {GetSelectedBoard().Name}.{action}");
         player.GetSelectedBoard().OnActionHandler(this, action);
+        if (syncToNet) Network.Instance.SendInputAction(action);
     }
 
     public async Task GoBackInHistoryState() => await boardInputAsync.AwaitBefore(playStateManager.GoBackInHistory, playStateChangeDelay);

@@ -109,7 +109,7 @@ public partial class Board : Node3D
             return;
         }
         selectedCard[playerName] = foundCard;
-        //GD.Print($"[SelectCardField] {player.Name}.{Name} - {foundCard.Name}");
+        GD.Print($"[SelectCardField] {player.Name}.{Name} - {foundCard.Name}");
         foundCard.UpdatePlayerSelectedColor(player);
         foundCard.SetIsSelected(true);
         if (syncToNet) Network.Instance.SendSelectCardField(player.MultiplayerId, this, position);

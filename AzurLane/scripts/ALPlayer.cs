@@ -95,7 +95,7 @@ public partial class ALPlayer : Player
         {
             await DrawCardToHand();
         }
-        SelectBoard(hand);
+        SelectBoard(this, hand);
         hand.SelectCardField(this, Vector2I.Zero);
         await ApplyFlagshipDurability(); // Manual says that this step is after drawing hand cards
     }
@@ -568,11 +568,11 @@ public partial class ALPlayer : Player
     public void TriggerPhaseButton(Player player)
     {
         ALBoard board = player.GetPlayerBoard<ALBoard>();
-        SelectBoard(board);
+        SelectBoard(player, board);
         // Select phase button
         board.SelectCardField(player, phaseButtonField.PositionInBoard);
         GD.Print($"[TriggerPhaseButton] {board.GetSelectedCard<Card>(player)}");
-        TriggerAction(InputAction.Ok, player);
+        TriggerAction(player, InputAction.Ok);
     }
 
     public async Task DrawCardToHand()

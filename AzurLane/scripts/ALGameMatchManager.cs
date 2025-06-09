@@ -159,18 +159,18 @@ public partial class ALGameMatchManager : Node
     async void HandleOnCardSelectEvent(int peerId, string boardName, bool isEnemyBoard, Vector2I position)
     {
         GD.Print($"[HandleOnCardSelectEvent] {peerId} -> {boardName} - {isEnemyBoard} - {position}");
-       // if (position == Vector2I.Zero) return;
+        // if (position == Vector2I.Zero) return;
 
         ALPlayer affectedPlayer = isEnemyBoard ? userPlayer : enemyPlayer;
         Board board = affectedPlayer.GetNode<Board>(boardName);
-        affectedPlayer.SelectBoard(board);
+        affectedPlayer.SelectBoard(affectedPlayer, board);
         board.SelectCardField(affectedPlayer, position, false);
         await Task.CompletedTask;
     }
     async void HandleOnInputActionEvent(int peerId, InputAction inputAction)
     {
         GD.Print($"[HandleOnInputActionEvent] {peerId} -> {inputAction}");
-        enemyPlayer.TriggerAction(inputAction, enemyPlayer);
+        enemyPlayer.TriggerAction(enemyPlayer, inputAction, false);
         await Task.CompletedTask;
     }
     async void HandleOnTurnEndEvent(int peerId)
@@ -247,7 +247,7 @@ public partial class ALGameMatchManager : Node
     async Task OnRetaliationHandler(Player damagedPlayer, Card retaliatingCard)
     {
         await damagedPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectRetaliationUnit);
-        damagedPlayer.SelectBoard(damagedPlayer.GetPlayerHand<ALHand>());
+        damagedPlayer.SelectBoard(damagedPlayer, damagedPlayer.GetPlayerHand<ALHand>());
         await retaliatingCard.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
 
         await GetNextPlayer((ALPlayer)damagedPlayer).SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);

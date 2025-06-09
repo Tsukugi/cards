@@ -53,7 +53,7 @@ public class ALBasicAI
         },
         -1,
         500);
-        player.TriggerAction(InputAction.Cancel, player);
+        player.TriggerAction(player, InputAction.Cancel);
         await player.Wait(1f);
         await SkipAttackGuards();
     }
