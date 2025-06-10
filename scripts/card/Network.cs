@@ -16,12 +16,14 @@ public partial class Network : Node
     public delegate void PlayerSelectCardEvent(int peerId, string boardType, bool isEnemyBoard, Vector2I position);
     public delegate void PlayerOrderEvent(int peerId, int order);
     public delegate void PlayerPlayStateEvent(int peerId, EPlayState state, string interactionState);
+    public delegate void ALPlayerEvent(int peerId);
 
     public event PlayerInputActionEvent OnSendInputActionEvent;
     public event PlayerCardEvent OnDrawCardEvent;
     public event PlayerOrderEvent OnSendPlayOrderEvent;
     public event PlayerPlayStateEvent OnSendPlayStateEvent;
     public event PlayerSelectCardEvent OnSendSelectCardEvent;
+    public event ALPlayerEvent OnTurnEndEvent;
 
     private const int Port = 7000;
     public const string DefaultServerIP = "127.0.0.1"; // IPv4 localhost
@@ -133,6 +135,13 @@ public partial class Network : Node
     protected virtual void OnSendInput(int inputAction)
     {
         if (OnSendInputActionEvent is not null) OnSendInputActionEvent(Multiplayer.GetRemoteSenderId(), (InputAction)inputAction);
+    }
+    public void SendTurnEnd() => Rpc(MethodName.OnSendTurnEnd, []);
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.UnreliableOrdered)]
+    protected void OnSendTurnEnd()
+    {
+        GD.Print($"[OnSendTurnEnd] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -------------!");
+        if (OnTurnEndEvent is not null) OnTurnEndEvent(Multiplayer.GetRemoteSenderId());
     }
 
     // When the server decides to start the game from a UI scene,

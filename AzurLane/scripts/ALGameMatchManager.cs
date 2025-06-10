@@ -82,10 +82,6 @@ public partial class ALGameMatchManager : Node
         });
         ALNetwork.Instance.OnTurnEndEvent -= HandleOnTurnEndEvent;
         ALNetwork.Instance.OnTurnEndEvent += HandleOnTurnEndEvent;
-        // ALNetwork.Instance.OnSyncPlaceCard -= HandleOnPlaceCardEvent;
-        // ALNetwork.Instance.OnSyncPlaceCard += HandleOnPlaceCardEvent;
-        // ALNetwork.Instance.OnSyncPlaceCardGuard -= HandleOnGuardEvent;
-        // ALNetwork.Instance.OnSyncPlaceCardGuard += HandleOnGuardEvent;
         ALNetwork.Instance.OnSendMatchPhaseEvent -= HandleOnSendMatchPhaseEvent;
         ALNetwork.Instance.OnSendMatchPhaseEvent += HandleOnSendMatchPhaseEvent;
         ALNetwork.Instance.OnSendPlayStateEvent -= HandleOnSendPlayStateEvent;
@@ -142,20 +138,6 @@ public partial class ALGameMatchManager : Node
                 break;
         }
     }
-    async void HandleOnPlaceCardEvent(int peerId, string cardId, Board board, Vector2I position)
-    {
-        ALCardDTO synchedCard = database.cards[cardId];
-        GD.Print($"[HandleOnPlaceCardEvent] {peerId} -> {synchedCard.name}");
-        board.SelectCardField(enemyPlayer, position);
-        await enemyPlayer.OnALPlaceCardStartHandler(board.GetSelectedCard<ALCard>(enemyPlayer), false);
-    }
-    async void HandleOnGuardEvent(int peerId, string cardId, Board board, Vector2I position)
-    {
-        ALCardDTO synchedCard = database.cards[cardId];
-        GD.Print($"[HandleOnGuardEvent] {peerId} -> {synchedCard.name}");
-        board.SelectCardField(enemyPlayer, position);
-        await enemyPlayer.PlayCardAsGuard(board.GetSelectedCard<ALCard>(enemyPlayer), false);
-    }
     async void HandleOnCardSelectEvent(int peerId, string boardName, bool isEnemyBoard, Vector2I position)
     {
         GD.Print($"[HandleOnCardSelectEvent] {peerId} -> {boardName} - {isEnemyBoard} - {position}");
@@ -169,8 +151,7 @@ public partial class ALGameMatchManager : Node
     async void HandleOnInputActionEvent(int peerId, InputAction inputAction)
     {
         GD.Print($"[HandleOnInputActionEvent] {peerId} -> {inputAction}");
-        //   enemyPlayer.TriggerAction(enemyPlayer, inputAction, false);
-        // TODO This triggers many things that affect play state
+        enemyPlayer.TriggerAction(enemyPlayer, inputAction, false);
         await Task.CompletedTask;
     }
     async void HandleOnTurnEndEvent(int peerId)
