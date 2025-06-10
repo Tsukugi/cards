@@ -107,11 +107,10 @@ public partial class ALPlayer : Player
         phaseManager.StartTurn();
     }
 
-    public async Task EndTurn(bool syncToNet = true)
+    public async Task EndTurn()
     {
         await TryToTriggerOnAllCards(ALCardEffectTrigger.EndOfTurn);
         await TryToExpireCardsModifierDuration(CardEffectDuration.UntilEndOfTurn);
-        if (syncToNet) ALNetwork.Instance.SendTurnEnd();
         if (OnTurnEnd is not null) OnTurnEnd();
     }
 

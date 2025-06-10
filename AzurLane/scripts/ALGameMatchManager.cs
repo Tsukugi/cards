@@ -110,9 +110,9 @@ public partial class ALGameMatchManager : Node
     }
     async void HandleOnSendPlayStateEvent(int peerId, EPlayState state, string interactionState)
     {
-        var currentPeerId = Network.Instance.Multiplayer.MultiplayerPeer.GetUniqueId();
-        ALPlayer affectedPlayer = orderedPlayers.Find(player => player.MultiplayerId == peerId);
-        GD.Print($"[HandleOnSendPlayStateEvent] {currentPeerId}: {peerId} - {state} - {interactionState}");
+        ALPlayer affectedPlayer = userPlayer.MultiplayerId == peerId ? userPlayer : enemyPlayer;
+        // ALPlayer affectedPlayer = GetPlayerPlayingTurn();
+        GD.Print($"[HandleOnSendPlayStateEvent] To {userPlayer.MultiplayerId}: Update {peerId} - {state} - {interactionState}");
         await affectedPlayer.SetPlayState(state, interactionState, false);
     }
     async void HandleOnSyncFlagship(int peerId, string cardId)
@@ -159,7 +159,6 @@ public partial class ALGameMatchManager : Node
     async void HandleOnCardSelectEvent(int peerId, string boardName, bool isEnemyBoard, Vector2I position)
     {
         GD.Print($"[HandleOnCardSelectEvent] {peerId} -> {boardName} - {isEnemyBoard} - {position}");
-        // if (position == Vector2I.Zero) return;
 
         ALPlayer affectedPlayer = isEnemyBoard ? userPlayer : enemyPlayer;
         Board board = affectedPlayer.GetNode<Board>(boardName);
@@ -170,18 +169,20 @@ public partial class ALGameMatchManager : Node
     async void HandleOnInputActionEvent(int peerId, InputAction inputAction)
     {
         GD.Print($"[HandleOnInputActionEvent] {peerId} -> {inputAction}");
-        enemyPlayer.TriggerAction(enemyPlayer, inputAction, false);
+        //   enemyPlayer.TriggerAction(enemyPlayer, inputAction, false);
+        // TODO This triggers many things that affect play state
         await Task.CompletedTask;
     }
     async void HandleOnTurnEndEvent(int peerId)
     {
-        GD.Print($"[HandleOnTurnEndEvent] {peerId}");
-        if (GetPlayerPlayingTurn() == userPlayer)
+        if (GetPlayerPlayingTurn() == userPlayer || peerId == Network.Instance.Multiplayer.GetUniqueId())
         {
             GD.PushError("[HandleOnTurnEndEvent] Another peer is trying to end their turn");
             return;
         }
-        await enemyPlayer.EndTurn(false);
+        GD.Print($"[HandleOnTurnEndEvent] {peerId} Finishes its turn");
+        PickNextPlayerToPlayTurn().StartTurn();
+        await Task.CompletedTask;
     }
 
     // Match
@@ -294,13 +295,15 @@ public partial class ALGameMatchManager : Node
         ALPlayer playingPlayer = GetPlayerPlayingTurn();
         GD.Print($"[OnTurnEndHandler] {playingPlayer.Name} Turn ended!");
 
-        // PickNextPlayer().StartTurn();
         await playingPlayer.TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
         await GetNextPlayer().TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
+        await this.Wait(1f);
+        ALNetwork.Instance.SendTurnEnd();
+        PickNextPlayerToPlayTurn();
         // if (!GetPlayerPlayingTurn().GetIsControllerPlayer()) GetPlayerPlayingTurn().GetPlayerAIController().StartTurn();
     }
 
-    ALPlayer PickNextPlayer()
+    ALPlayer PickNextPlayerToPlayTurn()
     {
         playerIndexPlayingTurn = GetNextPlayerIndex(playerIndexPlayingTurn);
         return GetPlayerPlayingTurn();

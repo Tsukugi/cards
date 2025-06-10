@@ -45,7 +45,8 @@ public partial class ALPlayerUI : Control
             selectedCardUI.Visible = CanShowCardDetailsUI;
         }
         else { selectedCardUI.Visible = false; }
-        peerIdLabel.Text = Multiplayer.GetUniqueId().ToString() + " " + (attachedPlayer.TryFindParentNodeOfType<ALGameMatchManager>().GetPlayerPlayingTurn() == attachedPlayer);
+        string playingTurn = attachedPlayer.TryFindParentNodeOfType<ALGameMatchManager>().GetPlayerPlayingTurn() == attachedPlayer ? "Playing Turn" : "Enemy Turn";
+        peerIdLabel.Text = Multiplayer.GetUniqueId().ToString() + " " + playingTurn;
     }
 
     public async Task ShowGameOverUI(bool isVictory)
