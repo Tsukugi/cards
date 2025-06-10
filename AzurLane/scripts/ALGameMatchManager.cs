@@ -100,7 +100,7 @@ public partial class ALGameMatchManager : Node
 
     async void HandleOnSendMatchPhaseEvent(int peerId, int phase)
     {
-        GD.Print($"[HandleOnSendMatchPhaseEvent] {peerId}: {phase}");
+        GD.Print($"[HandleOnSendMatchPhaseEvent] To {userPlayer.MultiplayerId}: From {peerId}: {phase}");
         matchCurrentPhase = (EALTurnPhase)phase;
         await Task.CompletedTask;
     }
@@ -114,14 +114,14 @@ public partial class ALGameMatchManager : Node
     async void HandleOnSyncFlagship(int peerId, string cardId)
     {
         ALCardDTO synchedCard = database.cards[cardId];
-        GD.Print($"[HandleOnSyncFlagship] {peerId}: {synchedCard.name}");
+        GD.Print($"[HandleOnSyncFlagship] To {userPlayer.MultiplayerId}: From {peerId}: {synchedCard.name}");
         enemyPlayer.UpdateFlagship(synchedCard);
         await Task.CompletedTask;
     }
     async void HandleOnDrawCardEvent(int peerId, string cardId, ALDrawType drawType)
     {
         ALCardDTO synchedCard = database.cards[cardId];
-        GD.Print($"[HandleOnDrawCardEvent] {peerId} -> {synchedCard.name} - {drawType}");
+        GD.Print($"[HandleOnDrawCardEvent] To {userPlayer.MultiplayerId}: From {peerId}: -> {synchedCard.name} - {drawType}");
         switch (drawType)
         {
             case ALDrawType.Deck:
@@ -140,7 +140,7 @@ public partial class ALGameMatchManager : Node
     }
     async void HandleOnCardSelectEvent(int peerId, string boardName, bool isEnemyBoard, Vector2I position)
     {
-        GD.Print($"[HandleOnCardSelectEvent] {peerId} -> {boardName} - {isEnemyBoard} - {position}");
+        GD.Print($"[HandleOnCardSelectEvent] To {userPlayer.MultiplayerId}: From {peerId}: -> {boardName} - {isEnemyBoard} - {position}");
 
         ALPlayer affectedPlayer = isEnemyBoard ? userPlayer : enemyPlayer;
         Board board = affectedPlayer.GetNode<Board>(boardName);
@@ -150,7 +150,7 @@ public partial class ALGameMatchManager : Node
     }
     async void HandleOnInputActionEvent(int peerId, InputAction inputAction)
     {
-        GD.Print($"[HandleOnInputActionEvent] {peerId} -> {inputAction}");
+        GD.Print($"[HandleOnInputActionEvent] To {userPlayer.MultiplayerId}: From {peerId}: -> {inputAction}");
         enemyPlayer.TriggerAction(enemyPlayer, inputAction, false);
         await Task.CompletedTask;
     }
@@ -161,7 +161,7 @@ public partial class ALGameMatchManager : Node
             GD.PushError("[HandleOnTurnEndEvent] Another peer is trying to end their turn");
             return;
         }
-        GD.Print($"[HandleOnTurnEndEvent] {peerId} Finishes its turn");
+        GD.Print($"[HandleOnTurnEndEvent] To {userPlayer.MultiplayerId}: From {peerId}: Finishes its turn");
         PickNextPlayerToPlayTurn().StartTurn();
         await Task.CompletedTask;
     }
