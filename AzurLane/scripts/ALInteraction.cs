@@ -31,8 +31,6 @@ public class ALInteraction
         //GD.Print($"[OnBoardInputActionHandler] Phase:{currentPhase} InteractionState:{state} Player:{triggeringPlayer.Name} Board:{triggeringBoard.Name} Action:{action} Card:{card.Name}");
 
         // Main
-        Network.Instance.SendInputAction(action);
-
         if (currentPhase == EALTurnPhase.Main && state == ALInteractionState.SelectBoardFieldToPlaceCard)
         {
             if (action == InputAction.Ok) await player.OnALPlaceCardStartHandler(board.CardToPlace);
