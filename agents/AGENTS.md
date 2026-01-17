@@ -13,3 +13,15 @@ Shared notes for AI/automation working on the Cards Godot project.
 ## Notes
 - This is a Godot 4.4 .NET (C#) project; avoid Node/npm assumptions
 - Avoid removing user changes; never reset the repo without explicit instruction
+
+## Code Standards
+- Do not write fallbacks unless told to, throw Errors with the reason of the failure
+- Always look for typeguards to check a type
+- Don't do inline type coercion
+
+## Git
+- Avoid commiting or pushing without user permission
+- Commit message must have a title and a description with min 50 words, use bullet list of changes format
+- Avoid using file paths in commit messages
+- In commit title, avoid "feat:" or "chore:"
+- NEVER write coauthored information in the commit message
