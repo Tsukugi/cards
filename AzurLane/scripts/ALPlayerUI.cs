@@ -123,4 +123,13 @@ public partial class ALPlayerUI : Control
         }
     }
     public void SetPlayer(ALPlayer _player) => attachedPlayer = _player;
+
+    public void SyncDebugMenuState()
+    {
+        if (debugMenuBtn is null) return;
+        if (attachedPlayer is null) return;
+        var debug = attachedPlayer.GetMatchManager().GetDebug();
+        if (debug is null) return;
+        debugMenuBtn.GetPopup().SetItemChecked(0, !debug.GetIgnoreCosts());
+    }
 }

@@ -28,6 +28,7 @@ public partial class ALGameMatchManager : Node
 
         playerUI = GetNode<ALPlayerUI>("Control");
         playerUI.SetPlayer(userPlayer); // Assign the controlling player
+        playerUI.SyncDebugMenuState();
 
         database.LoadData();
 

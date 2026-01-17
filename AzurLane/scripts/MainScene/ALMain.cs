@@ -50,6 +50,7 @@ public partial class ALMain : Control
         if (debugCloseBtn is not null) debugCloseBtn.Pressed += OnDebugClosePressed;
         if (joinConfirmBtn is not null) joinConfirmBtn.Pressed += OnJoinConfirmPressed;
 
+        LoadConnectionSettings();
         Callable.From(debug.AutoSyncStart).CallDeferred();
     }
 
@@ -154,6 +155,12 @@ public partial class ALMain : Control
             }
         }
 
+        ALLocalStorage.SaveConnectionSettings(new ALConnectionSettings
+        {
+            Address = address,
+            Port = port
+        });
+
         var joinGameResult = JoinGame(address, port);
         if (joinGameResult != Error.Ok)
         {
@@ -212,6 +219,14 @@ public partial class ALMain : Control
         if (errorLabel is null) return;
         errorLabel.Text = "";
         errorLabel.Visible = false;
+    }
+
+    void LoadConnectionSettings()
+    {
+        var settings = ALLocalStorage.LoadConnectionSettings();
+        if (settings is null) return;
+        if (joinAddressInput is not null) joinAddressInput.Text = settings.Address;
+        if (joinPortInput is not null) joinPortInput.Text = settings.Port.ToString();
     }
 
     public static void ExitLobby() => Network.Instance.CloseConnection();
