@@ -10,6 +10,7 @@ namespace TCG.Tests
     {
         public delegate Task TestImplAsync(Test test);
         Node rootNode;
+        int failedAsserts = 0;
         public TestHandler(Node _rootNode)
         {
             rootNode = _rootNode;
@@ -20,6 +21,8 @@ namespace TCG.Tests
             tests.ForEach(test => tasks.Add(() => RunTest(test)));
             await AsyncHandler.RunAsyncFunctionsSequentially(tasks);
             GD.Print($"[RunTestsSequentially] Tests complete! {rootNode.GetType()} Total {tests.Count}");
+            PrintSummary(tests.Count);
+            QuitIfHeadless();
         }
 
         public async Task RunTestsParallel(List<TestImplAsync> tests)
@@ -28,11 +31,47 @@ namespace TCG.Tests
             tests.ForEach(test => taskResults.Add(RunTest(test)));
             await Task.WhenAll(taskResults.ToArray());
             GD.Print($"[RunTestsSequentially] Tests complete! {rootNode.GetType()} Total {tests.Count}");
+            PrintSummary(tests.Count);
+            QuitIfHeadless();
         }
 
         public Task RunTest(TestImplAsync impl)
         {
-            return new Test(rootNode, impl).RunTest();
+            return new Test(rootNode, impl, this).RunTest();
+        }
+
+        internal void RegisterAssertResult(bool success)
+        {
+            if (!success)
+            {
+                failedAsserts++;
+            }
+        }
+
+        private void QuitIfHeadless()
+        {
+            if (!IsHeadless())
+            {
+                return;
+            }
+
+            int exitCode = failedAsserts > 0 ? 1 : 0;
+            rootNode.GetTree().Quit(exitCode);
+        }
+
+        private static bool IsHeadless()
+        {
+            if (OS.HasFeature("headless"))
+            {
+                return true;
+            }
+
+            return DisplayServer.GetName() == "headless";
+        }
+
+        private void PrintSummary(int totalTests)
+        {
+            GD.Print($"[TestsSummary] {rootNode.GetType()} Tests {totalTests} - FailedAsserts {failedAsserts}");
         }
     }
 
@@ -40,12 +79,14 @@ namespace TCG.Tests
     {
         Node rootNode;
         TestHandler.TestImplAsync impl;
+        TestHandler handler;
         int failedAsserts = 0, successfulAsserts = 0;
 
-        public Test(Node _rootNode, TestHandler.TestImplAsync _impl)
+        public Test(Node _rootNode, TestHandler.TestImplAsync _impl, TestHandler _handler)
         {
             rootNode = _rootNode;
             impl = _impl;
+            handler = _handler;
         }
         public Task RunTest()
         {
@@ -62,6 +103,7 @@ namespace TCG.Tests
 
         void HandleAssert<T>(bool success, T value, T expected)
         {
+            handler.RegisterAssertResult(success);
             if (success)
             {
                 successfulAsserts++;

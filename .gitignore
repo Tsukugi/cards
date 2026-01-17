@@ -1,3 +1,7 @@
+.dotnet
 # Godot 4+ specific ignores
 .godot/
 /android/
+.env
+.godot_test.log
+.godot_test.stdout

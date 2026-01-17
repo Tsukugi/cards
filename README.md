@@ -1,10 +1,10 @@
-# Cards (Godot 4.4, C#)
+# Cards (Godot 4.5, C#)
 
 Card game playground built in Godot with C# scripts. The main menu boots the
 Azur Lane prototype and exposes local match, create game, and join game flows.
 
 ## Requirements
-- Godot 4.4 .NET (C# build)
+- Godot 4.5 .NET (C# build)
 - .NET SDK (as required by your Godot install)
 
 ## Run

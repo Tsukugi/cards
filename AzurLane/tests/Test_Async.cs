@@ -14,16 +14,15 @@ namespace ALTCG.Tests
         public override void _Ready()
         {
             base._Ready();
-            testHandler = new(this);
             async = new(this);
 
-            _ = testHandler.RunTestsSequentially(new List<TestHandler.TestImplAsync>(){
-                    TestAwaitBefore,
-                    TestAwaitForCheck,
-                    TestAwaitForCheckTimeout,
-                    TestDebounce,
-                    TestRunAsyncFunctionsSequentially
-                });
+            testHandler = TestRunner.RunSequential(this,
+                TestAwaitBefore,
+                TestAwaitForCheck,
+                TestAwaitForCheckTimeout,
+                TestDebounce,
+                TestRunAsyncFunctionsSequentially
+            );
         }
 
         public async Task TestAwaitBefore(Test test)

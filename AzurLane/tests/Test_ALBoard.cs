@@ -1,5 +1,4 @@
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Godot;
 using TCG.Tests;
@@ -13,10 +12,9 @@ namespace ALTCG.Tests
         public override void _Ready()
         {
             base._Ready();
-            testHandler = new(this);
-            _ = testHandler.RunTestsSequentially(new List<TestHandler.TestImplAsync>(){
-                    TestPlaceCardInBoardFromHand
-                });
+            testHandler = TestRunner.RunSequential(this,
+                TestPlaceCardInBoardFromHand
+            );
         }
 
         public async Task TestPlaceCardInBoardFromHand(Test test)
