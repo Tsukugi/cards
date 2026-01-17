@@ -16,7 +16,7 @@ shader_parameter/animation_speed = 0.03
 shader_parameter/time_multiplier = 1.0
 shader_parameter/pixel_size = 512.0
 
-[node name="Main" type="Control" node_paths=PackedStringArray("startBtn", "optionsBtn", "exitBtn", "createGameBtn", "joinBtn", "debugBtn", "errorLabel", "debugPanel", "simulateErrorBtn", "debugCloseBtn")]
+[node name="Main" type="Control" node_paths=PackedStringArray("startBtn", "optionsBtn", "exitBtn", "createGameBtn", "joinBtn", "debugBtn", "errorLabel", "debugPanel", "simulateErrorBtn", "debugCloseBtn", "joinAddressInput", "joinPortInput", "joinConfirmBtn", "joinAddressLabel", "joinPortLabel")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,6 +34,11 @@ errorLabel = NodePath("ErrorLabel")
 debugPanel = NodePath("DebugPanel")
 simulateErrorBtn = NodePath("DebugPanel/DebugList/RowSimError/Run")
 debugCloseBtn = NodePath("DebugPanel/DebugList/RowClose/Close")
+joinAddressInput = NodePath("LobbyManager/LobbyLayout/Options/RowAddress/AddressInput")
+joinPortInput = NodePath("LobbyManager/LobbyLayout/Options/RowPort/PortInput")
+joinConfirmBtn = NodePath("LobbyManager/LobbyLayout/Options/RowActions/Join")
+joinAddressLabel = NodePath("LobbyManager/LobbyLayout/Options/RowAddress/Label")
+joinPortLabel = NodePath("LobbyManager/LobbyLayout/Options/RowPort/Label")
 
 [node name="Panel" type="Panel" parent="."]
 material = SubResource("ShaderMaterial_p83fu")
@@ -69,7 +74,7 @@ size_flags_vertical = 3
 focus_neighbor_top = NodePath("../Start")
 focus_neighbor_bottom = NodePath("../Exit")
 theme = ExtResource("2_skdpf")
-text = "Create Game
+text = "Host Match
 "
 
 [node name="JoinGame" type="Button" parent="Panel/Vert"]
@@ -78,7 +83,7 @@ size_flags_vertical = 3
 focus_neighbor_top = NodePath("../Start")
 focus_neighbor_bottom = NodePath("../Exit")
 theme = ExtResource("2_skdpf")
-text = "Join Game
+text = "Connect
 "
 
 [node name="Debug" type="Button" parent="Panel/Vert"]
@@ -188,28 +193,71 @@ offset_right = 909.0
 offset_bottom = 159.0
 grow_vertical = 2
 script = ExtResource("4_spqid")
-cancelBtn = NodePath("Cancel")
-playersList = NodePath("ItemList")
+cancelBtn = NodePath("LobbyLayout/Options/RowActions/Cancel")
+playersList = NodePath("LobbyLayout/ItemList")
 
-[node name="ItemList" type="ItemList" parent="LobbyManager"]
+[node name="LobbyLayout" type="HBoxContainer" parent="LobbyManager"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
 offset_top = 18.0
-offset_right = -124.0
-offset_bottom = -17.0
+offset_right = -20.0
+offset_bottom = -18.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Cancel" type="Button" parent="LobbyManager"]
-layout_mode = 0
-offset_left = 431.0
-offset_top = 17.0
-offset_right = 524.0
-offset_bottom = 56.0
+[node name="ItemList" type="ItemList" parent="LobbyManager/LobbyLayout"]
+layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
-focus_neighbor_top = NodePath("../Options")
+
+[node name="Options" type="VBoxContainer" parent="LobbyManager/LobbyLayout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RowAddress" type="HBoxContainer" parent="LobbyManager/LobbyLayout/Options"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="LobbyManager/LobbyLayout/Options/RowAddress"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remote Address"
+
+[node name="AddressInput" type="LineEdit" parent="LobbyManager/LobbyLayout/Options/RowAddress"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "127.0.0.1"
+
+[node name="RowPort" type="HBoxContainer" parent="LobbyManager/LobbyLayout/Options"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="LobbyManager/LobbyLayout/Options/RowPort"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remote Port"
+
+[node name="PortInput" type="LineEdit" parent="LobbyManager/LobbyLayout/Options/RowPort"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "7000"
+
+[node name="RowActions" type="HBoxContainer" parent="LobbyManager/LobbyLayout/Options"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Join" type="Button" parent="LobbyManager/LobbyLayout/Options/RowActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_skdpf")
+text = "Connect"
+
+[node name="Cancel" type="Button" parent="LobbyManager/LobbyLayout/Options/RowActions"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme = ExtResource("2_skdpf")
 text = "Cancel"

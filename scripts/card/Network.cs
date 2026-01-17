@@ -27,7 +27,7 @@ public partial class Network : Node
     public event PlayerSelectCardEvent OnSendSelectCardEvent;
     public event ALPlayerEvent OnTurnEndEvent;
 
-    private const int Port = 7000;
+    public const int DefaultPort = 7000;
     public const string DefaultServerIP = "127.0.0.1"; // IPv4 localhost
     private const int MaxConnections = 20;
 
@@ -55,7 +55,7 @@ public partial class Network : Node
         Multiplayer.ServerDisconnected += OnServerDisconnected;
     }
 
-    public Error JoinGame(string address = "")
+    public Error JoinGame(string address = "", int port = DefaultPort)
     {
         if (string.IsNullOrEmpty(address))
         {
@@ -63,7 +63,7 @@ public partial class Network : Node
         }
 
         var peer = new ENetMultiplayerPeer();
-        Error error = peer.CreateClient(address, Port);
+        Error error = peer.CreateClient(address, port);
 
         if (error != Error.Ok)
         {
@@ -77,7 +77,7 @@ public partial class Network : Node
     public Error CreateGame()
     {
         var peer = new ENetMultiplayerPeer();
-        Error error = peer.CreateServer(Port, MaxConnections);
+        Error error = peer.CreateServer(DefaultPort, MaxConnections);
 
         if (error != Error.Ok)
         {

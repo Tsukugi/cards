@@ -4,6 +4,7 @@ using System;
 public partial class ALMain : Control
 {
     bool isGameCreated = false;
+    bool isHostLobbyMode = false;
     [Export]
     Button startBtn, optionsBtn, exitBtn, createGameBtn, joinBtn, debugBtn;
     [Export]
@@ -12,6 +13,12 @@ public partial class ALMain : Control
     Panel debugPanel;
     [Export]
     Button simulateErrorBtn, debugCloseBtn;
+    [Export]
+    LineEdit joinAddressInput, joinPortInput;
+    [Export]
+    Button joinConfirmBtn;
+    [Export]
+    Label joinAddressLabel, joinPortLabel;
     ALLobbyUI lobby = null;
 
     ALMainDebug debug;
@@ -41,6 +48,7 @@ public partial class ALMain : Control
         if (debugPanel is not null) debugPanel.Visible = false;
         if (simulateErrorBtn is not null) simulateErrorBtn.Pressed += OnSimulateErrorPressed;
         if (debugCloseBtn is not null) debugCloseBtn.Pressed += OnDebugClosePressed;
+        if (joinConfirmBtn is not null) joinConfirmBtn.Pressed += OnJoinConfirmPressed;
 
         Callable.From(debug.AutoSyncStart).CallDeferred();
     }
@@ -54,13 +62,9 @@ public partial class ALMain : Control
         createGameBtn.Disabled = true;
         joinBtn.Disabled = true;
         lobby.Visible = true;
-        isGameCreated = true;
-        var result = CreateGame();
-        if (result != Error.Ok)
-        {
-            HandleNetworkError($"Create Game failed: {result}");
-        }
-        else ClearError();
+        isHostLobbyMode = true;
+        SetLobbyMode(isHostMode: true);
+        ClearError();
 
     }
     public void OnJoinPressed()
@@ -69,12 +73,9 @@ public partial class ALMain : Control
         createGameBtn.Disabled = true;
         joinBtn.Disabled = true;
         lobby.Visible = true;
-        var result = JoinGame();
-        if (result != Error.Ok)
-        {
-            HandleNetworkError($"Join Game failed: {result}");
-        }
-        else ClearError();
+        isHostLobbyMode = false;
+        SetLobbyMode(isHostMode: false);
+        ClearError();
     }
     void OnDebugPressed()
     {
@@ -106,8 +107,63 @@ public partial class ALMain : Control
         joinBtn.Disabled = false;
         lobby.Visible = false;
         isGameCreated = false;
+        isHostLobbyMode = false;
         ExitLobby();
         ClearError();
+        if (joinConfirmBtn is not null) joinConfirmBtn.Disabled = false;
+    }
+    void OnJoinConfirmPressed()
+    {
+        if (Network.Instance.Multiplayer.MultiplayerPeer is not null)
+        {
+            var status = Network.Instance.Multiplayer.MultiplayerPeer.GetConnectionStatus();
+            if (status == MultiplayerPeer.ConnectionStatus.Connected || status == MultiplayerPeer.ConnectionStatus.Connecting)
+            {
+                HandleNetworkError("Already connected. Disconnect before joining again.");
+                return;
+            }
+        }
+
+        if (isHostLobbyMode)
+        {
+            var createGameResult = CreateGame();
+            if (createGameResult != Error.Ok)
+            {
+                HandleNetworkError($"Create Game failed: {createGameResult}");
+                return;
+            }
+            isGameCreated = true;
+            if (joinConfirmBtn is not null) joinConfirmBtn.Disabled = true;
+            ClearError();
+            return;
+        }
+
+        var address = joinAddressInput is not null ? joinAddressInput.Text : Network.DefaultServerIP;
+        if (string.IsNullOrWhiteSpace(address))
+        {
+            address = Network.DefaultServerIP;
+        }
+
+        int port = Network.DefaultPort;
+        if (joinPortInput is not null && !string.IsNullOrWhiteSpace(joinPortInput.Text))
+        {
+            if (!int.TryParse(joinPortInput.Text, out port))
+            {
+                HandleNetworkError("Invalid port.");
+                return;
+            }
+        }
+
+        var joinGameResult = JoinGame(address, port);
+        if (joinGameResult != Error.Ok)
+        {
+            HandleNetworkError($"Join Game failed: {joinGameResult}");
+        }
+        else
+        {
+            if (joinConfirmBtn is not null) joinConfirmBtn.Disabled = true;
+            ClearError();
+        }
     }
 
     void OnServerDisconnectedHandler()
@@ -127,8 +183,21 @@ public partial class ALMain : Control
         joinBtn.Disabled = false;
         lobby.Visible = false;
         isGameCreated = false;
+        isHostLobbyMode = false;
         ExitLobby();
         ShowError(message);
+        if (joinConfirmBtn is not null) joinConfirmBtn.Disabled = false;
+    }
+
+    void SetLobbyMode(bool isHostMode)
+    {
+        if (joinAddressLabel is not null) joinAddressLabel.Text = isHostMode ? "Host Address" : "Remote Address";
+        if (joinPortLabel is not null) joinPortLabel.Text = isHostMode ? "Host Port" : "Remote Port";
+        if (joinConfirmBtn is not null)
+        {
+            joinConfirmBtn.Text = isHostMode ? "Host Match" : "Connect";
+            joinConfirmBtn.Disabled = false;
+        }
     }
 
     void ShowError(string message)
@@ -148,6 +217,6 @@ public partial class ALMain : Control
     public static void ExitLobby() => Network.Instance.CloseConnection();
     public static void StartMatch(string path) => Network.Instance.RequestStartMatch(path);
     public static void CheckConnection() => Network.Instance.CheckConnection();
-    public static Error JoinGame(string address = Network.DefaultServerIP) => Network.Instance.JoinGame(address);
+    public static Error JoinGame(string address = Network.DefaultServerIP, int port = Network.DefaultPort) => Network.Instance.JoinGame(address, port);
     public static Error CreateGame() => Network.Instance.CreateGame();
 }
