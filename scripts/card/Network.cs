@@ -11,6 +11,8 @@ public partial class Network : Node
     public delegate void PlayerDisconnectedEventHandler(int peerId);
     [Signal]
     public delegate void ServerDisconnectedEventHandler();
+    [Signal]
+    public delegate void ConnectionFailedEventHandler();
     public delegate void PlayerInputActionEvent(int peerId, InputAction inputAction);
     public delegate void PlayerCardEvent(int peerId, string cardId);
     public delegate void PlayerSelectCardEvent(int peerId, string boardType, bool isEnemyBoard, Vector2I position);
@@ -196,7 +198,11 @@ public partial class Network : Node
         EmitSignal(SignalName.PlayerConnected, peerId, _playerInfo);
     }
 
-    private void OnConnectionFail() => CloseConnection();
+    private void OnConnectionFail()
+    {
+        CloseConnection();
+        EmitSignal(SignalName.ConnectionFailed);
+    }
 
     private void OnServerDisconnected()
     {
