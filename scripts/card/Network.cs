@@ -90,6 +90,15 @@ public partial class Network : Node
         return Error.Ok;
     }
 
+    public void SetPlayerName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new System.InvalidOperationException("[Network.SetPlayerName] Name is required.");
+        }
+        _playerInfo["Name"] = name;
+    }
+
     public void SendInputAction(InputAction action) => Rpc(MethodName.OnSendInput, [(int)action]);
     public void RequestStartMatch(string path) => Rpc(MethodName.StartMatch, [path]);
     public void SendPlayOrder(int order) => Rpc(MethodName.OnSendPlayOrder, [order]);
@@ -152,6 +161,7 @@ public partial class Network : Node
     private void StartMatch(string gameScenePath)
     {
         if (!CheckConnection()) return;
+        GD.Print($"[Network.StartMatch] Loading {gameScenePath}");
         GetTree().ChangeSceneToFile(gameScenePath);
     }
 
@@ -233,5 +243,5 @@ public partial class Network : Node
         }
     }
 
-    public int GetPlayerCount() => _playerInfo.Count;
+    public int GetPlayerCount() => _players.Count;
 }

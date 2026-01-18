@@ -54,9 +54,8 @@ public partial class ALDebug
 
     void SaveSettings()
     {
-        ALLocalStorage.SaveMatchDebugSettings(new ALMatchDebugSettings
-        {
-            IgnoreCosts = ignoreCosts
-        });
+        var settings = ALLocalStorage.LoadMatchDebugSettings() ?? new ALMatchDebugSettings();
+        settings.IgnoreCosts = ignoreCosts;
+        ALLocalStorage.SaveMatchDebugSettings(settings);
     }
 }

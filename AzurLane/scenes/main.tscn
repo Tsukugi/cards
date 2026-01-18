@@ -16,7 +16,7 @@ shader_parameter/animation_speed = 0.03
 shader_parameter/time_multiplier = 1.0
 shader_parameter/pixel_size = 512.0
 
-[node name="Main" type="Control" node_paths=PackedStringArray("startBtn", "optionsBtn", "exitBtn", "createGameBtn", "joinBtn", "debugBtn", "errorLabel", "debugPanel", "simulateErrorBtn", "debugCloseBtn", "joinAddressInput", "joinPortInput", "joinConfirmBtn", "joinAddressLabel", "joinPortLabel")]
+[node name="Main" type="Control" node_paths=PackedStringArray("startBtn", "optionsBtn", "exitBtn", "createGameBtn", "joinBtn", "debugBtn", "errorLabel", "debugPanel", "simulateErrorBtn", "debugCloseBtn", "autoHostMatchToggle", "autoJoinMatchToggle", "playerNameInput", "joinAddressInput", "joinPortInput", "joinConfirmBtn", "joinAddressLabel", "joinPortLabel")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,6 +34,9 @@ errorLabel = NodePath("ErrorLabel")
 debugPanel = NodePath("DebugPanel")
 simulateErrorBtn = NodePath("DebugPanel/DebugList/RowSimError/Run")
 debugCloseBtn = NodePath("DebugPanel/DebugList/RowClose/Close")
+autoHostMatchToggle = NodePath("DebugPanel/DebugList/RowAutoHostMatch/Toggle")
+autoJoinMatchToggle = NodePath("DebugPanel/DebugList/RowAutoJoinMatch/Toggle")
+playerNameInput = NodePath("DebugPanel/DebugList/RowPlayerName/NameInput")
 joinAddressInput = NodePath("LobbyManager/LobbyLayout/Options/RowAddress/AddressInput")
 joinPortInput = NodePath("LobbyManager/LobbyLayout/Options/RowPort/PortInput")
 joinConfirmBtn = NodePath("LobbyManager/LobbyLayout/Options/RowActions/Join")
@@ -164,6 +167,46 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("2_skdpf")
 text = "Run"
+
+[node name="RowAutoHostMatch" type="HBoxContainer" parent="DebugPanel/DebugList"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="DebugPanel/DebugList/RowAutoHostMatch"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Enable auto host match"
+
+[node name="Toggle" type="CheckButton" parent="DebugPanel/DebugList/RowAutoHostMatch"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RowAutoJoinMatch" type="HBoxContainer" parent="DebugPanel/DebugList"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="DebugPanel/DebugList/RowAutoJoinMatch"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Enable auto join match"
+
+[node name="Toggle" type="CheckButton" parent="DebugPanel/DebugList/RowAutoJoinMatch"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RowPlayerName" type="HBoxContainer" parent="DebugPanel/DebugList"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="DebugPanel/DebugList/RowPlayerName"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Player Name"
+
+[node name="NameInput" type="LineEdit" parent="DebugPanel/DebugList/RowPlayerName"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "PlayerName"
 
 [node name="RowClose" type="HBoxContainer" parent="DebugPanel/DebugList"]
 layout_mode = 2

@@ -28,10 +28,38 @@ public static class ALLocalStorage
         WriteJson(MatchDebugSettingsPath, settings);
     }
 
+    public static void SaveMatchDebugSettings(ALMatchDebugSettings settings, string profileName)
+    {
+        if (settings is null) throw new InvalidOperationException("[ALLocalStorage.SaveMatchDebugSettings] Settings are required.");
+        EnsureSaveDir();
+        WriteJson(GetMatchDebugSettingsPath(profileName), settings);
+    }
+
     public static ALMatchDebugSettings LoadMatchDebugSettings()
     {
         if (!FileAccess.FileExists(MatchDebugSettingsPath)) return null;
         return ReadJson<ALMatchDebugSettings>(MatchDebugSettingsPath);
+    }
+
+    public static ALMatchDebugSettings LoadMatchDebugSettings(string profileName)
+    {
+        string path = GetMatchDebugSettingsPath(profileName);
+        if (!FileAccess.FileExists(path)) return null;
+        return ReadJson<ALMatchDebugSettings>(path);
+    }
+
+    public static void SavePlayerSettings(ALPlayerSettings settings, string profileName)
+    {
+        if (settings is null) throw new InvalidOperationException("[ALLocalStorage.SavePlayerSettings] Settings are required.");
+        EnsureSaveDir();
+        WriteJson(GetPlayerSettingsPath(profileName), settings);
+    }
+
+    public static ALPlayerSettings LoadPlayerSettings(string profileName)
+    {
+        string path = GetPlayerSettingsPath(profileName);
+        if (!FileAccess.FileExists(path)) return null;
+        return ReadJson<ALPlayerSettings>(path);
     }
 
     static void EnsureSaveDir()
@@ -41,6 +69,48 @@ public static class ALLocalStorage
         {
             throw new InvalidOperationException($"[ALLocalStorage.EnsureSaveDir] Failed to create save directory. Error: {error}");
         }
+    }
+
+    static string GetMatchDebugSettingsPath(string profileName)
+    {
+        if (string.IsNullOrWhiteSpace(profileName))
+        {
+            return MatchDebugSettingsPath;
+        }
+
+        string safeName = NormalizeProfileName(profileName);
+        return $"user://saves/match_debug_{safeName}.json";
+    }
+
+    static string GetPlayerSettingsPath(string profileName)
+    {
+        if (string.IsNullOrWhiteSpace(profileName))
+        {
+            throw new InvalidOperationException("[ALLocalStorage.GetPlayerSettingsPath] Profile name is required.");
+        }
+
+        string safeName = NormalizeProfileName(profileName);
+        return $"user://saves/player_settings_{safeName}.json";
+    }
+
+    static string NormalizeProfileName(string profileName)
+    {
+        var builder = new System.Text.StringBuilder(profileName.Length);
+        foreach (char character in profileName)
+        {
+            if (char.IsLetterOrDigit(character) || character == '_')
+            {
+                builder.Append(character);
+                continue;
+            }
+            builder.Append('_');
+        }
+        string result = builder.ToString();
+        if (string.IsNullOrWhiteSpace(result))
+        {
+            throw new InvalidOperationException("[ALLocalStorage.NormalizeProfileName] Profile name must include alphanumeric characters.");
+        }
+        return result;
     }
 
     static void WriteJson<T>(string path, T data)
@@ -82,4 +152,11 @@ public sealed class ALConnectionSettings
 public sealed class ALMatchDebugSettings
 {
     public bool IgnoreCosts { get; set; } = true;
+    public bool EnableAutoHostMatch { get; set; } = false;
+    public bool EnableAutoJoinMatch { get; set; } = false;
+}
+
+public sealed class ALPlayerSettings
+{
+    public string Name { get; set; } = "PlayerName";
 }

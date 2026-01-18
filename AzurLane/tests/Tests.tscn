@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://chcjq0afarkic"]
+[gd_scene load_steps=6 format=3 uid="uid://chcjq0afarkic"]
 
 [ext_resource type="Script" uid="uid://bmjjv26ot6774" path="res://scripts/card/Board.cs" id="1_oih2n"]
 [ext_resource type="Script" uid="uid://bjnv8s24jt0c3" path="res://AzurLane/tests/Test_ALCard.cs" id="2_tk44o"]
 [ext_resource type="Script" uid="uid://dmqv5hruinyuy" path="res://AzurLane/tests/Test_Async.cs" id="3_8wtn2"]
 [ext_resource type="Script" uid="uid://c8m0l6k0a1b2c" path="res://AzurLane/tests/Test_ALNetwork.cs" id="4_4i4wp"]
+[ext_resource type="Script" uid="uid://ct26cpbn7su7b" path="res://AzurLane/tests/Test_ALMainDebug.cs" id="5_mlk7b"]
 
 [node name="Setup" type="Node"]
 
@@ -20,3 +21,6 @@ script = ExtResource("3_8wtn2")
 
 [node name="TestALNetwork" type="Node" parent="."]
 script = ExtResource("4_4i4wp")
+
+[node name="TestALMainDebug" type="Node" parent="."]
+script = ExtResource("5_mlk7b")

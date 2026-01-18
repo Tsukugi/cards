@@ -5,3 +5,4 @@
 .env
 .godot_test.log
 .godot_test.stdout
+logs
