@@ -16,6 +16,7 @@ public partial class ALGameMatchManager : Node
     ALPlayerUI playerUI;
     ALDebug debug;
     ALInteraction interaction;
+    ALSelectionSyncTest selectionSyncTest;
 
     public override void _Ready()
     {
@@ -97,6 +98,7 @@ public partial class ALGameMatchManager : Node
         ALNetwork.Instance.OnSendInputActionEvent += HandleOnInputActionEvent;
 
         Callable.From(StartMatchForPlayer).CallDeferred();
+        Callable.From(TryStartSelectionSyncTest).CallDeferred();
     }
 
     async void HandleOnSendMatchPhaseEvent(int peerId, int phase)
@@ -139,16 +141,59 @@ public partial class ALGameMatchManager : Node
                 break;
         }
     }
-    async void HandleOnCardSelectEvent(int peerId, string boardName, bool isEnemyBoard, Vector2I position)
+    async void HandleOnCardSelectEvent(int peerId, int targetOwnerPeerId, string boardName, Vector2I position)
     {
-        GD.Print($"[HandleOnCardSelectEvent] To {userPlayer.MultiplayerId}: From {peerId}: -> {boardName} - {isEnemyBoard} - {position}");
+        GD.Print($"[HandleOnCardSelectEvent] To {userPlayer.MultiplayerId}: From {peerId}: owner={targetOwnerPeerId} -> {boardName} - {position}");
 
-        ALPlayer affectedPlayer = isEnemyBoard ? userPlayer : enemyPlayer;
-        Board board = affectedPlayer.GetNode<Board>(boardName);
-        affectedPlayer.SelectBoard(affectedPlayer, board);
-        board.SelectCardField(affectedPlayer, position, false);
+        ALPlayer selectingPlayer = ResolveSelectingPlayer(peerId);
+        if (selectingPlayer is null)
+        {
+            GD.PrintErr($"[HandleOnCardSelectEvent] Unknown peerId {peerId}. User={userPlayer.MultiplayerId} Enemy={enemyPlayer.MultiplayerId}");
+            return;
+        }
+        ALPlayer targetOwner = ResolveSelectingPlayer(targetOwnerPeerId);
+        if (targetOwner is null)
+        {
+            GD.PrintErr($"[HandleOnCardSelectEvent] Unknown targetOwnerPeerId {targetOwnerPeerId}. User={userPlayer.MultiplayerId} Enemy={enemyPlayer.MultiplayerId}");
+            return;
+        }
+        Board board = ResolveOwnerBoard(targetOwner, boardName);
+        GD.Print($"[HandleOnCardSelectEvent.Resolve] selector={selectingPlayer.Name}({selectingPlayer.MultiplayerId}) owner={targetOwner.Name}({targetOwner.MultiplayerId}) board={board.Name} localEnemy={board.GetIsEnemyBoard()} pos={position}");
+        board.SelectCardField(selectingPlayer, position, false);
+        selectingPlayer.SelectBoard(selectingPlayer, board);
         await Task.CompletedTask;
     }
+
+    Board ResolveOwnerBoard(ALPlayer ownerPlayer, string boardName)
+    {
+        if (boardName == "Board")
+        {
+            Board board = ownerPlayer.GetPlayerBoard<PlayerBoard>();
+            if (board is null)
+            {
+                throw new System.InvalidOperationException($"[ResolveOwnerBoard] Board '{boardName}' not found for player {ownerPlayer.Name}.");
+            }
+            return board;
+        }
+        if (boardName == "Hand")
+        {
+            Board board = ownerPlayer.GetPlayerHand<PlayerHand>();
+            if (board is null)
+            {
+                throw new System.InvalidOperationException($"[ResolveOwnerBoard] Board '{boardName}' not found for player {ownerPlayer.Name}.");
+            }
+            return board;
+        }
+        throw new System.InvalidOperationException($"[ResolveOwnerBoard] Unknown board name '{boardName}'.");
+    }
+
+    ALPlayer ResolveSelectingPlayer(int peerId)
+    {
+        if (userPlayer.MultiplayerId == peerId) return userPlayer;
+        if (enemyPlayer.MultiplayerId == peerId) return enemyPlayer;
+        return null;
+    }
+
     async void HandleOnInputActionEvent(int peerId, InputAction inputAction)
     {
         GD.Print($"[HandleOnInputActionEvent] To {userPlayer.MultiplayerId}: From {peerId}: -> {inputAction}");
@@ -175,6 +220,16 @@ public partial class ALGameMatchManager : Node
         //await enemyPlayer.StartGameForPlayer(enemyPlayer.GetDeckSet());
         if (Multiplayer.IsServer()) GetPlayerPlayingTurn().StartTurn();
         // if (!GetNextPlayer().GetIsControllerPlayer()) Callable.From(GetNextPlayer().GetPlayerAIController().StartTurn).CallDeferred();
+    }
+
+    void TryStartSelectionSyncTest()
+    {
+        if (!debug.GetSelectionSyncTestEnabled())
+        {
+            return;
+        }
+        selectionSyncTest ??= new ALSelectionSyncTest(this, debug.GetSelectionSyncStepSeconds());
+        _ = selectionSyncTest.Run();
     }
 
     async Task OnGameOverHandler(Player losingPlayer)
@@ -230,7 +285,12 @@ public partial class ALGameMatchManager : Node
     async Task OnRetaliationHandler(Player damagedPlayer, Card retaliatingCard)
     {
         await damagedPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectRetaliationUnit);
-        damagedPlayer.SelectBoard(damagedPlayer, damagedPlayer.GetPlayerHand<ALHand>());
+        ALHand hand = damagedPlayer.GetPlayerHand<ALHand>();
+        if (hand.GetSelectedCard<Card>(damagedPlayer) is null)
+        {
+            throw new System.InvalidOperationException($"[OnRetaliationHandler] No selected card on board {hand.Name} for player {damagedPlayer.Name}.");
+        }
+        damagedPlayer.SelectBoard(damagedPlayer, hand);
         await retaliatingCard.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
 
         await GetNextPlayer((ALPlayer)damagedPlayer).SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);

@@ -71,14 +71,17 @@ transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -8.259
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, -12.5)
 playerColor = Color(0.837848, 0.180546, 0.530967, 1)
 
-[node name="FrontRow" parent="EnemyPlayer/Board/Units" index="0" node_paths=PackedStringArray("EdgeUp")]
+[node name="FrontRow" parent="EnemyPlayer/Board/Units" index="0" node_paths=PackedStringArray("EdgeUp", "EdgeDown")]
 EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow3")
+EdgeDown = NodePath("../../../../UserPlayer/Board/Units/FrontRow3")
 
-[node name="FrontRow2" parent="EnemyPlayer/Board/Units" index="1" node_paths=PackedStringArray("EdgeUp")]
+[node name="FrontRow2" parent="EnemyPlayer/Board/Units" index="1" node_paths=PackedStringArray("EdgeUp", "EdgeDown")]
 EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow2")
+EdgeDown = NodePath("../../../../UserPlayer/Board/Units/FrontRow2")
 
-[node name="FrontRow3" parent="EnemyPlayer/Board/Units" index="2" node_paths=PackedStringArray("EdgeUp")]
+[node name="FrontRow3" parent="EnemyPlayer/Board/Units" index="2" node_paths=PackedStringArray("EdgeUp", "EdgeDown")]
 EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow")
+EdgeDown = NodePath("../../../../UserPlayer/Board/Units/FrontRow")
 
 [node name="Count" parent="EnemyPlayer/Board/FlagshipDurability" index="10"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -12.2177, 0.601988, -11.3278)

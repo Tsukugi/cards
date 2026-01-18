@@ -12,6 +12,8 @@ public partial class ALDebug
     }
 
     bool ignoreCosts = true;
+    bool selectionSyncTestEnabled = false;
+    float selectionSyncStepSeconds = 1f;
 
     public void ToggleIgnoreCosts()
     {
@@ -30,6 +32,8 @@ public partial class ALDebug
         await matchManager.GetControlledPlayer().TryDrawCubeToBoard();
     }
     public bool GetIgnoreCosts() => ignoreCosts;
+    public bool GetSelectionSyncTestEnabled() => selectionSyncTestEnabled;
+    public float GetSelectionSyncStepSeconds() => selectionSyncStepSeconds;
 
     public async Task InflictDamage()
     {
@@ -50,12 +54,16 @@ public partial class ALDebug
         var settings = ALLocalStorage.LoadMatchDebugSettings();
         if (settings is null) return;
         ignoreCosts = settings.IgnoreCosts;
+        selectionSyncTestEnabled = settings.EnableSelectionSyncTest;
+        selectionSyncStepSeconds = settings.SelectionSyncStepSeconds;
     }
 
     void SaveSettings()
     {
         var settings = ALLocalStorage.LoadMatchDebugSettings() ?? new ALMatchDebugSettings();
         settings.IgnoreCosts = ignoreCosts;
+        settings.EnableSelectionSyncTest = selectionSyncTestEnabled;
+        settings.SelectionSyncStepSeconds = selectionSyncStepSeconds;
         ALLocalStorage.SaveMatchDebugSettings(settings);
     }
 }

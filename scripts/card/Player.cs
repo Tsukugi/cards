@@ -39,6 +39,7 @@ public partial class Player : Node3D
         hand = GetNode<PlayerHand>("Hand");
         board = GetNode<PlayerBoard>("Board");
         orderedBoards = [hand, board];
+        hand.SelectCardField(this, Vector2I.Zero, false);
         SelectBoard(this, GetSelectedBoard());
     }
 
@@ -79,6 +80,7 @@ public partial class Player : Node3D
     {
         cardPlaced.SetIsEmptyField(false);
         await SetPlayState(EPlayState.SelectCardToPlay);
+        hand.SelectCardField(this, cardPlaced.PositionInBoard, false);
         SelectBoard(this, hand);
     }
 
@@ -101,6 +103,10 @@ public partial class Player : Node3D
         await cardToPlay.TryToTriggerCardEffect(CardEffectTrigger.WhenPlayedFromHand);
         cardToPlay.SetIsEmptyField(true);
         await SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectBoardFieldToPlaceCard);
+        if (board.GetSelectedCard<Card>(this) is null)
+        {
+            throw new InvalidOperationException($"[OnPlayCardStartHandler] No selected card on board {board.Name}.");
+        }
         SelectBoard(this, board);
     }
 
@@ -117,6 +123,16 @@ public partial class Player : Node3D
 
 
         Board newBoard = orderedBoards[newIndex];
+        if (exitingBoard is PlayerBoard && newBoard is PlayerBoard)
+        {
+            Card selectedCard = exitingBoard.GetSelectedCard<Card>(this) ?? throw new InvalidOperationException($"[OnBoardEdgeHandler] No selected card on board {exitingBoard.Name}.");
+            Card edgeCard = (axis.Y < 0 ? selectedCard.EdgeUp : selectedCard.EdgeDown) ?? throw new InvalidOperationException($"[OnBoardEdgeHandler] Missing edge card for {selectedCard.Name} on board {exitingBoard.Name}.");
+            if (edgeCard.GetBoard() != newBoard)
+            {
+                throw new InvalidOperationException($"[OnBoardEdgeHandler] Edge card {edgeCard.Name} is not on board {newBoard.Name}.");
+            }
+            newBoard.SelectCardField(this, edgeCard.PositionInBoard);
+        }
         SelectBoard(this, newBoard);
         GD.Print($"[OnBoardEdgeHandler] {newBoard.Name} - {selectedBoardIndex} ");
     }
@@ -124,19 +140,22 @@ public partial class Player : Node3D
     protected void OnSelectFixedCardEdgeHandler(Board triggeringBoard, Card card)
     {
         Board newBoard = card.GetBoard();
-        SelectBoard(this, newBoard);
         newBoard.SelectCardField(this, card.PositionInBoard); // Use the card's board to select itself, a referenced card can be from another board than the triggering one
+        SelectBoard(this, newBoard);
     }
 
     public void SelectBoard(Player player, Board board)
     {
-        if (selectedBoard is not null)
+        if (selectedBoard is not null && selectedBoard != board)
         {
             UnassignBoardEvents(selectedBoard);
-            if (selectedBoard.GetSelectedCard<Card>(player) is ALCard card) selectedBoard.ClearSelectionForPlayer(player); // Clear selection for old board
+            if (selectedBoard.GetSelectedCard<Card>(player) is Card card) selectedBoard.ClearSelectionForPlayer(player); // Clear selection for old board
         }
         selectedBoard = board;
-        if (selectedBoard.GetSelectedCard<ALCard>(player) is null) selectedBoard.SelectCardField(player, Vector2I.Zero, false); // Select default field if none
+        if (selectedBoard.GetSelectedCard<Card>(player) is null)
+        {
+            throw new InvalidOperationException($"[SelectBoard] No selected card on board {selectedBoard.Name} for player {player.Name}.");
+        }
         selectedBoardIndex = orderedBoards.FindIndex((board) => board == selectedBoard);
         axisInputHandler.SetInverted(selectedBoard.GetIsEnemyBoard()); // An enemy board should have its axis inverted as it is inverted in the editor
         if (selectedBoard is not null) AssignBoardEvents(selectedBoard);
@@ -219,8 +238,8 @@ public partial class Player : Node3D
     {
         var foundBoard = orderedBoards.Find(orderedBoard => orderedBoard == card.GetBoard());
         if (foundBoard is null) GD.PrintErr($"[SelectAndTriggerCard] Board {card.GetBoard()} cannot be found ");
-        SelectBoard(this, foundBoard);
         foundBoard.SelectCardField(this, card.PositionInBoard);
+        SelectBoard(this, foundBoard);
         TriggerAction(this, InputAction.Ok);
     }
     public void TriggerAction(Player player, InputAction action, bool syncToNet = true)

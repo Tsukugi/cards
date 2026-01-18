@@ -8,7 +8,7 @@ public partial class Card : CardField
     public delegate Task OnProvidedCardEvent(Card card);
     public event OnProvidedCardFieldEvent OnCardIsSidewaysUpdate;
     protected Node3D cardDisplay;
-    protected MeshInstance3D front = null, back = null, side = null, selectedIndicator = null;
+    protected MeshInstance3D front = null, back = null, side = null, selectedIndicator = null, selectedIndicatorEnemy = null;
     protected Board board;
     EffectManager effect;
     Player ownerPlayer;
@@ -18,12 +18,16 @@ public partial class Card : CardField
     [Export]
     Color selectedIndicatorColor = new();
     [Export]
+    Color selectedIndicatorEnemyColor = new();
+    [Export]
     public Card EdgeUp, EdgeDown, EdgeLeft, EdgeRight;
 
     [Export]
     bool isFaceDown = false;
     [Export]
     bool isSideWays = false;
+    bool isSelectedLocal = false;
+    bool isSelectedEnemy = false;
 
     CardDTO attributes = new();
     protected readonly List<CardEffectDTO> activeStatusEffects = []; // StatusEffectId is effectValue[0]
@@ -34,6 +38,13 @@ public partial class Card : CardField
         board = this.TryFindParentNodeOfType<Board>();
         cardDisplay = GetNode<Node3D>("CardDisplay");
         selectedIndicator = GetNodeOrNull<MeshInstance3D>("CardDisplay/SelectedIndicator");
+        if (selectedIndicator is not null)
+        {
+            selectedIndicatorEnemy = (MeshInstance3D)selectedIndicator.Duplicate();
+            selectedIndicatorEnemy.Name = "SelectedIndicatorEnemy";
+            selectedIndicatorEnemy.Visible = false;
+            cardDisplay.AddChild(selectedIndicatorEnemy);
+        }
         front = GetNodeOrNull<MeshInstance3D>("CardDisplay/Front");
         back = GetNodeOrNull<MeshInstance3D>("CardDisplay/Back");
         side = GetNodeOrNull<MeshInstance3D>("CardDisplay/Side");
@@ -53,8 +64,13 @@ public partial class Card : CardField
     {
         if (selectedIndicator is not null)
         {
-            selectedIndicator.Visible = isSelected;
-            if (isSelected) UpdateColor(selectedIndicator, selectedIndicatorColor);
+            selectedIndicator.Visible = isSelectedLocal;
+            if (isSelectedLocal) UpdateColor(selectedIndicator, selectedIndicatorColor);
+        }
+        if (selectedIndicatorEnemy is not null)
+        {
+            selectedIndicatorEnemy.Visible = isSelectedEnemy;
+            if (isSelectedEnemy) UpdateColor(selectedIndicatorEnemy, selectedIndicatorEnemyColor);
         }
     }
 
@@ -205,6 +221,14 @@ public partial class Card : CardField
     {
         selectedIndicatorColor = player.GetPlayerColor();
         UpdateColor(selectedIndicator, selectedIndicatorColor);
+    }
+
+    public void UpdateSelectionIndicators(bool localSelected, Color localColor, bool enemySelected, Color enemyColor)
+    {
+        isSelectedLocal = localSelected;
+        isSelectedEnemy = enemySelected;
+        selectedIndicatorColor = localColor;
+        selectedIndicatorEnemyColor = enemyColor;
     }
 
     public Resource GetCardImageResource() => isFaceDown ? cardBackImage : cardImage;

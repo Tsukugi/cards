@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Godot;
 
@@ -118,7 +119,7 @@ public partial class Board : Node3D
         List<Card> allCards = GetCardsInTree();
         if (allCards.Count == 0)
         {
-            GD.Print($"[Board.SelectCardField] Board doesn't have cards");
+            GD.Print($"[Board.SelectCardField] Board '{Name}' has no cards for player {player.Name}({playerId}) pos={position}");
             return;
         }
 
@@ -128,7 +129,7 @@ public partial class Board : Node3D
             throw new System.InvalidOperationException($"[SelectCardField] Position {position} cannot be found on board {Name}.");
         }
         selectedCard[playerId] = foundCard;
-        GD.Print($"[SelectCardField] {player.Name}.{Name} - {foundCard.Name}");
+        GD.Print($"[SelectCardField] player={player.Name}({playerId}) board={Name} enemy={isEnemyBoard} pos={position} card={foundCard.Name} cardPos={foundCard.PositionInBoard} sync={syncToNet}");
         if (!cardSelectors.TryGetValue(foundCard, out HashSet<int> selectors))
         {
             selectors = [];
@@ -136,7 +137,14 @@ public partial class Board : Node3D
         }
         selectors.Add(playerId);
         ApplyIndicatorForCard(foundCard);
-        if (syncToNet) Network.Instance.SendSelectCardField(player.MultiplayerId, this, position);
+        if (syncToNet)
+        {
+            if (ownerPlayer is null)
+            {
+                throw new System.InvalidOperationException($"[SelectCardField] Board owner is missing for {Name}.");
+            }
+            Network.Instance.SendSelectCardField(player.MultiplayerId, ownerPlayer.MultiplayerId, this, position);
+        }
     }
 
     public virtual void OnInputAxisChange(Player player, Vector2I axis) => GD.Print($"[OnInputAxisChange] {player.Name}.{axis}");
@@ -176,6 +184,7 @@ public partial class Board : Node3D
     }
     public void SetIsEnemyBoard(bool value) => isEnemyBoard = value;
     public bool GetIsEnemyBoard() => isEnemyBoard;
+    public Player GetOwnerPlayer() => ownerPlayer;
 
     public Vector2I MirrorPosition(Vector2I position)
     {
@@ -204,33 +213,56 @@ public partial class Board : Node3D
     {
         if (!cardSelectors.TryGetValue(card, out HashSet<int> selectors) || selectors.Count == 0)
         {
+            card.UpdateSelectionIndicators(false, default, false, default);
             card.SetIsSelected(false);
             return;
         }
 
-        int preferredPeerId = int.MaxValue;
-        bool hasPreferred = false;
+        Player localSelector = null;
+        Player enemySelector = null;
         foreach (int selectorId in selectors)
         {
-            if (playerByPeerId.TryGetValue(selectorId, out Player selectorPlayer) && selectorPlayer.GetIsControllerPlayer())
+            if (!playerByPeerId.TryGetValue(selectorId, out Player selectorPlayer))
             {
-                preferredPeerId = selectorId;
-                hasPreferred = true;
-                break;
+                throw new System.InvalidOperationException($"[ApplyIndicatorForCard] Selector {selectorId} not registered for board {Name}.");
+            }
+            if (selectorPlayer.GetIsControllerPlayer())
+            {
+                if (localSelector is not null && localSelector.MultiplayerId != selectorPlayer.MultiplayerId)
+                {
+                    throw new System.InvalidOperationException($"[ApplyIndicatorForCard] Multiple local selectors on board {Name}.");
+                }
+                localSelector = selectorPlayer;
+                continue;
+            }
+            if (enemySelector is not null && enemySelector.MultiplayerId != selectorPlayer.MultiplayerId)
+            {
+                throw new System.InvalidOperationException($"[ApplyIndicatorForCard] Multiple enemy selectors on board {Name}.");
+            }
+            enemySelector = selectorPlayer;
+        }
+        var selectorInfo = new StringBuilder();
+        foreach (int selectorId in selectors)
+        {
+            if (selectorInfo.Length > 0) selectorInfo.Append(", ");
+            if (playerByPeerId.TryGetValue(selectorId, out Player selectorPlayer))
+            {
+                selectorInfo.Append($"{selectorPlayer.Name}({selectorId}) controller={selectorPlayer.GetIsControllerPlayer()}");
+            }
+            else
+            {
+                selectorInfo.Append($"Unknown({selectorId})");
             }
         }
-        if (!hasPreferred)
-        {
-            foreach (int selectorId in selectors)
-            {
-                if (selectorId < preferredPeerId) preferredPeerId = selectorId;
-            }
-        }
-        if (!playerByPeerId.TryGetValue(preferredPeerId, out Player preferredPlayer))
-        {
-            throw new System.InvalidOperationException($"[ApplyIndicatorForCard] Player {preferredPeerId} not registered for selection on board {Name}.");
-        }
-        card.UpdatePlayerSelectedColor(preferredPlayer);
-        card.SetIsSelected(true);
+        bool localSelected = localSelector is not null;
+        bool enemySelected = enemySelector is not null;
+        Color localColor = localSelected ? localSelector.GetPlayerColor() : default;
+        Color enemyColor = enemySelected ? enemySelector.GetPlayerColor() : default;
+        string localLabel = localSelected ? $"{localSelector.Name}({localSelector.MultiplayerId})" : "None";
+        string enemyLabel = enemySelected ? $"{enemySelector.Name}({enemySelector.MultiplayerId})" : "None";
+        GD.Print($"[SelectIndicator] board={Name} card={card.Name} selectors=[{selectorInfo}] local={localLabel} enemy={enemyLabel}");
+        card.UpdateSelectionIndicators(localSelected, localColor, enemySelected, enemyColor);
+        card.SetIsSelected(localSelected || enemySelected);
+        GD.Print($"[SelectIndicatorState] board={Name} enemyBoard={isEnemyBoard} card={card.Name} pos={card.PositionInBoard} localSelected={localSelected} enemySelected={enemySelected} localColor={localColor} enemyColor={enemyColor}");
     }
 }

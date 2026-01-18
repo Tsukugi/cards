@@ -154,6 +154,8 @@ public sealed class ALMatchDebugSettings
     public bool IgnoreCosts { get; set; } = true;
     public bool EnableAutoHostMatch { get; set; } = false;
     public bool EnableAutoJoinMatch { get; set; } = false;
+    public bool EnableSelectionSyncTest { get; set; } = false;
+    public float SelectionSyncStepSeconds { get; set; } = 1f;
 }
 
 public sealed class ALPlayerSettings
