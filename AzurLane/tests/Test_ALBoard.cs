@@ -23,7 +23,7 @@ namespace ALTCG.Tests
 
             SelectCardField(player, Vector2I.One);
             PlaceCardInBoardFromHand(player, mockCard);
-            test.Assert(GetSelectedCardPosition(), Vector2I.One);
+            test.Assert(GetSelectedCardPosition(player), Vector2I.One);
             test.Assert(GetSelectedCard<ALCard>(player).Name, mockCard.Name);
             await Task.CompletedTask;
         }

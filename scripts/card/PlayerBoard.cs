@@ -19,15 +19,15 @@ public partial class PlayerBoard : Board
             if (axis == Vector2I.Right && selectedCard.EdgeRight is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeRight); return; }
         }
 
-        Card? card = SearchForCardInBoard(selectedCardPosition, axis, 1, 10);
+        Vector2I startingPosition = GetSelectedCardPosition(player);
+        Card? card = SearchForCardInBoard(startingPosition, axis, 1, 10);
         if (card is null) // We didn't find a card with the specified position
         {
             if (OnBoardEdge is not null) OnBoardEdge(this, axis);
             return;
         }
 
-        selectedCardPosition = card.PositionInBoard;
-        SelectCardField(player, selectedCardPosition);
+        SelectCardField(player, card.PositionInBoard);
         // GD.Print($"[{player.Name}.PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {selectedCardPosition}");
     }
 
