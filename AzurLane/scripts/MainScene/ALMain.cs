@@ -64,6 +64,7 @@ public partial class ALMain : Control, IALMainAutoMatchHost
         LoadPlayerSettings();
         LoadDebugSettings();
         Callable.From(debug.AutoSyncStart).CallDeferred();
+        ScheduleQuitAfterArg();
     }
 
     public void OnStartPressed()
@@ -248,6 +249,30 @@ public partial class ALMain : Control, IALMainAutoMatchHost
         if (string.IsNullOrWhiteSpace(playerName)) return;
         playerNameInput.Text = playerName;
         GD.Print($"[ALMain.LoadPlayerNameFromArgs] Player {playerName}");
+    }
+
+    void ScheduleQuitAfterArg()
+    {
+        string value = GetCommandLineValue("--quit-after");
+        if (string.IsNullOrWhiteSpace(value)) return;
+        if (!float.TryParse(value, out float seconds))
+        {
+            throw new InvalidOperationException($"[ALMain.ScheduleQuitAfterArg] Invalid quit-after value: {value}");
+        }
+        GD.Print($"[ALMain.ScheduleQuitAfterArg] Quit after {seconds}s");
+        _ = QuitAfterDelay(seconds);
+    }
+
+    async System.Threading.Tasks.Task QuitAfterDelay(float seconds)
+    {
+        var tree = GetTree();
+        if (tree is null)
+        {
+            throw new InvalidOperationException("[ALMain.QuitAfterDelay] SceneTree is required.");
+        }
+        await System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(seconds));
+        GD.Print($"[ALMain.QuitAfterDelay] Quitting after {seconds}s");
+        tree.Quit();
     }
 
     static string GetCommandLineValue(string key)

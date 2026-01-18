@@ -8,6 +8,7 @@ LOG_DIR="$ROOT_DIR/logs"
 RUN_SECONDS="${RUN_SECONDS:-}"       # When set, how long to keep clients alive before killing them.
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-30}" # Timeout (seconds) for the build step.
 DOTNET_BIN="${DOTNET_BIN:-dotnet}"
+QUIT_AFTER="${QUIT_AFTER:-}"         # When set, pass --quit-after=<seconds> to clients.
 
 if [[ -f "$ROOT_DIR/.env" ]]; then
   # Load per-repo environment overrides (e.g. GODOT_BIN).
@@ -43,8 +44,13 @@ if ! timeout "${BUILD_TIMEOUT}s" "$DOTNET_BIN" build "$ROOT_DIR/Cards.sln"; then
 fi
 
 # Run two clients and write logs per instance.
-"$GODOT_BIN" --path "$ROOT_DIR" -- --player-name="$CLIENT_A" >"$LOG_DIR/${CLIENT_A}.log" 2>&1 &
-"$GODOT_BIN" --path "$ROOT_DIR" -- --player-name="$CLIENT_B" >"$LOG_DIR/${CLIENT_B}.log" 2>&1 &
+QUIT_ARG=""
+if [[ -n "${QUIT_AFTER}" ]]; then
+  QUIT_ARG="--quit-after=${QUIT_AFTER}"
+fi
+
+"$GODOT_BIN" --path "$ROOT_DIR" -- --player-name="$CLIENT_A" $QUIT_ARG >"$LOG_DIR/${CLIENT_A}.log" 2>&1 &
+"$GODOT_BIN" --path "$ROOT_DIR" -- --player-name="$CLIENT_B" $QUIT_ARG >"$LOG_DIR/${CLIENT_B}.log" 2>&1 &
 
 # Give the clients time to boot, then stop them to avoid hanging CI.
 if [[ -n "${RUN_SECONDS}" ]]; then
