@@ -82,7 +82,8 @@ public partial class Board : Node3D
         int currentRange = 1;
         while (currentRange <= searchMaxRange)
         {
-            for (int sideOffset = -(currentRange * sideOffsetRange); sideOffset <= (currentRange * sideOffsetRange); sideOffset++)
+            int maxSideOffset = currentRange * sideOffsetRange;
+            foreach (int sideOffset in BuildSideOffsets(maxSideOffset))
             {
                 var newOffset = FindOffsetBasedOnAxis(axis, currentRange, sideOffset);
                 var newPosition = startingPosition + newOffset;
@@ -93,6 +94,20 @@ public partial class Board : Node3D
             currentRange++;
         }
         return null;
+    }
+
+    static IEnumerable<int> BuildSideOffsets(int maxSideOffset)
+    {
+        if (maxSideOffset < 0)
+        {
+            throw new System.InvalidOperationException("[BuildSideOffsets] maxSideOffset must be non-negative.");
+        }
+        yield return 0;
+        for (int offset = 1; offset <= maxSideOffset; offset++)
+        {
+            yield return offset;
+            yield return -offset;
+        }
     }
 
     // --- Public API---

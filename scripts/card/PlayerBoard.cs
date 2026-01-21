@@ -10,13 +10,26 @@ public partial class PlayerBoard : Board
     public override void OnInputAxisChange(Player player, Vector2I axis)
     {
         if (axis == Vector2I.Zero) return;
-        if (OnSelectFixedCardEdge is not null && GetSelectedCard<Card>(player) is Card selectedCard)
+        Card selectedCard = GetSelectedCard<Card>(player);
+        bool allowFixedEdge = !(GetIsEnemyBoard() && axis.Y > 0);
+        if (allowFixedEdge && OnSelectFixedCardEdge is not null && selectedCard is Card)
         {
             // Override search with predefined edges
             if (axis == Vector2I.Up && selectedCard.EdgeUp is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeUp); return; }
             if (axis == Vector2I.Down && selectedCard.EdgeDown is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeDown); return; }
             if (axis == Vector2I.Left && selectedCard.EdgeLeft is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeLeft); return; }
             if (axis == Vector2I.Right && selectedCard.EdgeRight is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeRight); return; }
+        }
+
+        if (selectedCard is null)
+        {
+            throw new System.InvalidOperationException("[PlayerBoard.OnInputAxisChange] No selected card found.");
+        }
+
+        if (axis.Y > 0 && selectedCard.PositionInBoard.Y >= 2)
+        {
+            if (OnBoardEdge is not null) OnBoardEdge(this, axis);
+            return;
         }
 
         Vector2I startingPosition = GetSelectedCardPosition(player);

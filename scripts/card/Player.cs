@@ -39,7 +39,6 @@ public partial class Player : Node3D
         hand = GetNode<PlayerHand>("Hand");
         board = GetNode<PlayerBoard>("Board");
         orderedBoards = [hand, board];
-        hand.SelectCardField(this, Vector2I.Zero, false);
         SelectBoard(this, GetSelectedBoard());
     }
 
@@ -118,11 +117,16 @@ public partial class Player : Node3D
         // So by having Up as 0,1 and Down as 0,-1 we can correctly switch between this order
         Vector2I invertedAxis = axis * -1;
         int invertedToken = !exitingBoard.GetIsEnemyBoard() ? 1 : -1;
-        int newIndex = selectedBoardIndex + (invertedAxis.Y * invertedToken);
+        int exitingIndex = orderedBoards.FindIndex(board => board == exitingBoard);
+        if (exitingIndex < 0)
+        {
+            throw new InvalidOperationException($"[OnBoardEdgeHandler] Board {exitingBoard.Name} not found in orderedBoards.");
+        }
+        int newIndex = exitingIndex + (invertedAxis.Y * invertedToken);
         if (!orderedBoards.Count.IsInsideBounds(newIndex)) { return; }
 
-
         Board newBoard = orderedBoards[newIndex];
+        GD.Print($"[OnBoardEdgeHandler] player={Name} exiting={exitingBoard.Name} enemy={exitingBoard.GetIsEnemyBoard()} axis={axis} invertedAxis={invertedAxis} token={invertedToken} newIndex={newIndex} newBoard={newBoard.Name} newEnemy={newBoard.GetIsEnemyBoard()}");
         if (exitingBoard is PlayerBoard && newBoard is PlayerBoard)
         {
             Card selectedCard = exitingBoard.GetSelectedCard<Card>(this) ?? throw new InvalidOperationException($"[OnBoardEdgeHandler] No selected card on board {exitingBoard.Name}.");
@@ -132,6 +136,14 @@ public partial class Player : Node3D
                 throw new InvalidOperationException($"[OnBoardEdgeHandler] Edge card {edgeCard.Name} is not on board {newBoard.Name}.");
             }
             newBoard.SelectCardField(this, edgeCard.PositionInBoard);
+        }
+        else if (exitingBoard is PlayerHand && newBoard is PlayerBoard)
+        {
+            SelectBoardPositionByExit(exitingBoard, newBoard);
+        }
+        else if (newBoard.GetSelectedCard<Card>(this) is null)
+        {
+            SelectBoardPositionByExit(exitingBoard, newBoard);
         }
         SelectBoard(this, newBoard);
         GD.Print($"[OnBoardEdgeHandler] {newBoard.Name} - {selectedBoardIndex} ");
@@ -144,6 +156,28 @@ public partial class Player : Node3D
         SelectBoard(this, newBoard);
     }
 
+    void SelectBoardPositionByExit(Board exitingBoard, Board newBoard)
+    {
+        Vector2I exitingPosition = exitingBoard.GetSelectedCardPosition(this);
+        Vector2I targetPosition = exitingPosition;
+        if (newBoard is PlayerHand)
+        {
+            // Hands are 1D (Y=0), keep X but clamp Y to 0 for cross-board moves.
+            int maxX = newBoard.GetCardsInTree().Count - 1;
+            if (maxX < 0)
+            {
+                throw new InvalidOperationException($"[OnBoardEdgeHandler] Hand {newBoard.Name} has no cards to select.");
+            }
+            int clampedX = Mathf.Clamp(exitingPosition.X, 0, maxX);
+            targetPosition = new Vector2I(clampedX, 0);
+        }
+        if (newBoard.FindCardInTree(targetPosition) is null)
+        {
+            throw new InvalidOperationException($"[OnBoardEdgeHandler] No card at {targetPosition} on board {newBoard.Name}.");
+        }
+        newBoard.SelectCardField(this, targetPosition);
+    }
+
     public void SelectBoard(Player player, Board board)
     {
         if (selectedBoard is not null && selectedBoard != board)
@@ -154,6 +188,13 @@ public partial class Player : Node3D
         selectedBoard = board;
         if (selectedBoard.GetSelectedCard<Card>(player) is null)
         {
+            if (selectedBoard.GetCardsInTree().Count == 0)
+            {
+                selectedBoardIndex = orderedBoards.FindIndex((board) => board == selectedBoard);
+                axisInputHandler.SetInverted(selectedBoard.GetIsEnemyBoard()); // An enemy board should have its axis inverted as it is inverted in the editor
+                if (selectedBoard is not null) AssignBoardEvents(selectedBoard);
+                return;
+            }
             throw new InvalidOperationException($"[SelectBoard] No selected card on board {selectedBoard.Name} for player {player.Name}.");
         }
         selectedBoardIndex = orderedBoards.FindIndex((board) => board == selectedBoard);
@@ -247,6 +288,13 @@ public partial class Player : Node3D
         GD.Print($"[Action Triggered by player {Name}] {GetSelectedBoard().Name}.{action}");
         player.GetSelectedBoard().OnActionHandler(this, action);
         if (syncToNet) Network.Instance.SendInputAction(action);
+    }
+
+    public Vector2I SimulateAxisInput(Vector2I axis)
+    {
+        Vector2I appliedAxis = axisInputHandler.ApplyInversion(axis);
+        GetSelectedBoard().OnInputAxisChange(this, appliedAxis);
+        return appliedAxis;
     }
 
     public async Task GoBackInHistoryState() => await boardInputAsync.AwaitBefore(playStateManager.GoBackInHistory, playStateChangeDelay);

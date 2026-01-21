@@ -16,7 +16,7 @@ public partial class ALGameMatchManager : Node
     ALPlayerUI playerUI;
     ALDebug debug;
     ALInteraction interaction;
-    ALSelectionSyncTest selectionSyncTest;
+    ISelectionSyncTest selectionSyncTest;
 
     public override void _Ready()
     {
@@ -144,6 +144,11 @@ public partial class ALGameMatchManager : Node
     async void HandleOnCardSelectEvent(int peerId, int targetOwnerPeerId, string boardName, Vector2I position)
     {
         GD.Print($"[HandleOnCardSelectEvent] To {userPlayer.MultiplayerId}: From {peerId}: owner={targetOwnerPeerId} -> {boardName} - {position}");
+        if (peerId == userPlayer.MultiplayerId)
+        {
+            GD.Print($"[HandleOnCardSelectEvent] Ignore self selection from {peerId}.");
+            return;
+        }
 
         ALPlayer selectingPlayer = ResolveSelectingPlayer(peerId);
         if (selectingPlayer is null)
@@ -212,13 +217,43 @@ public partial class ALGameMatchManager : Node
         await Task.CompletedTask;
     }
 
+    bool ShouldSkipAutoPhasesForTest()
+    {
+        return debug.GetSelectionSyncTestEnabled();
+    }
+
     // Match
     async void StartMatchForPlayer()
     {
         await AssignDeckSet();
+        if (ShouldSkipAutoPhasesForTest())
+        {
+            foreach (var player in orderedPlayers)
+            {
+                player.Phase.SetSkipAutoPhases(true);
+            }
+        }
         await userPlayer.StartGameForPlayer(userPlayer.GetDeckSet());
         //await enemyPlayer.StartGameForPlayer(enemyPlayer.GetDeckSet());
-        if (Multiplayer.IsServer()) GetPlayerPlayingTurn().StartTurn();
+        if (Multiplayer.IsServer())
+        {
+            if (ShouldSkipAutoPhasesForTest())
+            {
+                await GetPlayerPlayingTurn().Phase.ForceMainPhase(true);
+                foreach (var player in orderedPlayers)
+                {
+                    if (player == GetPlayerPlayingTurn())
+                    {
+                        continue;
+                    }
+                    await player.Phase.ForceMainPhase(false);
+                }
+            }
+            else
+            {
+                GetPlayerPlayingTurn().StartTurn();
+            }
+        }
         // if (!GetNextPlayer().GetIsControllerPlayer()) Callable.From(GetNextPlayer().GetPlayerAIController().StartTurn).CallDeferred();
     }
 
@@ -228,8 +263,52 @@ public partial class ALGameMatchManager : Node
         {
             return;
         }
-        selectionSyncTest ??= new ALSelectionSyncTest(this, debug.GetSelectionSyncStepSeconds());
+        string selectionClass = GetSelectionSyncTestClass();
+        if (string.Equals(selectionClass, "Simul", System.StringComparison.OrdinalIgnoreCase))
+        {
+            selectionSyncTest ??= new ALSelectionSyncSimulTest(this, debug.GetSelectionSyncStepSeconds());
+        }
+        else
+        {
+            selectionSyncTest ??= new ALSelectionSyncTest(this, debug.GetSelectionSyncStepSeconds());
+        }
         _ = selectionSyncTest.Run();
+    }
+
+    static string GetSelectionSyncTestClass()
+    {
+        string value = GetCommandLineValue("--selection-sync-test-class");
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "Default";
+        }
+        return value;
+    }
+
+    static string GetCommandLineValue(string key)
+    {
+        string value = GetCommandLineValueFromArgs(OS.GetCmdlineUserArgs(), key);
+        if (!string.IsNullOrWhiteSpace(value)) return value;
+        return GetCommandLineValueFromArgs(OS.GetCmdlineArgs(), key);
+    }
+
+    static string GetCommandLineValueFromArgs(string[] args, string key)
+    {
+        if (args is null || args.Length == 0) return "";
+        for (int index = 0; index < args.Length; index++)
+        {
+            string arg = args[index];
+            if (arg is null) continue;
+            if (arg.StartsWith(key + "=", System.StringComparison.Ordinal))
+            {
+                return arg[(key.Length + 1)..];
+            }
+            if (arg == key && index + 1 < args.Length)
+            {
+                return args[index + 1];
+            }
+        }
+        return "";
     }
 
     async Task OnGameOverHandler(Player losingPlayer)

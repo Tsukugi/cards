@@ -1,0 +1,284 @@
+{
+  "Hand.Start": [
+    [
+      "OwnHand:Hand0(0,0)",
+      "OwnHand:Hand0(0,0)"
+    ]
+  ],
+  "Hand.ToBoard.Step1": [
+    [
+      "OwnBoard:FrontRow(0,0)",
+      "OwnBoard:FrontRow(0,0)"
+    ]
+  ],
+  "Hand.ToBoard": [
+    [
+      "OwnBoard:FrontRow(0,0)",
+      "OwnBoard:FrontRow(0,0)"
+    ]
+  ],
+  "Board.ToEnemyBoard.Step1": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "Board.ToEnemyBoard": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyBoard.ToBoard.Step1": [
+    [
+      "OwnBoard:FrontRow(0,0)",
+      "OwnBoard:FrontRow(0,0)"
+    ]
+  ],
+  "EnemyBoard.ToBoard": [
+    [
+      "OwnBoard:FrontRow(0,0)",
+      "OwnBoard:FrontRow(0,0)"
+    ]
+  ],
+  "Board.ToHand.Step1": [
+    [
+      "OwnBoard:FrontRow(0,1)",
+      "OwnBoard:FrontRow(0,1)"
+    ]
+  ],
+  "Board.ToHand.Step2": [
+    [
+      "OwnBoard:CubeDeck(0,2)",
+      "OwnBoard:CubeDeck(0,2)"
+    ]
+  ],
+  "Board.ToHand.Step3": [
+    [
+      "OwnHand:Hand0(0,0)",
+      "OwnHand:Hand0(0,0)"
+    ]
+  ],
+  "Board.ToHand.Step4": [
+    [
+      "OwnHand:Hand0(0,0)",
+      "OwnHand:Hand0(0,0)"
+    ]
+  ],
+  "Board.ToHand": [
+    [
+      "OwnHand:Hand0(0,0)",
+      "OwnHand:Hand0(0,0)"
+    ]
+  ],
+  "Hand.ToBoard2.Step1": [
+    [
+      "OwnBoard:FrontRow(0,0)",
+      "OwnBoard:FrontRow(0,0)"
+    ]
+  ],
+  "Hand.ToBoard2": [
+    [
+      "OwnBoard:FrontRow(0,0)",
+      "OwnBoard:FrontRow(0,0)"
+    ]
+  ],
+  "Board.ToEnemyBoard2.Step1": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "Board.ToEnemyBoard2": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyBoard.ToEnemyHand.Step1": [
+    [
+      "EnemyBoard:BackRow2(2,1)",
+      "EnemyBoard:BackRow2(2,1)"
+    ]
+  ],
+  "EnemyBoard.ToEnemyHand.Step2": [
+    [
+      "EnemyHand:Hand2(2,0)",
+      "EnemyHand:Hand2(2,0)"
+    ]
+  ],
+  "EnemyBoard.ToEnemyHand.Step3": [
+    [
+      "EnemyHand:Hand2(2,0)",
+      "EnemyHand:Hand2(2,0)"
+    ]
+  ],
+  "EnemyBoard.ToEnemyHand.Step4": [
+    [
+      "EnemyHand:Hand2(2,0)",
+      "EnemyHand:Hand2(2,0)"
+    ]
+  ],
+  "EnemyBoard.ToEnemyHand": [
+    [
+      "EnemyHand:Hand2(2,0)",
+      "EnemyHand:Hand2(2,0)"
+    ]
+  ],
+  "EnemyHand.ToEnemyBoard.Step1": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyHand.ToEnemyBoard.Step2": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyHand.ToEnemyBoard.Step3": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyHand.ToEnemyBoard.Step4": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyHand.ToEnemyBoard": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyBoard.ToEnemyHand2.Step1": [
+    [
+      "EnemyBoard:BackRow2(2,1)",
+      "EnemyBoard:BackRow2(2,1)"
+    ]
+  ],
+  "EnemyBoard.ToEnemyHand2.Step2": [
+    [
+      "EnemyHand:Hand2(2,0)",
+      "EnemyHand:Hand2(2,0)"
+    ]
+  ],
+  "EnemyBoard.ToEnemyHand2.Step3": [
+    [
+      "EnemyHand:Hand2(2,0)",
+      "EnemyHand:Hand2(2,0)"
+    ]
+  ],
+  "EnemyBoard.ToEnemyHand2.Step4": [
+    [
+      "EnemyHand:Hand2(2,0)",
+      "EnemyHand:Hand2(2,0)"
+    ]
+  ],
+  "EnemyBoard.ToEnemyHand2": [
+    [
+      "EnemyHand:Hand2(2,0)",
+      "EnemyHand:Hand2(2,0)"
+    ]
+  ],
+  "EnemyHand.ToEnemyBoard2.Step1": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyHand.ToEnemyBoard2.Step2": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyHand.ToEnemyBoard2.Step3": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyHand.ToEnemyBoard2.Step4": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyHand.ToEnemyBoard2": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyBoard.ToBoard2.Step1": [
+    [
+      "OwnBoard:FrontRow(0,0)",
+      "OwnBoard:FrontRow(0,0)"
+    ]
+  ],
+  "EnemyBoard.ToBoard2": [
+    [
+      "OwnBoard:FrontRow(0,0)",
+      "OwnBoard:FrontRow(0,0)"
+    ]
+  ],
+  "Board.ToEnemyBoard3.Step1": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "Board.ToEnemyBoard3": [
+    [
+      "EnemyBoard:FrontRow2(2,0)",
+      "EnemyBoard:FrontRow2(2,0)"
+    ]
+  ],
+  "EnemyBoard.ToBoard3.Step1": [
+    [
+      "OwnBoard:FrontRow(0,0)",
+      "OwnBoard:FrontRow(0,0)"
+    ]
+  ],
+  "EnemyBoard.ToBoard3": [
+    [
+      "OwnBoard:FrontRow(0,0)",
+      "OwnBoard:FrontRow(0,0)"
+    ]
+  ],
+  "Board.ToHand2.Step1": [
+    [
+      "OwnBoard:FrontRow(0,1)",
+      "OwnBoard:FrontRow(0,1)"
+    ]
+  ],
+  "Board.ToHand2.Step2": [
+    [
+      "OwnBoard:CubeDeck(0,2)",
+      "OwnBoard:CubeDeck(0,2)"
+    ]
+  ],
+  "Board.ToHand2.Step3": [
+    [
+      "OwnHand:Hand0(0,0)",
+      "OwnHand:Hand0(0,0)"
+    ]
+  ],
+  "Board.ToHand2.Step4": [
+    [
+      "OwnHand:Hand0(0,0)",
+      "OwnHand:Hand0(0,0)"
+    ]
+  ],
+  "Board.ToHand2": [
+    [
+      "OwnHand:Hand0(0,0)",
+      "OwnHand:Hand0(0,0)"
+    ]
+  ]
+}

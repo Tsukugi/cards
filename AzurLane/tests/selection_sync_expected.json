@@ -1,0 +1,284 @@
+{
+  "Hand.Start": {
+    "Board": "Hand",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "None"
+  },
+  "Hand.ToBoard.Step1": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Up"
+  },
+  "Hand.ToBoard": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Up"
+  },
+  "Board.ToEnemyBoard.Step1": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "Board.ToEnemyBoard": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "EnemyBoard.ToBoard.Step1": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "EnemyBoard.ToBoard": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "Board.ToHand.Step1": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 1],
+    "Axis": "Down"
+  },
+  "Board.ToHand.Step2": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [-1, 2],
+    "Axis": "Down"
+  },
+  "Board.ToHand.Step3": {
+    "Board": "Hand",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "Board.ToHand.Step4": {
+    "Board": "Hand",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "Board.ToHand": {
+    "Board": "Hand",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "Hand.ToBoard2.Step1": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Up"
+  },
+  "Hand.ToBoard2": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Up"
+  },
+  "Board.ToEnemyBoard2.Step1": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "Board.ToEnemyBoard2": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "EnemyBoard.ToEnemyHand.Step1": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 1],
+    "Axis": "Up"
+  },
+  "EnemyBoard.ToEnemyHand.Step2": {
+    "Board": "Hand",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "EnemyBoard.ToEnemyHand.Step3": {
+    "Board": "Hand",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "EnemyBoard.ToEnemyHand.Step4": {
+    "Board": "Hand",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "EnemyBoard.ToEnemyHand": {
+    "Board": "Hand",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "EnemyHand.ToEnemyBoard.Step1": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Down"
+  },
+  "EnemyHand.ToEnemyBoard.Step2": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Down"
+  },
+  "EnemyHand.ToEnemyBoard.Step3": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Down"
+  },
+  "EnemyHand.ToEnemyBoard.Step4": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Down"
+  },
+  "EnemyHand.ToEnemyBoard": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Down"
+  },
+  "EnemyBoard.ToEnemyHand2.Step1": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 1],
+    "Axis": "Up"
+  },
+  "EnemyBoard.ToEnemyHand2.Step2": {
+    "Board": "Hand",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "EnemyBoard.ToEnemyHand2.Step3": {
+    "Board": "Hand",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "EnemyBoard.ToEnemyHand2.Step4": {
+    "Board": "Hand",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "EnemyBoard.ToEnemyHand2": {
+    "Board": "Hand",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "EnemyHand.ToEnemyBoard2.Step1": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Down"
+  },
+  "EnemyHand.ToEnemyBoard2.Step2": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Down"
+  },
+  "EnemyHand.ToEnemyBoard2.Step3": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Down"
+  },
+  "EnemyHand.ToEnemyBoard2.Step4": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Down"
+  },
+  "EnemyHand.ToEnemyBoard2": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Down"
+  },
+  "EnemyBoard.ToBoard2.Step1": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "EnemyBoard.ToBoard2": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "Board.ToEnemyBoard3.Step1": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "Board.ToEnemyBoard3": {
+    "Board": "Board",
+    "Enemy": true,
+    "Pos": [2, 0],
+    "Axis": "Up"
+  },
+  "EnemyBoard.ToBoard3.Step1": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "EnemyBoard.ToBoard3": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "Board.ToHand2.Step1": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 1],
+    "Axis": "Down"
+  },
+  "Board.ToHand2.Step2": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 2],
+    "Axis": "Down"
+  },
+  "Board.ToHand2.Step3": {
+    "Board": "Hand",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "Board.ToHand2.Step4": {
+    "Board": "Hand",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "Board.ToHand2": {
+    "Board": "Hand",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  }
+}
