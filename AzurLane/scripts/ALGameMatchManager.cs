@@ -81,6 +81,8 @@ public partial class ALGameMatchManager : Node
         ALNetwork.Instance.OnDrawCardEvent += HandleOnDrawCardEvent;
         ALNetwork.Instance.OnSyncFlagshipEvent -= HandleOnSyncFlagship;
         ALNetwork.Instance.OnSyncFlagshipEvent += HandleOnSyncFlagship;
+        ALNetwork.Instance.OnSyncDurabilityDamageEvent -= HandleOnSyncDurabilityDamage;
+        ALNetwork.Instance.OnSyncDurabilityDamageEvent += HandleOnSyncDurabilityDamage;
         ALNetwork.Instance.OnSyncPlaceCard -= HandleOnSyncPlaceCard;
         ALNetwork.Instance.OnSyncPlaceCard += HandleOnSyncPlaceCard;
         ALNetwork.Instance.OnSyncPlaceCardGuard -= HandleOnSyncPlaceCardGuard;
@@ -117,6 +119,13 @@ public partial class ALGameMatchManager : Node
         ALCardDTO synchedCard = database.cards[cardId];
         GD.Print($"[HandleOnSyncFlagship] To {userPlayer.MultiplayerId}: From {peerId}: {synchedCard.name}");
         userPlayer.UpdateEnemyFlagship(synchedCard);
+        await Task.CompletedTask;
+    }
+    async void HandleOnSyncDurabilityDamage(int peerId, string cardId)
+    {
+        ALCardDTO synchedCard = database.cards[cardId];
+        GD.Print($"[HandleOnSyncDurabilityDamage] To {userPlayer.MultiplayerId}: From {peerId}: {synchedCard.name}");
+        userPlayer.ApplyEnemyDurabilityDamage(synchedCard);
         await Task.CompletedTask;
     }
     async void HandleOnDrawCardEvent(int peerId, string cardId, ALDrawType drawType)

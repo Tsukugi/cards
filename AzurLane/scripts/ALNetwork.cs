@@ -11,6 +11,7 @@ public partial class ALNetwork : Network
     public event ALPlayerMatchPhaseEvent OnSendMatchPhaseEvent;
     public new event ALPlayerDrawEvent OnDrawCardEvent;
     public event ALPlayerSyncCardEvent OnSyncFlagshipEvent;
+    public event ALPlayerSyncCardEvent OnSyncDurabilityDamageEvent;
     public event ALPlayerSyncPlaceCardEvent OnSyncPlaceCard;
     public event ALPlayerSyncPlaceCardEvent OnSyncPlaceCardGuard;
 
@@ -56,6 +57,14 @@ public partial class ALNetwork : Network
     {
         GD.Print($"[OnSyncFlagship] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -------------> {cardId}");
         if (OnSyncFlagshipEvent is not null) OnSyncFlagshipEvent(Multiplayer.GetRemoteSenderId(), cardId);
+    }
+
+    public void SyncDurabilityDamage(string cardId) => Rpc(MethodName.OnSyncDurabilityDamage, [cardId]);
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    protected void OnSyncDurabilityDamage(string cardId)
+    {
+        GD.Print($"[OnSyncDurabilityDamage] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -------------> {cardId}");
+        if (OnSyncDurabilityDamageEvent is not null) OnSyncDurabilityDamageEvent(Multiplayer.GetRemoteSenderId(), cardId);
     }
     public void SendMatchPhase(int matchPhase) => Rpc(MethodName.OnSendMatchPhase, [matchPhase]);
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.UnreliableOrdered)]

@@ -384,6 +384,10 @@ public partial class ALPlayer : Player
         // "Draw" the card to hand 
         ALHand hand = GetPlayerHand<ALHand>();
         ALCard durabilityCardInHand = await hand.AddCardToHand(durabilityCardInBoard.GetAttributes<ALCardDTO>());
+        if (GetIsControllerPlayer())
+        {
+            ALNetwork.Instance.SyncDurabilityDamage(durabilityCardInHand.GetAttributes<ALCardDTO>().id);
+        }
         durabilityCardInBoard.DestroyCard(); // Destroy card from board
         await TryToTriggerOnAllCards(ALCardEffectTrigger.OnDamageReceived);
         GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown()).Count}/{durabilityCards.Count}");
@@ -752,6 +756,21 @@ public partial class ALPlayer : Player
         emptyDurability.UpdateAttributes(card);
         emptyDurability.IsInputSelectable = true;
         await this.Wait(DrawDelay);
+    }
+
+    public void ApplyEnemyDurabilityDamage(ALCardDTO card)
+    {
+        if (card is null)
+        {
+            throw new InvalidOperationException("[ApplyEnemyDurabilityDamage] Card is required.");
+        }
+        ALCard durabilityCardInBoard = GetEnemyDurabilityCards().FindLast(durabilityCard => durabilityCard.GetIsFaceDown());
+        if (durabilityCardInBoard is null)
+        {
+            throw new InvalidOperationException("[ApplyEnemyDurabilityDamage] No enemy durability card available.");
+        }
+        durabilityCardInBoard.DestroyCard();
+        AddEnemyCardToHand(card);
     }
 
     public async Task PlaceEnemyCardToBoard(ALCardDTO card, string boardName, string fieldPath)
