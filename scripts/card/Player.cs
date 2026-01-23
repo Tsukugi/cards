@@ -20,8 +20,6 @@ public partial class Player : Node3D
     protected string handPath = "Hand";
     [Export]
     protected string enemyHandPath = "";
-    [Export]
-    protected bool includeEnemyHandInOrder = false;
     protected readonly AxisInputHandler axisInputHandler = new();
     protected readonly ActionInputHandler actionInputHandler = new();
     protected Board selectedBoard;
@@ -385,12 +383,8 @@ public partial class Player : Node3D
             enemyBoard.SetIsEnemyBoard(true);
             boards.Add(enemyBoard);
         }
-        if (includeEnemyHandInOrder)
+        if (enemyHand is not null)
         {
-            if (enemyHand is null)
-            {
-                throw new InvalidOperationException("[RebuildOrderedBoards] Enemy hand is required when includeEnemyHandInOrder is enabled.");
-            }
             enemyHand.SetIsEnemyBoard(true);
             boards.Add(enemyHand);
         }
@@ -403,11 +397,7 @@ public partial class Player : Node3D
         {
             throw new InvalidOperationException($"[Player._Ready] {label} path is required.");
         }
-        T node = GetNodeOrNull<T>(path);
-        if (node is null)
-        {
-            throw new InvalidOperationException($"[Player._Ready] {label} not found at '{path}'.");
-        }
+        T node = GetNodeOrNull<T>(path) ?? throw new InvalidOperationException($"[Player._Ready] {label} not found at '{path}'.");
         return node;
     }
 }

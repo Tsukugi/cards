@@ -69,13 +69,9 @@ public partial class ALPlayer : Player
             int clampedX = Math.Clamp(position.X, 0, maxX);
             return new Vector2I(clampedX, 0);
         });
-        if (includeEnemyHandInOrder)
+        ALHand enemyHand = GetEnemyPlayerHand<ALHand>();
+        if (enemyHand is not null)
         {
-            ALHand enemyHand = GetEnemyPlayerHand<ALHand>();
-            if (enemyHand is null)
-            {
-                throw new InvalidOperationException("[ALPlayer._Ready] Enemy hand is required for enemy hand exit mappings.");
-            }
             SetBoardExitMapping(enemyHand, board, _ => new Vector2I(1, -2));
         }
         costArea = board.GetCostArea(ALBoardSide.Player);
