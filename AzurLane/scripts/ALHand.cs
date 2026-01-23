@@ -30,6 +30,7 @@ public partial class ALHand : PlayerHand
         }
         ALCard cardToRemove = GetCardsInHand().Find(card => card.GetAttributes<ALCardDTO>().id == cardId) ?? throw new System.InvalidOperationException($"[RemoveEnemyCardFromHand] Card id not found in enemy hand: {cardId}");
         RemoveChild(cardToRemove);
+        cardToRemove.QueueFree();
         RepositionHandCards();
     }
 

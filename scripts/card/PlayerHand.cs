@@ -43,6 +43,7 @@ public partial class PlayerHand : Board
     {
         GD.Print($"[RemoveCardFromHand] Removing {cardToRemove}");
         RemoveChild(cardToRemove);
+        cardToRemove.QueueFree();
         RepositionHandCards();
         SelectCardField(player, GetSelectedCardPosition(player)); // Try to select again on that position
     }
