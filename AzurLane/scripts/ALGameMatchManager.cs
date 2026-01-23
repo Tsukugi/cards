@@ -199,8 +199,13 @@ public partial class ALGameMatchManager : Node
         {
             remoteSelectedBoard.ClearSelectionForPlayer(remotePlayer);
         }
-        GD.Print($"[HandleOnCardSelectEvent.Resolve] selector={remotePlayer.Name}({remotePlayer.MultiplayerId}) board={board.Name} pos={position}");
-        board.SelectCardField(remotePlayer, position, false);
+        Vector2I mappedPosition = position;
+        if (board is ALBoard alBoard)
+        {
+            mappedPosition = alBoard.MapToOppositeSidePosition(position);
+        }
+        GD.Print($"[HandleOnCardSelectEvent.Resolve] selector={remotePlayer.Name}({remotePlayer.MultiplayerId}) board={board.Name} pos={position} mapped={mappedPosition}");
+        board.SelectCardField(remotePlayer, mappedPosition, false);
         remoteSelectedBoard = board;
         await Task.CompletedTask;
     }
@@ -220,14 +225,10 @@ public partial class ALGameMatchManager : Node
         {
             if (targetOwnerPeerId != userPlayer.MultiplayerId)
             {
-                GD.Print($"[ResolveSelectionBoard] Ignore remote hand selection. owner={targetOwnerPeerId} local={userPlayer.MultiplayerId}");
-                return null;
+                Board enemyHand = userPlayer.GetEnemyPlayerHand<PlayerHand>() ?? throw new System.InvalidOperationException($"[ResolveSelectionBoard] Enemy hand not found for remote selection. owner={targetOwnerPeerId} local={userPlayer.MultiplayerId}");
+                return enemyHand;
             }
-            Board board = userPlayer.GetPlayerHand<PlayerHand>();
-            if (board is null)
-            {
-                throw new System.InvalidOperationException($"[ResolveSelectionBoard] Hand '{boardName}' not found for player {userPlayer.Name}.");
-            }
+            Board board = userPlayer.GetPlayerHand<PlayerHand>() ?? throw new System.InvalidOperationException($"[ResolveSelectionBoard] Hand '{boardName}' not found for player {userPlayer.Name}.");
             return board;
         }
         throw new System.InvalidOperationException($"[ResolveSelectionBoard] Unknown board name '{boardName}'.");

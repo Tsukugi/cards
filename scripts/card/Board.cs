@@ -158,7 +158,24 @@ public partial class Board : Node3D
             {
                 throw new System.InvalidOperationException($"[SelectCardField] Board owner is missing for {Name}.");
             }
-            Network.Instance.SendSelectCardField(player.MultiplayerId, ownerPlayer.MultiplayerId, this, position);
+            int targetOwnerPeerId = ownerPlayer.MultiplayerId;
+            if (isEnemyBoard)
+            {
+                if (ownerPlayer is ALPlayer alPlayer)
+                {
+                    int enemyPeerId = alPlayer.GetMatchManager().GetEnemyPeerId();
+                    if (enemyPeerId <= 0)
+                    {
+                        throw new System.InvalidOperationException($"[SelectCardField] Enemy peer id is not registered for board {Name}.");
+                    }
+                    targetOwnerPeerId = enemyPeerId;
+                }
+                else
+                {
+                    throw new System.InvalidOperationException($"[SelectCardField] Enemy board {Name} requires an ALPlayer owner.");
+                }
+            }
+            Network.Instance.SendSelectCardField(player.MultiplayerId, targetOwnerPeerId, this, position);
         }
     }
 

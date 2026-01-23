@@ -91,6 +91,31 @@ public partial class ALBoard : PlayerBoard
         return false;
     }
 
+    public Vector2I MapToOppositeSidePosition(Vector2I position)
+    {
+        Card sourceCard = FindCardInTree(position) ?? throw new System.InvalidOperationException($"[MapToOppositeSidePosition] No card found at {position} on board {Name}.");
+        string sourcePath = GetPathTo(sourceCard).ToString();
+        string mappedPath;
+        if (sourcePath.StartsWith($"{PlayerRootName}/", System.StringComparison.Ordinal))
+        {
+            mappedPath = $"{EnemyRootName}/{sourcePath[(PlayerRootName.Length + 1)..]}";
+        }
+        else if (sourcePath.StartsWith($"{EnemyRootName}/", System.StringComparison.Ordinal))
+        {
+            mappedPath = $"{PlayerRootName}/{sourcePath[(EnemyRootName.Length + 1)..]}";
+        }
+        else
+        {
+            throw new System.InvalidOperationException($"[MapToOppositeSidePosition] Card path '{sourcePath}' is not under Player or Enemy roots.");
+        }
+        Node mappedNode = GetNodeOrNull(mappedPath);
+        if (mappedNode is not Card mappedCard)
+        {
+            throw new System.InvalidOperationException($"[MapToOppositeSidePosition] Opposite card not found at '{mappedPath}'.");
+        }
+        return mappedCard.PositionInBoard;
+    }
+
     static string GetRootName(ALBoardSide side) => side == ALBoardSide.Enemy ? EnemyRootName : PlayerRootName;
 }
 
