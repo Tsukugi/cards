@@ -238,9 +238,21 @@ public partial class ALPlayer : Player
 
     public async Task OnALPlaceCardStartHandler(Card fieldToPlace)
     {
-        ALCard cardToPlace = fieldToPlace.CastToALCard();
+        if (fieldToPlace is not ALCard cardToPlace)
+        {
+            throw new InvalidOperationException("[OnALPlaceCardStartHandler] Card to place must be an ALCard.");
+        }
         ALBoard board = GetPlayerBoard<ALBoard>();
-        ALCard fieldBeingPlaced = board.GetSelectedCard<ALCard>(this);
+        ALCard fieldBeingPlaced = board.GetSelectedCard<ALCard>(this) ?? throw new InvalidOperationException("[OnALPlaceCardStartHandler] Field cannot be found.");
+        ALCardDTO attrs = cardToPlace.GetAttributes<ALCardDTO>();
+        if (attrs.cardType != ALCardType.Ship)
+        {
+            throw new InvalidOperationException($"[OnALPlaceCardStartHandler] Only ship cards can be placed on units, got {attrs.cardType}.");
+        }
+        if (!board.GetUnitFields(ALBoardSide.Player).Contains(fieldBeingPlaced))
+        {
+            throw new InvalidOperationException("[OnALPlaceCardStartHandler] You can only place units in your units area.");
+        }
         if (!fieldBeingPlaced.CanPlayerPlaceInThisField()) { GD.PrintErr("[PlaceCardInBoardFromHand] This card place is not placeable!"); return; }
         if (fieldBeingPlaced.GetIsAFlagship())
         {

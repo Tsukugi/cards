@@ -4,6 +4,7 @@ using Godot;
 
 public partial class ALBoard : PlayerBoard
 {
+    static readonly string[] UnitFieldNames = ["FrontRow", "FrontRow2", "FrontRow3", "BackRow", "Flagship", "BackRow2"];
     [Export]
     ALCard flagshipCard, enemyFlagshipCard;
 
@@ -57,8 +58,19 @@ public partial class ALBoard : PlayerBoard
         }
         return GetFlagship();
     }
-    public List<ALCard> GetUnitFields() => GetUnitsRoot(ALBoardSide.Player).TryGetAllChildOfType<ALCard>();
-    public List<ALCard> GetUnitFields(ALBoardSide side) => GetUnitsRoot(side).TryGetAllChildOfType<ALCard>();
+    public List<ALCard> GetUnitFields() => GetUnitFields(ALBoardSide.Player);
+    public List<ALCard> GetUnitFields(ALBoardSide side)
+    {
+        Node3D unitsRoot = GetUnitsRoot(side);
+        List<ALCard> fields = [];
+        foreach (string fieldName in UnitFieldNames)
+        {
+            Node fieldNode = unitsRoot.GetNodeOrNull<Node>(fieldName) ?? throw new System.InvalidOperationException($"[GetUnitFields] Missing unit field {fieldName} under {unitsRoot.GetPath()}.");
+            if (fieldNode is not ALCard field) throw new System.InvalidOperationException($"[GetUnitFields] Unit field {fieldName} is not an ALCard.");
+            fields.Add(field);
+        }
+        return fields;
+    }
     public List<ALCard> GetUnits() => GetUnitFields().FindAll(card => card.IsCardUnit());
     public List<ALCard> GetUnits(ALBoardSide side) => GetUnitFields(side).FindAll(card => card.IsCardUnit());
 
