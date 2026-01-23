@@ -18,6 +18,8 @@ Shared notes for AI/automation working on the Cards Godot project.
 - Do not write fallbacks unless told to, throw Errors with the reason of the failure
 - Always look for typeguards to check a type
 - Don't do inline type coercion
+- Don't try to create flags, unless explicitly asked to
+- Try to reuse code as much as possible
 
 ## Git
 - Avoid commiting or pushing without user permission
