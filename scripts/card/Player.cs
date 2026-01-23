@@ -89,6 +89,11 @@ public partial class Player : Node3D
 
     protected async Task OnPlaceCardCancelHandler(Card cardPlaced)
     {
+        if (cardPlaced is null)
+        {
+            throw new InvalidOperationException("[OnPlaceCardCancelHandler] Card to restore is required.");
+        }
+        board.CardToPlace = null;
         cardPlaced.SetIsEmptyField(false);
         await SetPlayState(EPlayState.SelectCardToPlay);
         hand.SelectCardField(this, cardPlaced.PositionInBoard, false);
