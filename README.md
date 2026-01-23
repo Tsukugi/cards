@@ -17,14 +17,15 @@ Azur Lane prototype and exposes local match, create game, and join game flows.
 - Cancel: Esc, Q
 
 ## Testing
-- All tests (PowerShell): `scripts/buildAndRun.ps1 --all-tests`
-- Single test (PowerShell): `scripts/buildAndRun.ps1 --test=res://AzurLane/tests/Test_ALCard.cs`
-  - `--test` also accepts a test node name like `TestALCard`
-- Without test flags, `scripts/buildAndRun.ps1` launches two match clients
-- Headless test runs: add `--headless` to the command
-- Phases are auto-skipped when `--all-tests` or `--test` is set
-- Selection sync test (two clients): `scripts/buildAndRun.ps1 --test=res://AzurLane/tests/Test_ALSelectionSync.cs`
-- Selection sync tests (two clients): set `SELECTION_SYNC_TEST=1` and run `scripts/buildAndRun.ps1` (optional `SELECTION_SYNC_TEST_CLASS=Simul`)
+- Unit tests (run `AzurLane/tests/Tests.tscn`): `scripts/buildAndRun.ps1 --unit`
+  - Uses the test scene runner and executes all unit tests in `Tests.tscn`.
+  - Optional: add `--headless` to run Godot without a window.
+- Gameplay tests (two clients, auto host/join): `scripts/buildAndRun.ps1 --test=res://AzurLane/tests/Test_ALSelectionSync.cs`
+  - `--test` is for gameplay-only tests and must be the script path to the test file.
+  - The script launches two clients, auto-hosts/auto-joins a match, then the test runs once the match reaches main phase.
+  - Optional: add `--headless` to run Godot without a window.
+- Without test flags, `scripts/buildAndRun.ps1` just launches two match clients.
+- Phases are auto-skipped when `--unit` or `--test` is set.
 
 ## Project layout
 - `AzurLane/`: Azur Lane prototype (scenes, scripts, database, assets, tests)

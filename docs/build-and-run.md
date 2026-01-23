@@ -8,6 +8,8 @@ Usage:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/buildAndRun.ps1
 powershell -ExecutionPolicy Bypass -File scripts/buildAndRun.ps1 -ClientA "Alice" -ClientB "Bob"
+powershell -ExecutionPolicy Bypass -File scripts/buildAndRun.ps1 --unit
+powershell -ExecutionPolicy Bypass -File scripts/buildAndRun.ps1 --test=res://AzurLane/tests/Test_ALSelectionSync.cs
 ```
 
 Behavior:
@@ -15,6 +17,12 @@ Behavior:
 - Validates `GODOT_BIN_WINDOWS`/`GODOT_BIN` and `DOTNET_BIN` (or falls back to `godot`/`dotnet` in PATH).
 - Builds `Cards.sln`.
 - Launches two clients with `--player-name` set to `ClientA` and `ClientB`.
+- `--unit` runs the unit test scene (`res://AzurLane/tests/Tests.tscn`) and executes all tests in that scene.
+- `--test=path` runs a gameplay test by path:
+  - Launches two clients.
+  - Auto-hosts on `ClientA` and auto-joins on `ClientB`.
+  - Runs the test once the match reaches main phase.
+  - The path should be the script file for the test (for example, `res://AzurLane/tests/Test_ALSelectionSync.cs`).
 - Optionally quits after a duration using `QUIT_AFTER` (passed to Godot as `--quit-after=<seconds>`).
 - Optionally enforces a hard stop with `SCRIPT_TIMEOUT` (seconds).
 

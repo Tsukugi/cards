@@ -20,7 +20,6 @@ public partial class ALGameMatchManager : Node
     ALPlayerUI playerUI;
     ALDebug debug;
     ALInteraction interaction;
-    ISelectionSyncTest selectionSyncTest;
 
     public override void _Ready()
     {
@@ -88,7 +87,7 @@ public partial class ALGameMatchManager : Node
         ALNetwork.Instance.OnSendInputActionEvent += HandleOnInputActionEvent;
 
         Callable.From(StartMatchForPlayer).CallDeferred();
-        Callable.From(TryStartSelectionSyncTest).CallDeferred();
+        Callable.From(TryStartGameplayTest).CallDeferred();
     }
 
     async void HandleOnSendMatchPhaseEvent(int peerId, int phase)
@@ -247,63 +246,84 @@ public partial class ALGameMatchManager : Node
         // if (!GetNextPlayer().GetIsControllerPlayer()) Callable.From(GetNextPlayer().GetPlayerAIController().StartTurn).CallDeferred();
     }
 
-    void TryStartSelectionSyncTest()
+    void TryStartGameplayTest()
     {
-        if (!IsSelectionSyncTestRunRequested())
+        string testPath = GetTestFilter();
+        if (string.IsNullOrWhiteSpace(testPath))
         {
             return;
         }
-        string selectionClass = GetSelectionSyncTestClass();
-        if (string.Equals(selectionClass, "Simul", System.StringComparison.OrdinalIgnoreCase))
+        string className = GetGameplayTestClassName(testPath);
+        if (string.IsNullOrWhiteSpace(className))
         {
-            selectionSyncTest ??= new ALSelectionSyncSimulTest(this, debug.GetSelectionSyncStepSeconds());
+            throw new System.InvalidOperationException($"[ALGameMatchManager.TryStartGameplayTest] Invalid test path: {testPath}");
         }
-        else
+        System.Type testType = FindGameplayTestType(className);
+        if (testType is null)
         {
-            selectionSyncTest ??= new ALSelectionSyncTest(this, debug.GetSelectionSyncStepSeconds());
+            throw new System.InvalidOperationException($"[ALGameMatchManager.TryStartGameplayTest] No gameplay test type found for {className}.");
         }
-        _ = selectionSyncTest.Run();
+        var ctor = testType.GetConstructor(new[] { typeof(ALGameMatchManager), typeof(float) });
+        if (ctor is null)
+        {
+            throw new System.InvalidOperationException($"[ALGameMatchManager.TryStartGameplayTest] Missing required constructor on {className}.");
+        }
+        object instance = ctor.Invoke(new object[] { this, debug.GetSelectionSyncStepSeconds() });
+        if (instance is not ISelectionSyncTest test)
+        {
+            throw new System.InvalidOperationException($"[ALGameMatchManager.TryStartGameplayTest] {className} does not implement ISelectionSyncTest.");
+        }
+        _ = test.Run();
     }
 
-    static string GetSelectionSyncTestClass()
+    static string GetGameplayTestClassName(string testPath)
     {
-        string value = GetCommandLineValue("--selection-sync-test-class");
-        if (string.IsNullOrWhiteSpace(value))
+        string normalized = testPath.Replace('\\', '/').Trim();
+        string fileName = System.IO.Path.GetFileNameWithoutExtension(normalized);
+        if (string.IsNullOrWhiteSpace(fileName))
         {
-            return "Default";
+            return "";
         }
-        return value;
+        if (fileName.StartsWith("Test_", System.StringComparison.OrdinalIgnoreCase))
+        {
+            fileName = fileName[5..];
+        }
+        if (fileName.EndsWith("Test", System.StringComparison.OrdinalIgnoreCase))
+        {
+            return fileName;
+        }
+        return $"{fileName}Test";
+    }
+
+    static System.Type FindGameplayTestType(string className)
+    {
+        var assembly = typeof(ALGameMatchManager).Assembly;
+        foreach (var type in assembly.GetTypes())
+        {
+            if (type is null || type.IsAbstract)
+            {
+                continue;
+            }
+            if (!typeof(ISelectionSyncTest).IsAssignableFrom(type))
+            {
+                continue;
+            }
+            if (string.Equals(type.Name, className, System.StringComparison.Ordinal))
+            {
+                return type;
+            }
+        }
+        return null;
     }
 
     bool IsTestRunRequested()
     {
-        return IsSelectionSyncTestRunRequested()
-            || IsAllTestsRunRequested()
-            || IsSingleTestRunRequested();
-    }
-
-    bool IsSelectionSyncTestRunRequested()
-    {
-        string value = GetCommandLineValue("--selection-sync-test");
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            return !IsFalseValue(value);
-        }
-        return HasCommandLineFlag("--selection-sync-test");
-    }
-
-    static bool IsAllTestsRunRequested()
-    {
-        return HasCommandLineFlag("--all-tests") || HasCommandLineFlag("-all-tests");
+        return IsSingleTestRunRequested();
     }
 
     static bool IsSingleTestRunRequested()
     {
-        string value = GetCommandLineValue("--test");
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            value = GetCommandLineValue("-test");
-        }
+        string value = GetTestFilter();
         if (!string.IsNullOrWhiteSpace(value))
         {
             return !IsFalseValue(value);
@@ -343,6 +363,20 @@ public partial class ALGameMatchManager : Node
         string value = GetCommandLineValueFromArgs(OS.GetCmdlineUserArgs(), key);
         if (!string.IsNullOrWhiteSpace(value)) return value;
         return GetCommandLineValueFromArgs(OS.GetCmdlineArgs(), key);
+    }
+
+    static string GetTestFilter()
+    {
+        string value = GetCommandLineValue("--test");
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            value = GetCommandLineValue("-test");
+        }
+        if (value is null)
+        {
+            return "";
+        }
+        return value;
     }
 
     static string GetCommandLineValueFromArgs(string[] args, string key)

@@ -6,24 +6,14 @@ public partial class TestSceneController : Node
 {
     public override void _EnterTree()
     {
-        bool allTests = HasFlag("--all-tests") || HasFlag("-all-tests");
         string testFilter = GetValue("--test");
         if (string.IsNullOrWhiteSpace(testFilter))
         {
             testFilter = GetValue("-test");
         }
 
-        if (allTests && !string.IsNullOrWhiteSpace(testFilter))
-        {
-            throw new InvalidOperationException("[TestSceneController] Use only one of --all-tests or --test.");
-        }
-
         if (string.IsNullOrWhiteSpace(testFilter))
         {
-            if (allTests)
-            {
-                return;
-            }
             return;
         }
 
