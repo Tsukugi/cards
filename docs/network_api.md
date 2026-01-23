@@ -38,6 +38,7 @@ The network architecture consists of a base `Network` class that handles general
 - `ALDrawCard(string cardId, ALDrawType drawType)` - Draws a card with a specific draw type
 - `SyncFlagship(string cardId)` - Synchronizes flagship card information
 - `SendMatchPhase(int matchPhase)` - Sends the current match phase
+- `SyncPlaceCard(string cardId, string boardName, string fieldPath)` - Synchronizes a card placement using a board-relative field path
 - `OnMatchStart()` - Initializes match start procedures
 
 ## Signal Definitions
@@ -59,7 +60,7 @@ The network architecture consists of a base `Network` class that handles general
 - `ALPlayerMatchPhaseEvent(int peerId, int matchPhase)` - Event for match phase changes
 - `ALPlayerSyncCardEvent(int peerId, string cardId)` - Event for card synchronization
 - `ALPlayerDrawEvent(int peerId, string cardId, ALDrawType drawType)` - Event for card draw actions
-- `ALPlayerSyncPlaceCardEvent(int peerId, string cardId, string boardName, Vector2I position)` - Event for placing cards on board
+- `ALPlayerSyncPlaceCardEvent(int peerId, string cardId, string boardName, string fieldPath)` - Event for placing cards using a board-relative field path
 
 ## Internal RPC Callbacks
 
@@ -81,6 +82,11 @@ The network architecture consists of a base `Network` class that handles general
 - `OnALDrawCard(string data, ALDrawType drawType)` - Handles card draw events from other peers
 - `OnSyncFlagship(string cardId)` - Handles flagship sync from other peers
 - `OnSendMatchPhase(int matchPhase)` - Handles match phase updates from other peers
+- `OnSyncPlaceCardRpc(string cardId, string boardName, string fieldPath)` - Handles card placement sync using a board-relative field path
+
+## Placement Sync Notes
+- Card placement sync uses `fieldPath` from `Board.GetPathTo(selectedField)` (e.g., `Player/Units/FrontRow2`).
+- Receivers map the path to the enemy board by swapping `Player/` with `EnemyPlayer/` to place the card on the mirrored field.
 
 ## Network Architecture Notes
 - Uses Godot's built-in multiplayer system with ENet

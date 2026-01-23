@@ -28,6 +28,12 @@ public partial class ALBoard : PlayerBoard
         }
         await base.PlaceCardInBoardFromHand(player, cardToPlace);
         selectedField.UpdateAttributes(cardToPlace.GetAttributes<ALCardDTO>());
+        if (player.GetIsControllerPlayer())
+        {
+            ALCardDTO attrs = cardToPlace.GetAttributes<ALCardDTO>();
+            string fieldPath = GetPathTo(selectedField).ToString();
+            ALNetwork.Instance.SyncPlaceCard(attrs.id, Name, fieldPath);
+        }
     }
 
     public static ALCard FindLastActiveCardInRow(List<ALCard> row)

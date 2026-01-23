@@ -81,6 +81,10 @@ public partial class ALGameMatchManager : Node
         ALNetwork.Instance.OnDrawCardEvent += HandleOnDrawCardEvent;
         ALNetwork.Instance.OnSyncFlagshipEvent -= HandleOnSyncFlagship;
         ALNetwork.Instance.OnSyncFlagshipEvent += HandleOnSyncFlagship;
+        ALNetwork.Instance.OnSyncPlaceCard -= HandleOnSyncPlaceCard;
+        ALNetwork.Instance.OnSyncPlaceCard += HandleOnSyncPlaceCard;
+        ALNetwork.Instance.OnSyncPlaceCardGuard -= HandleOnSyncPlaceCardGuard;
+        ALNetwork.Instance.OnSyncPlaceCardGuard += HandleOnSyncPlaceCardGuard;
         ALNetwork.Instance.OnSendSelectCardEvent -= HandleOnCardSelectEvent;
         ALNetwork.Instance.OnSendSelectCardEvent += HandleOnCardSelectEvent;
         ALNetwork.Instance.OnSendInputActionEvent -= HandleOnInputActionEvent;
@@ -134,6 +138,37 @@ public partial class ALGameMatchManager : Node
                 await userPlayer.PlaceEnemyDurabilityCard(synchedCard);
                 break;
         }
+    }
+    async void HandleOnSyncPlaceCard(int peerId, string cardId, string boardName, string fieldPath)
+    {
+        GD.Print($"[HandleOnSyncPlaceCard] To {userPlayer.MultiplayerId}: From {peerId}: {cardId} {boardName} {fieldPath}");
+        if (peerId == userPlayer.MultiplayerId)
+        {
+            await Task.CompletedTask;
+            return;
+        }
+        RegisterEnemyPeer(peerId);
+        if (!database.cards.TryGetValue(cardId, out ALCardDTO synchedCard))
+        {
+            throw new System.InvalidOperationException($"[HandleOnSyncPlaceCard] Card id not found: {cardId}");
+        }
+        await userPlayer.PlaceEnemyCardToBoard(synchedCard, boardName, fieldPath);
+    }
+
+    async void HandleOnSyncPlaceCardGuard(int peerId, string cardId, string boardName, string fieldPath)
+    {
+        GD.Print($"[HandleOnSyncPlaceCardGuard] To {userPlayer.MultiplayerId}: From {peerId}: {cardId} {boardName} {fieldPath}");
+        if (peerId == userPlayer.MultiplayerId)
+        {
+            await Task.CompletedTask;
+            return;
+        }
+        RegisterEnemyPeer(peerId);
+        if (!database.cards.TryGetValue(cardId, out ALCardDTO synchedCard))
+        {
+            throw new System.InvalidOperationException($"[HandleOnSyncPlaceCardGuard] Card id not found: {cardId}");
+        }
+        await userPlayer.PlaceEnemyCardToBoard(synchedCard, boardName, fieldPath);
     }
     async void HandleOnCardSelectEvent(int peerId, int targetOwnerPeerId, string boardName, Vector2I position)
     {

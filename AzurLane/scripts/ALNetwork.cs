@@ -7,7 +7,7 @@ public partial class ALNetwork : Network
     public delegate void ALPlayerMatchPhaseEvent(int peerId, int matchPhase);
     public delegate void ALPlayerSyncCardEvent(int peerId, string cardId);
     public delegate void ALPlayerDrawEvent(int peerId, string cardId, ALDrawType drawType);
-    public delegate void ALPlayerSyncPlaceCardEvent(int peerId, string cardId, string boardName, Vector2I position);
+    public delegate void ALPlayerSyncPlaceCardEvent(int peerId, string cardId, string boardName, string fieldPath);
     public event ALPlayerMatchPhaseEvent OnSendMatchPhaseEvent;
     public new event ALPlayerDrawEvent OnDrawCardEvent;
     public event ALPlayerSyncCardEvent OnSyncFlagshipEvent;
@@ -63,6 +63,22 @@ public partial class ALNetwork : Network
     {
         GD.Print($"[OnSyncFlagship] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -------------> {matchPhase}");
         if (OnSendMatchPhaseEvent is not null) OnSendMatchPhaseEvent(Multiplayer.GetRemoteSenderId(), matchPhase);
+    }
+
+    public void SyncPlaceCard(string cardId, string boardName, string fieldPath) => Rpc(MethodName.OnSyncPlaceCardRpc, [cardId, boardName, fieldPath]);
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    protected void OnSyncPlaceCardRpc(string cardId, string boardName, string fieldPath)
+    {
+        GD.Print($"[OnSyncPlaceCard] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -> {cardId} {boardName} {fieldPath}");
+        if (OnSyncPlaceCard is not null) OnSyncPlaceCard(Multiplayer.GetRemoteSenderId(), cardId, boardName, fieldPath);
+    }
+
+    public void SyncPlaceCardGuard(string cardId, string boardName, string fieldPath) => Rpc(MethodName.OnSyncPlaceCardGuardRpc, [cardId, boardName, fieldPath]);
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    protected void OnSyncPlaceCardGuardRpc(string cardId, string boardName, string fieldPath)
+    {
+        GD.Print($"[OnSyncPlaceCardGuard] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -> {cardId} {boardName} {fieldPath}");
+        if (OnSyncPlaceCardGuard is not null) OnSyncPlaceCardGuard(Multiplayer.GetRemoteSenderId(), cardId, boardName, fieldPath);
     }
 
 

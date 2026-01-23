@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Godot;
@@ -19,6 +20,17 @@ public partial class ALHand : PlayerHand
         newCard.SetIsFaceDown(true);
         RepositionHandCards();
         return newCard;
+    }
+
+    public void RemoveEnemyCardFromHand(string cardId)
+    {
+        if (string.IsNullOrWhiteSpace(cardId))
+        {
+            throw new System.InvalidOperationException("[RemoveEnemyCardFromHand] Card id is required.");
+        }
+        ALCard cardToRemove = GetCardsInHand().Find(card => card.GetAttributes<ALCardDTO>().id == cardId) ?? throw new System.InvalidOperationException($"[RemoveEnemyCardFromHand] Card id not found in enemy hand: {cardId}");
+        RemoveChild(cardToRemove);
+        RepositionHandCards();
     }
 
     ALCard CreateHandCard(ALCardDTO attributes)

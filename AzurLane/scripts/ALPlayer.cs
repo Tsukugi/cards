@@ -663,6 +663,26 @@ public partial class ALPlayer : Player
         enemyHandBoard.AddEnemyCardToHand(card);
     }
 
+    public void RemoveEnemyCardFromHand(string cardId)
+    {
+        if (string.IsNullOrWhiteSpace(cardId))
+        {
+            throw new InvalidOperationException("[RemoveEnemyCardFromHand] Card id is required.");
+        }
+        int index = enemyHandCards.FindIndex(card => card.id == cardId);
+        if (index < 0)
+        {
+            throw new InvalidOperationException($"[RemoveEnemyCardFromHand] Card id not found in enemy hand: {cardId}");
+        }
+        enemyHandCards.RemoveAt(index);
+        PlayerHand enemyPlayerHand = GetEnemyPlayerHand<PlayerHand>();
+        if (enemyPlayerHand is not ALHand enemyHandBoard)
+        {
+            throw new InvalidOperationException("[RemoveEnemyCardFromHand] Enemy hand board is missing or invalid.");
+        }
+        enemyHandBoard.RemoveEnemyCardFromHand(cardId);
+    }
+
     public void SetBoardCardsAsActive()
     {
         // We wanna only reset units and cost area cards in AzurLane TCG
@@ -734,7 +754,54 @@ public partial class ALPlayer : Player
         await this.Wait(DrawDelay);
     }
 
+    public async Task PlaceEnemyCardToBoard(ALCardDTO card, string boardName, string fieldPath)
+    {
+        if (card is null)
+        {
+            throw new InvalidOperationException("[PlaceEnemyCardToBoard] Card is required.");
+        }
+        if (string.IsNullOrWhiteSpace(boardName))
+        {
+            throw new InvalidOperationException("[PlaceEnemyCardToBoard] Board name is required.");
+        }
+        if (string.IsNullOrWhiteSpace(fieldPath))
+        {
+            throw new InvalidOperationException("[PlaceEnemyCardToBoard] Field path is required.");
+        }
+        if (boardName != "Board")
+        {
+            throw new InvalidOperationException($"[PlaceEnemyCardToBoard] Unsupported board name: {boardName}");
+        }
+        ALBoard board = GetPlayerBoard<ALBoard>() ?? throw new InvalidOperationException("[PlaceEnemyCardToBoard] Player board is missing.");
+        string enemyFieldPath = fieldPath.Replace("Player/", "EnemyPlayer/");
+        Node enemyNode = board.GetNodeOrNull(enemyFieldPath);
+        if (enemyNode is not ALCard targetField)
+        {
+            throw new InvalidOperationException($"[PlaceEnemyCardToBoard] Enemy field not found for path {enemyFieldPath}.");
+        }
+        if (!targetField.GetIsEmptyField())
+        {
+            AddEnemyToRetreatAreaOnTop(targetField.GetAttributes<ALCardDTO>());
+        }
+        targetField.UpdateAttributes(card);
+        await targetField.GetEffectManager<ALEffectManager>().AddStatusEffect(ALCardStatusEffects.BattlefieldDelayImpl);
+        RemoveEnemyCardFromHand(card.id);
+    }
+
     public ALBasicAI GetPlayerAIController() => ai;
+
+    void AddEnemyToRetreatAreaOnTop(ALCardDTO cardToAdd)
+    {
+        if (cardToAdd is null)
+        {
+            throw new InvalidOperationException("[AddEnemyToRetreatAreaOnTop] Card is required.");
+        }
+        if (enemyDeckSet is null)
+        {
+            throw new InvalidOperationException("[AddEnemyToRetreatAreaOnTop] Enemy deck is required.");
+        }
+        AddCardToDeck(cardToAdd, enemyDeckSet.retreatDeck, enemyRetreatField, false);
+    }
 
 }
 

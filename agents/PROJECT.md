@@ -18,7 +18,7 @@ working with the Cards Godot project.
 
 ### Root Directory
 ```
-/mnt/g/dev/godot/cards/
+
 ├── AGENTS.md
 ├── Cards.sln
 ├── Cards.csproj
@@ -42,7 +42,7 @@ working with the Cards Godot project.
 
 ### AzurLane Prototype
 ```
-/mnt/g/dev/godot/cards/AzurLane/
+AzurLane/
 ├── scenes/
 ├── scripts/
 ├── database/
@@ -50,17 +50,11 @@ working with the Cards Godot project.
 └── tests/
 ```
 
-### Shared Content
-```
-/mnt/g/dev/godot/cards/scenes/
-/mnt/g/dev/godot/cards/scripts/
-/mnt/g/dev/godot/cards/shaders/
-```
-
 ## Notes
 - Godot main scene: `res://AzurLane/scenes/main.tscn`
 - Test scenes: `res://AzurLane/tests/Tests.tscn`, `res://tests/shader.tscn`
 - Default networking port: 7000 (see `docs/network_api.md`)
+- Check the docs for more information (/docs)
 
 ## Testing (Local Build + Run)
 Use the build/run helpers to compile and launch two clients with player names.
@@ -80,7 +74,7 @@ Logs are critical for validation:
 - Bash script writes combined output to `logs/<Client>.log`.
 
 ## Two-Client Testing And Auto Start
-- Launch two clients with the build/run scripts; they pass `--player-name` so each instance loads its profile.
+- Launch two clients with the build/run scripts;
 - In each client, use the main menu flows:
   - Start: local match (single client).
   - Create Game: host a match.
