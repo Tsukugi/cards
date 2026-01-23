@@ -38,13 +38,13 @@ public partial class ALDebug
     public async Task InflictDamage()
     {
         GD.Print($"[Debug.InflictDamage]");
-        var player = matchManager.GetPlayerPlayingTurn();
+        var player = matchManager.GetControlledPlayer();
         await player.ApplyDurabilityDamage(player.GetPlayerBoard<ALBoard>().GetFlagship());
     }
     public async Task TestRetaliation()
     {
         GD.Print($"[Debug.TestRetaliation]");
-        var player = matchManager.GetPlayerPlayingTurn();
+        var player = matchManager.GetControlledPlayer();
         await player.AddDurabilityCard(matchManager.GetDatabase().cards["SD01-016"]);
         await InflictDamage();
     }

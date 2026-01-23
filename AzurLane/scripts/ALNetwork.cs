@@ -28,7 +28,7 @@ public partial class ALNetwork : Network
     private void OnRegisterMatchPlayer()
     {
         int playerId = Multiplayer.GetRemoteSenderId();
-        matchManager.GetEnemyPlayer().MultiplayerId = playerId;
+        matchManager.RegisterEnemyPeer(playerId);
         GD.Print($"[OnRegisterMatchPlayer] {Multiplayer.GetUniqueId()}: {playerId}");
     }
     public void SendDeckSet(string userPlayerDeckSetId) => Rpc(MethodName.OnSendDeckSet, [userPlayerDeckSetId]);

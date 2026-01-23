@@ -7,9 +7,13 @@ public partial class ALGameMatchManager : Node
     readonly ALDatabase database = new();
     EALTurnPhase matchCurrentPhase = EALTurnPhase.Reset;
     [Export]
-    ALPlayer userPlayer, enemyPlayer;
-    List<ALPlayer> orderedPlayers = [];
-    int playerIndexPlayingTurn = 1; // First to start
+    ALPlayer userPlayer;
+    ALRemotePlayer remotePlayer;
+    readonly List<ALPlayer> orderedPlayers = [];
+    int enemyPeerId = 0;
+    int currentTurnPeerId = 0;
+    Board remoteSelectedBoard;
+    static readonly Color RemotePlayerColor = new(0.83f, 0.36f, 0.32f, 1f);
 
     // --- State ---
     ALCard attackerCard, attackedCard;
@@ -34,25 +38,11 @@ public partial class ALGameMatchManager : Node
         database.LoadData();
 
         // --- Players --- 
-        orderedPlayers = [userPlayer, enemyPlayer]; // TODO add some shuffling, with a minigame  also online
-        playerIndexPlayingTurn = Multiplayer.IsServer() ? 0 : 1;
-        // ! Needs 
+        orderedPlayers.Clear();
+        orderedPlayers.Add(userPlayer);
+        currentTurnPeerId = Multiplayer.IsServer() ? userPlayer.MultiplayerId : -1;
 
-        ALHand userHand = userPlayer.GetPlayerHand<ALHand>();
-        ALHand enemyHand = enemyPlayer.GetPlayerHand<ALHand>();
-        ALBoard userBoard = userPlayer.GetPlayerBoard<ALBoard>();
-        ALBoard enemyBoard = enemyPlayer.GetPlayerBoard<ALBoard>();
-
-        // ! NOTE: This only works thinking that always the player is down and enemy is up
-        // IsEnemyBoard is needed for thinks like flipping the Input axis
-        enemyHand.SetIsEnemyBoard(true);
-        enemyBoard.SetIsEnemyBoard(true);
-
-        // Assign Enemy boards is needed to handle onBoardEdges
-        userPlayer.AssignEnemyBoards(enemyHand, enemyBoard);
-        enemyPlayer.AssignEnemyBoards(userHand, userBoard);
-
-        orderedPlayers.ForEach(player =>
+        foreach (var player in orderedPlayers)
         {
             player.OnGameOver -= OnGameOverHandler;
             player.OnGameOver += OnGameOverHandler;
@@ -81,7 +71,7 @@ public partial class ALGameMatchManager : Node
             player.GetPlayerHand<ALHand>().OnInputAction -= interaction.OnHandInputActionHandler;
             player.GetPlayerHand<ALHand>().OnInputAction += interaction.OnHandInputActionHandler;
 
-        });
+        }
         ALNetwork.Instance.OnTurnEndEvent -= HandleOnTurnEndEvent;
         ALNetwork.Instance.OnTurnEndEvent += HandleOnTurnEndEvent;
         ALNetwork.Instance.OnSendMatchPhaseEvent -= HandleOnSendMatchPhaseEvent;
@@ -109,16 +99,21 @@ public partial class ALGameMatchManager : Node
     }
     async void HandleOnSendPlayStateEvent(int peerId, EPlayState state, string interactionState)
     {
-        ALPlayer affectedPlayer = userPlayer.MultiplayerId == peerId ? userPlayer : enemyPlayer;
-        // ALPlayer affectedPlayer = GetPlayerPlayingTurn();
         GD.Print($"[HandleOnSendPlayStateEvent] To {userPlayer.MultiplayerId}: Update {peerId} - {state} - {interactionState}");
-        await affectedPlayer.SetPlayState(state, interactionState, false);
+        if (peerId == userPlayer.MultiplayerId)
+        {
+            await Task.CompletedTask;
+            return;
+        }
+        RegisterEnemyPeer(peerId);
+        remotePlayer.SetRemotePlayState(state, interactionState);
+        await Task.CompletedTask;
     }
     async void HandleOnSyncFlagship(int peerId, string cardId)
     {
         ALCardDTO synchedCard = database.cards[cardId];
         GD.Print($"[HandleOnSyncFlagship] To {userPlayer.MultiplayerId}: From {peerId}: {synchedCard.name}");
-        enemyPlayer.UpdateFlagship(synchedCard);
+        userPlayer.UpdateEnemyFlagship(synchedCard);
         await Task.CompletedTask;
     }
     async void HandleOnDrawCardEvent(int peerId, string cardId, ALDrawType drawType)
@@ -128,16 +123,16 @@ public partial class ALGameMatchManager : Node
         switch (drawType)
         {
             case ALDrawType.Deck:
-                enemyPlayer.DrawFromDeck();
-                await enemyPlayer.AddCardToHand(synchedCard);
+                userPlayer.DrawFromEnemyDeck();
+                userPlayer.AddEnemyCardToHand(synchedCard);
                 break;
             case ALDrawType.Cube:
-                enemyPlayer.DrawFromCubeDeck();
-                await enemyPlayer.PlaceCubeToBoard(synchedCard);
+                userPlayer.DrawFromEnemyCubeDeck();
+                await userPlayer.PlaceEnemyCubeToBoard(synchedCard);
                 break;
             case ALDrawType.Durability:
-                enemyPlayer.DrawFromDeck();
-                await enemyPlayer.PlaceDurabilityCard(synchedCard);
+                userPlayer.DrawFromEnemyDeck();
+                await userPlayer.PlaceEnemyDurabilityCard(synchedCard);
                 break;
         }
     }
@@ -150,76 +145,83 @@ public partial class ALGameMatchManager : Node
             return;
         }
 
-        ALPlayer selectingPlayer = ResolveSelectingPlayer(peerId);
-        if (selectingPlayer is null)
+        RegisterEnemyPeer(peerId);
+        Board board = ResolveSelectionBoard(boardName, targetOwnerPeerId);
+        if (board is null)
         {
-            GD.PrintErr($"[HandleOnCardSelectEvent] Unknown peerId {peerId}. User={userPlayer.MultiplayerId} Enemy={enemyPlayer.MultiplayerId}");
+            await Task.CompletedTask;
             return;
         }
-        ALPlayer targetOwner = ResolveSelectingPlayer(targetOwnerPeerId);
-        if (targetOwner is null)
+        if (remoteSelectedBoard is not null && remoteSelectedBoard != board)
         {
-            GD.PrintErr($"[HandleOnCardSelectEvent] Unknown targetOwnerPeerId {targetOwnerPeerId}. User={userPlayer.MultiplayerId} Enemy={enemyPlayer.MultiplayerId}");
-            return;
+            remoteSelectedBoard.ClearSelectionForPlayer(remotePlayer);
         }
-        Board board = ResolveOwnerBoard(targetOwner, boardName);
-        GD.Print($"[HandleOnCardSelectEvent.Resolve] selector={selectingPlayer.Name}({selectingPlayer.MultiplayerId}) owner={targetOwner.Name}({targetOwner.MultiplayerId}) board={board.Name} localEnemy={board.GetIsEnemyBoard()} pos={position}");
-        board.SelectCardField(selectingPlayer, position, false);
-        selectingPlayer.SelectBoard(selectingPlayer, board);
+        GD.Print($"[HandleOnCardSelectEvent.Resolve] selector={remotePlayer.Name}({remotePlayer.MultiplayerId}) board={board.Name} pos={position}");
+        board.SelectCardField(remotePlayer, position, false);
+        remoteSelectedBoard = board;
         await Task.CompletedTask;
     }
 
-    Board ResolveOwnerBoard(ALPlayer ownerPlayer, string boardName)
+    Board ResolveSelectionBoard(string boardName, int targetOwnerPeerId)
     {
         if (boardName == "Board")
         {
-            Board board = ownerPlayer.GetPlayerBoard<PlayerBoard>();
+            Board board = userPlayer.GetPlayerBoard<PlayerBoard>();
             if (board is null)
             {
-                throw new System.InvalidOperationException($"[ResolveOwnerBoard] Board '{boardName}' not found for player {ownerPlayer.Name}.");
+                throw new System.InvalidOperationException($"[ResolveSelectionBoard] Board '{boardName}' not found for player {userPlayer.Name}.");
             }
             return board;
         }
         if (boardName == "Hand")
         {
-            Board board = ownerPlayer.GetPlayerHand<PlayerHand>();
+            if (targetOwnerPeerId != userPlayer.MultiplayerId)
+            {
+                GD.Print($"[ResolveSelectionBoard] Ignore remote hand selection. owner={targetOwnerPeerId} local={userPlayer.MultiplayerId}");
+                return null;
+            }
+            Board board = userPlayer.GetPlayerHand<PlayerHand>();
             if (board is null)
             {
-                throw new System.InvalidOperationException($"[ResolveOwnerBoard] Board '{boardName}' not found for player {ownerPlayer.Name}.");
+                throw new System.InvalidOperationException($"[ResolveSelectionBoard] Hand '{boardName}' not found for player {userPlayer.Name}.");
             }
             return board;
         }
-        throw new System.InvalidOperationException($"[ResolveOwnerBoard] Unknown board name '{boardName}'.");
-    }
-
-    ALPlayer ResolveSelectingPlayer(int peerId)
-    {
-        if (userPlayer.MultiplayerId == peerId) return userPlayer;
-        if (enemyPlayer.MultiplayerId == peerId) return enemyPlayer;
-        return null;
+        throw new System.InvalidOperationException($"[ResolveSelectionBoard] Unknown board name '{boardName}'.");
     }
 
     async void HandleOnInputActionEvent(int peerId, InputAction inputAction)
     {
         GD.Print($"[HandleOnInputActionEvent] To {userPlayer.MultiplayerId}: From {peerId}: -> {inputAction}");
-        enemyPlayer.TriggerAction(enemyPlayer, inputAction, false);
+        if (peerId == userPlayer.MultiplayerId)
+        {
+            await Task.CompletedTask;
+            return;
+        }
+        GD.Print($"[HandleOnInputActionEvent] Remote input ignored; apply explicit sync updates instead.");
         await Task.CompletedTask;
     }
     async void HandleOnTurnEndEvent(int peerId)
     {
-        if (GetPlayerPlayingTurn() == userPlayer || peerId == Network.Instance.Multiplayer.GetUniqueId())
+        if (peerId == userPlayer.MultiplayerId)
+        {
+            GD.PushError("[HandleOnTurnEndEvent] Local peer cannot end its own turn via network event.");
+            return;
+        }
+        if (currentTurnPeerId != 0 && currentTurnPeerId != peerId)
         {
             GD.PushError("[HandleOnTurnEndEvent] Another peer is trying to end their turn");
             return;
         }
         GD.Print($"[HandleOnTurnEndEvent] To {userPlayer.MultiplayerId}: From {peerId}: Finishes its turn");
-        PickNextPlayerToPlayTurn().StartTurn();
+        AdvanceTurnOwner();
+        StartLocalTurnIfNeeded();
         await Task.CompletedTask;
     }
 
     bool ShouldSkipAutoPhasesForTest()
     {
-        return debug.GetSelectionSyncTestEnabled();
+        return IsTestRunRequested();
     }
 
     // Match
@@ -228,30 +230,18 @@ public partial class ALGameMatchManager : Node
         await AssignDeckSet();
         if (ShouldSkipAutoPhasesForTest())
         {
-            foreach (var player in orderedPlayers)
-            {
-                player.Phase.SetSkipAutoPhases(true);
-            }
+            userPlayer.Phase.SetSkipAutoPhases(true);
         }
         await userPlayer.StartGameForPlayer(userPlayer.GetDeckSet());
-        //await enemyPlayer.StartGameForPlayer(enemyPlayer.GetDeckSet());
         if (Multiplayer.IsServer())
         {
             if (ShouldSkipAutoPhasesForTest())
             {
-                await GetPlayerPlayingTurn().Phase.ForceMainPhase(true);
-                foreach (var player in orderedPlayers)
-                {
-                    if (player == GetPlayerPlayingTurn())
-                    {
-                        continue;
-                    }
-                    await player.Phase.ForceMainPhase(false);
-                }
+                await userPlayer.Phase.ForceMainPhase(true);
             }
             else
             {
-                GetPlayerPlayingTurn().StartTurn();
+                StartLocalTurnIfNeeded();
             }
         }
         // if (!GetNextPlayer().GetIsControllerPlayer()) Callable.From(GetNextPlayer().GetPlayerAIController().StartTurn).CallDeferred();
@@ -259,7 +249,7 @@ public partial class ALGameMatchManager : Node
 
     void TryStartSelectionSyncTest()
     {
-        if (!debug.GetSelectionSyncTestEnabled())
+        if (!IsSelectionSyncTestRunRequested())
         {
             return;
         }
@@ -283,6 +273,69 @@ public partial class ALGameMatchManager : Node
             return "Default";
         }
         return value;
+    }
+
+    bool IsTestRunRequested()
+    {
+        return IsSelectionSyncTestRunRequested()
+            || IsAllTestsRunRequested()
+            || IsSingleTestRunRequested();
+    }
+
+    bool IsSelectionSyncTestRunRequested()
+    {
+        string value = GetCommandLineValue("--selection-sync-test");
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            return !IsFalseValue(value);
+        }
+        return HasCommandLineFlag("--selection-sync-test");
+    }
+
+    static bool IsAllTestsRunRequested()
+    {
+        return HasCommandLineFlag("--all-tests") || HasCommandLineFlag("-all-tests");
+    }
+
+    static bool IsSingleTestRunRequested()
+    {
+        string value = GetCommandLineValue("--test");
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            value = GetCommandLineValue("-test");
+        }
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            return !IsFalseValue(value);
+        }
+        return HasCommandLineFlag("--test") || HasCommandLineFlag("-test");
+    }
+
+    static bool IsFalseValue(string value)
+    {
+        return string.Equals(value, "0", System.StringComparison.OrdinalIgnoreCase)
+            || string.Equals(value, "false", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    static bool HasCommandLineFlag(string key)
+    {
+        return HasCommandLineFlagInArgs(OS.GetCmdlineUserArgs(), key)
+            || HasCommandLineFlagInArgs(OS.GetCmdlineArgs(), key);
+    }
+
+    static bool HasCommandLineFlagInArgs(string[] args, string key)
+    {
+        if (args is null || args.Length == 0) return false;
+        for (int index = 0; index < args.Length; index++)
+        {
+            string arg = args[index];
+            if (arg is null) continue;
+            if (arg == key || arg.StartsWith(key + "=", System.StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     static string GetCommandLineValue(string key)
@@ -341,13 +394,20 @@ public partial class ALGameMatchManager : Node
 
     async Task OnAttackGuardStartHandler(Player attackerPlayer, Player attackedPlayer)
     {
-        if (attackedPlayer is not ALPlayer)
+        if (GetAttackedCard() is null)
         {
-            GD.PrintErr($"[OnAttackGuardStartHandler] {attackedPlayer.GetType()} needs to be an ALPlayer instance.");
+            throw new System.InvalidOperationException("[OnAttackGuardStartHandler] Attacked card is missing.");
+        }
+        ALBoard board = userPlayer.GetPlayerBoard<ALBoard>();
+        bool attackedIsEnemy = board.IsEnemyCard(GetAttackedCard());
+        await attackerPlayer.SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
+        if (attackedIsEnemy)
+        {
+            UpdateRemotePlayState(EPlayState.SelectTarget, ALInteractionState.SelectGuardingUnit);
             return;
         }
-        await attackerPlayer.SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
-        await attackedPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectGuardingUnit);
+        await userPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectGuardingUnit);
+        UpdateRemotePlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
         GD.Print($"[OnAttackGuardStartHandler]");
     }
 
@@ -371,13 +431,12 @@ public partial class ALGameMatchManager : Node
         }
         damagedPlayer.SelectBoard(damagedPlayer, hand);
         await retaliatingCard.TryToTriggerCardEffect(ALCardEffectTrigger.Retaliation);
-
-        await GetNextPlayer((ALPlayer)damagedPlayer).SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
+        UpdateRemotePlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
     }
     async Task OnRetaliationCancel(Player damagedPlayer)
     {
         await damagedPlayer.GoBackInHistoryState();
-        await GetNextPlayer((ALPlayer)damagedPlayer).GoBackInHistoryState();
+        UpdateRemotePlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
     }
 
     async Task OnGuardProvidedHandler(Player guardingPlayer, Card card)
@@ -396,10 +455,7 @@ public partial class ALGameMatchManager : Node
 
     async Task OnAttackEndHandler(Player guardingPlayer)
     {
-        foreach (var player in orderedPlayers)
-        {
-            await player.TryToExpireCardsModifierDuration(ALCardEffectDuration.CurrentBattle);
-        }
+        await userPlayer.TryToExpireCardsModifierDuration(ALCardEffectDuration.CurrentBattle);
         attackerCard = null;
         attackedCard = null;
         GD.Print($"[OnAttackEndHandler]");
@@ -413,29 +469,18 @@ public partial class ALGameMatchManager : Node
     async void OnTurnEndHandler()
     {
         await this.Wait(1f);
-        ALPlayer playingPlayer = GetPlayerPlayingTurn();
-        GD.Print($"[OnTurnEndHandler] {playingPlayer.Name} Turn ended!");
+        if (!IsLocalTurn())
+        {
+            GD.PushError("[OnTurnEndHandler] Local player cannot end a remote turn.");
+            return;
+        }
+        GD.Print($"[OnTurnEndHandler] {userPlayer.Name} Turn ended!");
 
-        await playingPlayer.TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
-        await GetNextPlayer().TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
+        await userPlayer.TryToTriggerOnAllCards(ALCardEffectTrigger.StartOfTurn);
         await this.Wait(1f);
         ALNetwork.Instance.SendTurnEnd();
-        PickNextPlayerToPlayTurn();
+        AdvanceTurnOwner();
         // if (!GetPlayerPlayingTurn().GetIsControllerPlayer()) GetPlayerPlayingTurn().GetPlayerAIController().StartTurn();
-    }
-
-    ALPlayer PickNextPlayerToPlayTurn()
-    {
-        playerIndexPlayingTurn = GetNextPlayerIndex(playerIndexPlayingTurn);
-        return GetPlayerPlayingTurn();
-    }
-
-    int GetNextPlayerIndex(int fromPlayerIndex) => orderedPlayers.Count.ApplyCircularBounds(fromPlayerIndex + 1);
-    int FindIndexForPlayer(ALPlayer player) => orderedPlayers.FindIndex(orderedPlayer => orderedPlayer == player);
-    ALPlayer GetNextPlayer(ALPlayer fromPlayer = null)
-    {
-        var currentPlayer = fromPlayer is null ? GetPlayerPlayingTurn() : fromPlayer;
-        return orderedPlayers[GetNextPlayerIndex(FindIndexForPlayer(currentPlayer))];
     }
 
     async Task AssignDeckSet()
@@ -443,22 +488,100 @@ public partial class ALGameMatchManager : Node
         var userPlayerDeckSetId = Multiplayer.IsServer() ? "SD03" : "SD02";
         userPlayer.AssignDeck(BuildDeckSet(userPlayerDeckSetId));
         ALNetwork.Instance.SendDeckSet(userPlayerDeckSetId);
-        foreach (var player in orderedPlayers)
+        await userPlayer.GetAsyncHandler().AwaitForCheck(null, userPlayer.HasValidDeck, -1);
+        await userPlayer.GetAsyncHandler().AwaitForCheck(null, userPlayer.HasValidEnemyDeck, -1);
+    }
+
+    void EnsureRemotePlayer(int peerId)
+    {
+        if (peerId <= 0)
         {
-            await player.GetAsyncHandler().AwaitForCheck(null, player.HasValidDeck, -1);
+            throw new System.InvalidOperationException($"[EnsureRemotePlayer] Invalid peer id {peerId}.");
         }
+        if (remotePlayer is not null)
+        {
+            if (remotePlayer.MultiplayerId != peerId)
+            {
+                throw new System.InvalidOperationException($"[EnsureRemotePlayer] Remote player id mismatch. Current={remotePlayer.MultiplayerId} New={peerId}.");
+            }
+            return;
+        }
+        remotePlayer = new ALRemotePlayer();
+        remotePlayer.Initialize(peerId, "Enemy", RemotePlayerColor);
+    }
+
+    void UpdateRemotePlayState(EPlayState state, string interactionState)
+    {
+        if (enemyPeerId == 0)
+        {
+            return;
+        }
+        if (remotePlayer is null)
+        {
+            throw new System.InvalidOperationException("[UpdateRemotePlayState] Remote player is not registered.");
+        }
+        remotePlayer.SetRemotePlayState(state, interactionState);
+    }
+
+    void AdvanceTurnOwner()
+    {
+        if (enemyPeerId == 0)
+        {
+            throw new System.InvalidOperationException("[AdvanceTurnOwner] Enemy peer id is not registered.");
+        }
+        if (currentTurnPeerId == userPlayer.MultiplayerId)
+        {
+            currentTurnPeerId = enemyPeerId;
+            return;
+        }
+        currentTurnPeerId = userPlayer.MultiplayerId;
+    }
+
+    void StartLocalTurnIfNeeded()
+    {
+        if (!IsLocalTurn()) return;
+        userPlayer.StartTurn();
+    }
+
+    public void RegisterEnemyPeer(int peerId)
+    {
+        if (peerId <= 0)
+        {
+            throw new System.InvalidOperationException($"[RegisterEnemyPeer] Invalid peer id {peerId}.");
+        }
+        if (enemyPeerId != 0 && enemyPeerId != peerId)
+        {
+            throw new System.InvalidOperationException($"[RegisterEnemyPeer] Enemy peer already set to {enemyPeerId}, got {peerId}.");
+        }
+        enemyPeerId = peerId;
+        EnsureRemotePlayer(peerId);
+        if (currentTurnPeerId < 0)
+        {
+            currentTurnPeerId = enemyPeerId;
+        }
+        GD.Print($"[RegisterEnemyPeer] enemyPeerId={enemyPeerId} currentTurnPeerId={currentTurnPeerId}");
     }
 
     // ----- API -----
     public ALPlayerUI GetPlayerUI() => playerUI;
     public List<ALPlayer> GetOrderedPlayers() => orderedPlayers;
-    public ALPlayer GetPlayerPlayingTurn() => orderedPlayers[playerIndexPlayingTurn];
-    public ALPlayer GetControlledPlayer() => orderedPlayers.Find(player => player.GetIsControllerPlayer());
+    public ALPlayer GetPlayerPlayingTurn()
+    {
+        if (!IsLocalTurn())
+        {
+            throw new System.InvalidOperationException("[GetPlayerPlayingTurn] Remote turn has no local player instance.");
+        }
+        return userPlayer;
+    }
+    public ALPlayer GetControlledPlayer() => userPlayer;
+    public ALRemotePlayer GetRemotePlayer() => remotePlayer;
+    public bool IsLocalTurn() => currentTurnPeerId == userPlayer.MultiplayerId;
+    public int GetEnemyPeerId() => enemyPeerId;
+    public int GetCurrentTurnPeerId() => currentTurnPeerId;
     public EALTurnPhase GetMatchPhase() => matchCurrentPhase;
     public ALDatabase GetDatabase() => database;
     public bool IsAttackInProgress() => attackedCard is not null && attackerCard is not null;
     public ALPlayer GetUserPlayer() => userPlayer;
-    public ALPlayer GetEnemyPlayer() => enemyPlayer;
     public ALCard GetAttackerCard()
     {
         if (attackerCard is not null) return attackerCard;
@@ -501,7 +624,7 @@ public partial class ALGameMatchManager : Node
     public void OnEnemyDeckSetProvided(string enemyDeckId)
     {
         GD.Print($"[OnEnemyDeckSetProvided] {enemyDeckId}");
-        enemyPlayer.AssignDeck(BuildDeckSet(enemyDeckId));
+        userPlayer.AssignEnemyDeck(BuildDeckSet(enemyDeckId));
     }
     public ALDebug GetDebug() => debug;
 }

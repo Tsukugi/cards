@@ -14,6 +14,14 @@ public partial class Player : Node3D
 
     [Export]
     protected bool isControlledPlayer = false;
+    [Export]
+    protected string boardPath = "Board";
+    [Export]
+    protected string handPath = "Hand";
+    [Export]
+    protected string enemyHandPath = "";
+    [Export]
+    protected bool includeEnemyHandInOrder = false;
     protected readonly AxisInputHandler axisInputHandler = new();
     protected readonly ActionInputHandler actionInputHandler = new();
     protected Board selectedBoard;
@@ -26,6 +34,7 @@ public partial class Player : Node3D
     // Board position state
     List<Board> orderedBoards;
     int selectedBoardIndex = 0;
+    readonly Dictionary<(ulong fromId, ulong toId), Func<Vector2I, Vector2I>> exitPositionMappings = new();
 
     // PlayState
     float playStateChangeDelay = 0.2f;
@@ -36,9 +45,14 @@ public partial class Player : Node3D
     public override void _Ready()
     {
         boardInputAsync = new(this);
-        hand = GetNode<PlayerHand>("Hand");
-        board = GetNode<PlayerBoard>("Board");
-        orderedBoards = [hand, board];
+        board = GetRequiredNode<PlayerBoard>(boardPath, "board");
+        hand = GetRequiredNode<PlayerHand>(handPath, "hand");
+        if (!string.IsNullOrWhiteSpace(enemyHandPath))
+        {
+            enemyHand = GetRequiredNode<PlayerHand>(enemyHandPath, "enemy hand");
+            enemyHand.SetIsEnemyBoard(true);
+        }
+        RebuildOrderedBoards();
         SelectBoard(this, GetSelectedBoard());
     }
 
@@ -113,38 +127,19 @@ public partial class Player : Node3D
     {
         // Only vertical for now
         if (axis.Y == 0) return;
-        // We invert the input if belongs to player as Up is <0,-1> and the boards are (0, 1, 2, 3) Hand, Board, enemyBoard, enemyHand
-        // So by having Up as 0,1 and Down as 0,-1 we can correctly switch between this order
-        Vector2I invertedAxis = axis * -1;
-        int invertedToken = !exitingBoard.GetIsEnemyBoard() ? 1 : -1;
+        // Up moves forward in the ordered boards list, Down moves back.
+        int step = -axis.Y;
         int exitingIndex = orderedBoards.FindIndex(board => board == exitingBoard);
         if (exitingIndex < 0)
         {
             throw new InvalidOperationException($"[OnBoardEdgeHandler] Board {exitingBoard.Name} not found in orderedBoards.");
         }
-        int newIndex = exitingIndex + (invertedAxis.Y * invertedToken);
+        int newIndex = exitingIndex + step;
         if (!orderedBoards.Count.IsInsideBounds(newIndex)) { return; }
 
         Board newBoard = orderedBoards[newIndex];
-        GD.Print($"[OnBoardEdgeHandler] player={Name} exiting={exitingBoard.Name} enemy={exitingBoard.GetIsEnemyBoard()} axis={axis} invertedAxis={invertedAxis} token={invertedToken} newIndex={newIndex} newBoard={newBoard.Name} newEnemy={newBoard.GetIsEnemyBoard()}");
-        if (exitingBoard is PlayerBoard && newBoard is PlayerBoard)
-        {
-            Card selectedCard = exitingBoard.GetSelectedCard<Card>(this) ?? throw new InvalidOperationException($"[OnBoardEdgeHandler] No selected card on board {exitingBoard.Name}.");
-            Card edgeCard = (axis.Y < 0 ? selectedCard.EdgeUp : selectedCard.EdgeDown) ?? throw new InvalidOperationException($"[OnBoardEdgeHandler] Missing edge card for {selectedCard.Name} on board {exitingBoard.Name}.");
-            if (edgeCard.GetBoard() != newBoard)
-            {
-                throw new InvalidOperationException($"[OnBoardEdgeHandler] Edge card {edgeCard.Name} is not on board {newBoard.Name}.");
-            }
-            newBoard.SelectCardField(this, edgeCard.PositionInBoard);
-        }
-        else if (exitingBoard is PlayerHand && newBoard is PlayerBoard)
-        {
-            SelectBoardPositionByExit(exitingBoard, newBoard);
-        }
-        else if (newBoard.GetSelectedCard<Card>(this) is null)
-        {
-            SelectBoardPositionByExit(exitingBoard, newBoard);
-        }
+        GD.Print($"[OnBoardEdgeHandler] player={Name} exiting={exitingBoard.Name} axis={axis} step={step} newIndex={newIndex} newBoard={newBoard.Name} newEnemy={newBoard.GetIsEnemyBoard()}");
+        SelectBoardPositionByExit(exitingBoard, newBoard);
         SelectBoard(this, newBoard);
         GD.Print($"[OnBoardEdgeHandler] {newBoard.Name} - {selectedBoardIndex} ");
     }
@@ -159,6 +154,16 @@ public partial class Player : Node3D
     void SelectBoardPositionByExit(Board exitingBoard, Board newBoard)
     {
         Vector2I exitingPosition = exitingBoard.GetSelectedCardPosition(this);
+        if (TryGetExitMapping(exitingBoard, newBoard, out Func<Vector2I, Vector2I> positionMapper))
+        {
+            Vector2I mappedPosition = positionMapper(exitingPosition);
+            if (newBoard.FindCardInTree(mappedPosition) is null)
+            {
+                throw new InvalidOperationException($"[OnBoardEdgeHandler] Exit mapping from {exitingBoard.Name} to {newBoard.Name} returned {mappedPosition}, but no card exists.");
+            }
+            newBoard.SelectCardField(this, mappedPosition);
+            return;
+        }
         Vector2I targetPosition = exitingPosition;
         if (newBoard is PlayerHand)
         {
@@ -168,14 +173,47 @@ public partial class Player : Node3D
             {
                 throw new InvalidOperationException($"[OnBoardEdgeHandler] Hand {newBoard.Name} has no cards to select.");
             }
-            int clampedX = Mathf.Clamp(exitingPosition.X, 0, maxX);
+            int clampedX = Math.Clamp(exitingPosition.X, 0, maxX);
             targetPosition = new Vector2I(clampedX, 0);
+        }
+        if (newBoard is not PlayerHand && newBoard.FindCardInTree(targetPosition) is null)
+        {
+            List<Card> candidates = newBoard.GetCardsInTree().FindAll(card => card.IsInputSelectable);
+            if (candidates.Count == 0)
+            {
+                throw new InvalidOperationException($"[OnBoardEdgeHandler] No selectable cards on board {newBoard.Name}.");
+            }
+            Card bestCard = null;
+            int bestDistance = int.MaxValue;
+            foreach (Card card in candidates)
+            {
+                int distance = Math.Abs(card.PositionInBoard.X - exitingPosition.X)
+                    + Math.Abs(card.PositionInBoard.Y - exitingPosition.Y);
+                if (distance >= bestDistance) continue;
+                bestDistance = distance;
+                bestCard = card;
+            }
+            if (bestCard is null)
+            {
+                throw new InvalidOperationException($"[OnBoardEdgeHandler] No selectable cards for mapping on board {newBoard.Name}.");
+            }
+            targetPosition = bestCard.PositionInBoard;
         }
         if (newBoard.FindCardInTree(targetPosition) is null)
         {
             throw new InvalidOperationException($"[OnBoardEdgeHandler] No card at {targetPosition} on board {newBoard.Name}.");
         }
         newBoard.SelectCardField(this, targetPosition);
+    }
+
+    bool TryGetExitMapping(Board fromBoard, Board toBoard, out Func<Vector2I, Vector2I> mapper)
+    {
+        if (fromBoard is null || toBoard is null)
+        {
+            throw new InvalidOperationException("[TryGetExitMapping] Boards are required.");
+        }
+        var key = (fromBoard.GetInstanceId(), toBoard.GetInstanceId());
+        return exitPositionMappings.TryGetValue(key, out mapper);
     }
 
     public void SelectBoard(Player player, Board board)
@@ -191,14 +229,12 @@ public partial class Player : Node3D
             if (selectedBoard.GetCardsInTree().Count == 0)
             {
                 selectedBoardIndex = orderedBoards.FindIndex((board) => board == selectedBoard);
-                axisInputHandler.SetInverted(selectedBoard.GetIsEnemyBoard()); // An enemy board should have its axis inverted as it is inverted in the editor
                 if (selectedBoard is not null) AssignBoardEvents(selectedBoard);
                 return;
             }
             throw new InvalidOperationException($"[SelectBoard] No selected card on board {selectedBoard.Name} for player {player.Name}.");
         }
         selectedBoardIndex = orderedBoards.FindIndex((board) => board == selectedBoard);
-        axisInputHandler.SetInverted(selectedBoard.GetIsEnemyBoard()); // An enemy board should have its axis inverted as it is inverted in the editor
         if (selectedBoard is not null) AssignBoardEvents(selectedBoard);
     }
 
@@ -265,10 +301,18 @@ public partial class Player : Node3D
     }
     public void AssignEnemyBoards(PlayerHand _hand, PlayerBoard _board)
     {
+        if (_hand is null)
+        {
+            throw new InvalidOperationException("[AssignEnemyBoards] Enemy hand is required.");
+        }
+        if (_board is null)
+        {
+            throw new InvalidOperationException("[AssignEnemyBoards] Enemy board is required.");
+        }
         enemyBoard = _board;
         enemyHand = _hand;
 
-        orderedBoards = [hand, board, enemyBoard, enemyHand]; // assign order
+        RebuildOrderedBoards();
         GD.Print($"[AssignEnemyBoards] Boards assigned for {Name}");
     }
     public virtual void OnCardTriggerHandler(Card card)
@@ -290,6 +334,20 @@ public partial class Player : Node3D
         if (syncToNet) Network.Instance.SendInputAction(action);
     }
 
+    public void SetBoardExitMapping(Board fromBoard, Board toBoard, Func<Vector2I, Vector2I> positionMapper)
+    {
+        if (fromBoard is null || toBoard is null)
+        {
+            throw new InvalidOperationException("[SetBoardExitMapping] Boards are required.");
+        }
+        if (positionMapper is null)
+        {
+            throw new InvalidOperationException("[SetBoardExitMapping] Position mapper is required.");
+        }
+        var key = (fromBoard.GetInstanceId(), toBoard.GetInstanceId());
+        exitPositionMappings[key] = positionMapper;
+    }
+
     public Vector2I SimulateAxisInput(Vector2I axis)
     {
         Vector2I appliedAxis = axisInputHandler.ApplyInversion(axis);
@@ -303,10 +361,53 @@ public partial class Player : Node3D
     public string GetInteractionState() => playStateManager.GetPlayState().interactionState;
     public bool GetIsControllerPlayer() => isControlledPlayer;
     public Color GetPlayerColor() => playerColor;
+    public void SetPlayerColor(Color color) => playerColor = color;
     public Board GetSelectedBoard() => orderedBoards[selectedBoardIndex];
     public virtual T GetPlayerHand<T>() where T : PlayerHand => hand as T;
     public virtual T GetPlayerBoard<T>() where T : PlayerBoard => board as T;
     public virtual T GetEnemyPlayerHand<T>() where T : PlayerHand => enemyHand as T;
     public virtual T GetEnemyPlayerBoard<T>() where T : PlayerBoard => enemyBoard as T;
     public AsyncHandler GetAsyncHandler() => boardInputAsync;
+
+    void RebuildOrderedBoards()
+    {
+        if (hand is null)
+        {
+            throw new InvalidOperationException("[RebuildOrderedBoards] Player hand is required.");
+        }
+        if (board is null)
+        {
+            throw new InvalidOperationException("[RebuildOrderedBoards] Player board is required.");
+        }
+        List<Board> boards = [hand, board];
+        if (enemyBoard is not null)
+        {
+            enemyBoard.SetIsEnemyBoard(true);
+            boards.Add(enemyBoard);
+        }
+        if (includeEnemyHandInOrder)
+        {
+            if (enemyHand is null)
+            {
+                throw new InvalidOperationException("[RebuildOrderedBoards] Enemy hand is required when includeEnemyHandInOrder is enabled.");
+            }
+            enemyHand.SetIsEnemyBoard(true);
+            boards.Add(enemyHand);
+        }
+        orderedBoards = boards;
+    }
+
+    T GetRequiredNode<T>(string path, string label) where T : Node
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new InvalidOperationException($"[Player._Ready] {label} path is required.");
+        }
+        T node = GetNodeOrNull<T>(path);
+        if (node is null)
+        {
+            throw new InvalidOperationException($"[Player._Ready] {label} not found at '{path}'.");
+        }
+        return node;
+    }
 }

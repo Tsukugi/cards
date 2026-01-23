@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Godot;
@@ -11,8 +12,7 @@ public partial class PlayerBoard : Board
     {
         if (axis == Vector2I.Zero) return;
         Card selectedCard = GetSelectedCard<Card>(player);
-        bool allowFixedEdge = !(GetIsEnemyBoard() && axis.Y > 0);
-        if (allowFixedEdge && OnSelectFixedCardEdge is not null && selectedCard is Card)
+        if (OnSelectFixedCardEdge is not null && selectedCard is not null)
         {
             // Override search with predefined edges
             if (axis == Vector2I.Up && selectedCard.EdgeUp is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeUp); return; }
@@ -33,7 +33,8 @@ public partial class PlayerBoard : Board
         }
 
         Vector2I startingPosition = GetSelectedCardPosition(player);
-        Card? card = SearchForCardInBoard(startingPosition, axis, 1, 10);
+        int searchRange = GetAxisSearchRange(startingPosition, axis);
+        Card? card = SearchForCardInBoard(startingPosition, axis, searchRange, 10);
         if (card is null) // We didn't find a card with the specified position
         {
             if (OnBoardEdge is not null) OnBoardEdge(this, axis);
@@ -42,6 +43,37 @@ public partial class PlayerBoard : Board
 
         SelectCardField(player, card.PositionInBoard);
         // GD.Print($"[{player.Name}.PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {selectedCardPosition}");
+    }
+
+    int GetAxisSearchRange(Vector2I startingPosition, Vector2I axis)
+    {
+        int maxRange = 0;
+        List<Card> cards = GetCardsInTree();
+        foreach (Card card in cards)
+        {
+            if (!card.IsInputSelectable) continue;
+            Vector2I delta = card.PositionInBoard - startingPosition;
+            if (axis == Vector2I.Right && delta.X > 0)
+            {
+                maxRange = Math.Max(maxRange, delta.X);
+                continue;
+            }
+            if (axis == Vector2I.Left && delta.X < 0)
+            {
+                maxRange = Math.Max(maxRange, -delta.X);
+                continue;
+            }
+            if (axis == Vector2I.Down && delta.Y > 0)
+            {
+                maxRange = Math.Max(maxRange, delta.Y);
+                continue;
+            }
+            if (axis == Vector2I.Up && delta.Y < 0)
+            {
+                maxRange = Math.Max(maxRange, -delta.Y);
+            }
+        }
+        return maxRange;
     }
 
     // --- Public API ---

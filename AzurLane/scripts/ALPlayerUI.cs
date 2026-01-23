@@ -32,10 +32,20 @@ public partial class ALPlayerUI : Control
     public override void _Process(double delta)
     {
         base._Process(delta);
+        var matchManager = attachedPlayer.GetMatchManager();
         phaseLabel.Text = attachedPlayer.GetCurrentPhaseText();
-        phaseLabel.Modulate = attachedPlayer.GetMatchManager().GetPlayerPlayingTurn().GetPlayerColor();
-        var enemyPlayer = attachedPlayer.GetEnemyPlayerBoard<ALBoard>().TryFindParentNodeOfType<ALPlayer>();
-        playStateLabel.Text = $"{attachedPlayer.GetInteractionState()} - {attachedPlayer.GetInputPlayState()} --- {enemyPlayer.GetInputPlayState()} - {enemyPlayer.GetInteractionState()}";
+        var remotePlayer = matchManager.GetRemotePlayer();
+        if (matchManager.IsLocalTurn())
+        {
+            phaseLabel.Modulate = attachedPlayer.GetPlayerColor();
+        }
+        else if (remotePlayer is not null)
+        {
+            phaseLabel.Modulate = remotePlayer.GetPlayerColor();
+        }
+        playStateLabel.Text = remotePlayer is null
+            ? $"{attachedPlayer.GetInteractionState()} - {attachedPlayer.GetInputPlayState()}"
+            : $"{attachedPlayer.GetInteractionState()} - {attachedPlayer.GetInputPlayState()} --- {remotePlayer.GetRemoteInputPlayState()} - {remotePlayer.GetRemoteInteractionState()}";
 
         if (attachedPlayer.GetSelectedBoard().GetSelectedCard<Card>(attachedPlayer) is ALCard selectedCard)
         {
@@ -45,7 +55,7 @@ public partial class ALPlayerUI : Control
             selectedCardUI.Visible = CanShowCardDetailsUI;
         }
         else { selectedCardUI.Visible = false; }
-        string playingTurn = attachedPlayer.TryFindParentNodeOfType<ALGameMatchManager>().GetPlayerPlayingTurn() == attachedPlayer ? "Playing Turn" : "Enemy Turn";
+        string playingTurn = matchManager.IsLocalTurn() ? "Playing Turn" : "Enemy Turn";
         peerIdLabel.Text = Multiplayer.GetUniqueId().ToString() + " " + playingTurn;
     }
 

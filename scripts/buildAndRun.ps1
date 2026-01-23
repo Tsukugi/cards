@@ -5,6 +5,33 @@ Param(
 
 $ErrorActionPreference = "Stop"
 
+$allTests = $false
+$testPath = ""
+$headless = $false
+
+for ($i = 0; $i -lt $args.Count; $i++) {
+  $arg = $args[$i]
+  if ([string]::IsNullOrWhiteSpace($arg)) { continue }
+  if ($arg -match '^(--|-)(all-tests)$') {
+    $allTests = $true
+    continue
+  }
+  if ($arg -match '^(--|-)(headless)$') {
+    $headless = $true
+    continue
+  }
+  if ($arg -match '^(--|-)(test)=(.+)$') {
+    $testPath = $Matches[3]
+    continue
+  }
+  if ($arg -match '^(--|-)(test)$') {
+    if ($i + 1 -ge $args.Count) { throw "Missing value for --test." }
+    $testPath = $args[$i + 1]
+    $i++
+    continue
+  }
+}
+
 $rootDir = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $logDir = Join-Path $rootDir "logs"
 
@@ -31,6 +58,30 @@ $scriptTimeout = $env:SCRIPT_TIMEOUT
 $waitForExit = $env:WAIT_FOR_EXIT
 $selectionSyncTest = $env:SELECTION_SYNC_TEST
 $selectionSyncTestClass = $env:SELECTION_SYNC_TEST_CLASS
+$runTests = $allTests -or ($testPath -ne "")
+
+$selectionSyncFromTest = $false
+$selectionSyncFromTestClass = ""
+if ($testPath) {
+  $normalizedTest = $testPath.ToLower()
+  if ($normalizedTest -like "*test_alselectionsyncsimul*") {
+    $selectionSyncFromTest = $true
+    $selectionSyncFromTestClass = "Simul"
+  } elseif ($normalizedTest -like "*test_alselectionsync*") {
+    $selectionSyncFromTest = $true
+  }
+}
+
+if ($selectionSyncFromTest) {
+  $selectionSyncTest = "1"
+  if ($selectionSyncFromTestClass) {
+    $selectionSyncTestClass = $selectionSyncFromTestClass
+  }
+}
+
+if ($allTests -and $testPath) {
+  throw "Use only one of --all-tests or --test."
+}
 
 if (-not (Get-Command $godotBin -ErrorAction SilentlyContinue)) {
   throw "godot binary not found at GODOT_BIN_WINDOWS/GODOT_BIN or in PATH."
@@ -53,6 +104,17 @@ $quitArg = if ($quitAfter) { "--quit-after=$quitAfter" } else { "" }
 $renderArgs = @("--rendering-driver", $renderingDriver)
 
 $commonArgs = @("--path", $rootDir) + $renderArgs + @("--")
+if ($headless) { $commonArgs = @("--headless") + $commonArgs }
+
+if ($runTests -and -not $selectionSyncFromTest) {
+  $testArgs = @("--path", $rootDir) + $renderArgs
+  if ($headless) { $testArgs = @("--headless") + $testArgs }
+  $testArgs += @("--scene", "res://AzurLane/tests/Tests.tscn", "--")
+  if ($allTests) { $testArgs += "--all-tests" }
+  if ($testPath) { $testArgs += "--test=$testPath" }
+  & $godotBin @testArgs
+  exit $LASTEXITCODE
+}
 
 $clientALog = Join-Path $logDir "$ClientA.log"
 $clientAErr = Join-Path $logDir "$ClientA.error.log"
@@ -62,11 +124,13 @@ $clientBErr = Join-Path $logDir "$ClientB.error.log"
 $clientAArgs = $commonArgs + @("--player-name=$ClientA")
 if ($selectionSyncTest) { $clientAArgs += @("--selection-sync-test=$selectionSyncTest") }
 if ($selectionSyncTestClass) { $clientAArgs += @("--selection-sync-test-class=$selectionSyncTestClass") }
+if ($selectionSyncFromTest -and $testPath) { $clientAArgs += @("--test=$testPath") }
 if ($quitArg) { $clientAArgs += $quitArg }
 
 $clientBArgs = $commonArgs + @("--player-name=$ClientB")
 if ($selectionSyncTest) { $clientBArgs += @("--selection-sync-test=$selectionSyncTest") }
 if ($selectionSyncTestClass) { $clientBArgs += @("--selection-sync-test-class=$selectionSyncTestClass") }
+if ($selectionSyncFromTest -and $testPath) { $clientBArgs += @("--test=$testPath") }
 if ($quitArg) { $clientBArgs += $quitArg }
 
 Start-Process -FilePath $godotBin -ArgumentList $clientAArgs -WorkingDirectory $rootDir `

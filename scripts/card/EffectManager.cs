@@ -38,8 +38,13 @@ public class EffectManager(Card _card, List<CardEffectDTO> _activeStatusEffects,
     protected Player GetPlayerBasedOnScope(string scope)
     {
         if (scope == PlayerType.Self) return ownerPlayer;
-        if (scope == PlayerType.Enemy) return ownerPlayer.GetEnemyPlayerBoard<PlayerBoard>().TryFindParentNodeOfType<Player>();
-        return null;
+        if (scope == PlayerType.Enemy)
+        {
+            PlayerBoard enemyBoard = ownerPlayer.GetEnemyPlayerBoard<PlayerBoard>() ?? throw new System.InvalidOperationException("[GetPlayerBasedOnScope] Enemy board is not assigned.");
+            Player enemyPlayer = enemyBoard.TryFindParentNodeOfType<Player>() ?? throw new System.InvalidOperationException("[GetPlayerBasedOnScope] Enemy player not found from enemy board.");
+            return enemyPlayer;
+        }
+        throw new System.InvalidOperationException($"[GetPlayerBasedOnScope] Unknown scope '{scope}'.");
     }
     protected virtual List<Card> GetCardListBasedOnArgs(string nodeType, string scope)
     {

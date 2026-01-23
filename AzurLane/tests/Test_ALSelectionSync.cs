@@ -65,25 +65,16 @@ public sealed class ALSelectionSyncTest : TestBase, ISelectionSyncTest
         }
 
         ALBoard ownBoard = player.GetPlayerBoard<ALBoard>();
-        ALBoard enemyBoard = player.GetEnemyPlayerBoard<ALBoard>();
         ALHand ownHand = player.GetPlayerHand<ALHand>();
-        ALHand enemyHand = player.GetEnemyPlayerHand<ALHand>();
 
         await EnsureSelectionAt(player, ownHand, Vector2I.Zero, $"{prefix}.Hand.Start");
-        await MoveAxisUntilBoard(player, Vector2I.Up, ownBoard, 2, $"{prefix}.Hand.ToBoard");
-        await MoveAxisUntilBoard(player, Vector2I.Up, enemyBoard, 2, $"{prefix}.Board.ToEnemyBoard");
-        await MoveAxisUntilBoard(player, Vector2I.Down, ownBoard, 2, $"{prefix}.EnemyBoard.ToBoard");
-        await MoveAxisUntilBoard(player, Vector2I.Down, ownHand, 4, $"{prefix}.Board.ToHand");
-        await MoveAxisUntilBoard(player, Vector2I.Up, ownBoard, 2, $"{prefix}.Hand.ToBoard2");
-        await MoveAxisUntilBoard(player, Vector2I.Up, enemyBoard, 2, $"{prefix}.Board.ToEnemyBoard2");
-        await MoveAxisUntilBoard(player, Vector2I.Up, enemyHand, 4, $"{prefix}.EnemyBoard.ToEnemyHand");
-        await MoveAxisUntilBoard(player, Vector2I.Down, enemyBoard, 4, $"{prefix}.EnemyHand.ToEnemyBoard");
-        await MoveAxisUntilBoard(player, Vector2I.Up, enemyHand, 4, $"{prefix}.EnemyBoard.ToEnemyHand2");
-        await MoveAxisUntilBoard(player, Vector2I.Down, enemyBoard, 4, $"{prefix}.EnemyHand.ToEnemyBoard2");
-        await MoveAxisUntilBoard(player, Vector2I.Down, ownBoard, 2, $"{prefix}.EnemyBoard.ToBoard2");
-        await MoveAxisUntilBoard(player, Vector2I.Up, enemyBoard, 2, $"{prefix}.Board.ToEnemyBoard3");
-        await MoveAxisUntilBoard(player, Vector2I.Down, ownBoard, 2, $"{prefix}.EnemyBoard.ToBoard3");
-        await MoveAxisUntilBoard(player, Vector2I.Down, ownHand, 4, $"{prefix}.Board.ToHand2");
+        await MoveAxis(player, Vector2I.Up, $"{prefix}.Hand.ToBoard");
+        await MoveAxis(player, Vector2I.Up, $"{prefix}.Board.ToEnemyFront");
+        await MoveAxis(player, Vector2I.Up, $"{prefix}.Board.ToEnemyBack");
+        await MoveAxis(player, Vector2I.Down, $"{prefix}.Board.ToEnemyFront2");
+        await MoveAxis(player, Vector2I.Down, $"{prefix}.Board.ToPlayerFront");
+        await MoveAxis(player, Vector2I.Down, $"{prefix}.Board.ToPlayerBack");
+        await MoveAxis(player, Vector2I.Down, $"{prefix}.Board.ToHand");
     }
 
     async void HandleRemoteMessage(int peerId, string message)

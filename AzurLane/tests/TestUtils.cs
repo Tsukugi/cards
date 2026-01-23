@@ -15,7 +15,7 @@ public static class TestUtils
         }
         await player.GetPlayerAsyncHandler().AwaitForCheck(
             null,
-            () => matchManager.GetEnemyPlayer().MultiplayerId != 0,
+            () => matchManager.GetEnemyPeerId() != 0,
             -1);
         await player.GetPlayerAsyncHandler().AwaitForCheck(
             null,

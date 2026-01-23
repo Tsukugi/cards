@@ -29,7 +29,7 @@ public static class NodeUtils
             if (child is not T typedChild)
             {
                 if (!includeInternal) continue;
-                typedChildren.AddRange(child.TryGetAllChildOfType<T>());
+                typedChildren.AddRange(child.TryGetAllChildOfType<T>(includeInternal));
             }
             else
             {
