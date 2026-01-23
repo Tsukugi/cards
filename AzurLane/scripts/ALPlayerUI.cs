@@ -1,3 +1,5 @@
+using System;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Godot;
 
@@ -6,7 +8,7 @@ public partial class ALPlayerUI : Control
     ALPlayer attachedPlayer;
     ALSelectedCardUI selectedCardUI, triggerCardUI, attackerUI, attackedUI;
     [Export]
-    Label playStateLabel, phaseLabel, gameOverLabel, peerIdLabel;
+    Label playStateLabel, phaseLabel, gameOverLabel, peerIdLabel, invalidOperationLabel;
     Panel gameOverPanel;
     TextureRect selectedCardImage;
     [Export]
@@ -17,6 +19,7 @@ public partial class ALPlayerUI : Control
         base._Ready();
         phaseLabel = GetNode<Label>("PhaseLabel");
         playStateLabel = GetNode<Label>("PlayState");
+        invalidOperationLabel = GetNode<Label>("InvalidOperationLabel");
         matchMenuBtn = GetNode<MenuButton>("MatchMenuBtn");
         debugMenuBtn = GetNode<MenuButton>("DebugMenuBtn");
         matchMenuBtn.GetPopup().IndexPressed += OnMatchMenuItemSelected;
@@ -27,6 +30,7 @@ public partial class ALPlayerUI : Control
         attackedUI = GetNode<ALSelectedCardUI>("AttackedUI");
         gameOverPanel = GetNode<Panel>("GameOverPanel");
         gameOverLabel = gameOverPanel.GetNode<Label>("GameOverLabel");
+        AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
     }
 
     public override void _Process(double delta)
@@ -57,6 +61,32 @@ public partial class ALPlayerUI : Control
         else { selectedCardUI.Visible = false; }
         string playingTurn = matchManager.IsLocalTurn() ? "Playing Turn" : "Enemy Turn";
         peerIdLabel.Text = Multiplayer.GetUniqueId().ToString() + " " + playingTurn;
+    }
+
+    public override void _ExitTree()
+    {
+        base._ExitTree();
+        AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
+    }
+
+    void OnFirstChanceException(object sender, FirstChanceExceptionEventArgs args)
+    {
+        if (args?.Exception is not InvalidOperationException exception)
+        {
+            return;
+        }
+        string message = $"{exception.GetType().Name}: {exception.Message}";
+        CallDeferred(nameof(UpdateInvalidOperationLabel), message);
+    }
+
+    void UpdateInvalidOperationLabel(string message)
+    {
+        if (invalidOperationLabel is null)
+        {
+            throw new InvalidOperationException("[UpdateInvalidOperationLabel] InvalidOperationLabel is missing.");
+        }
+        invalidOperationLabel.Text = message;
+        invalidOperationLabel.Visible = true;
     }
 
     public async Task ShowGameOverUI(bool isVictory)
