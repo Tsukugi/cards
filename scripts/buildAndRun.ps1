@@ -126,12 +126,8 @@ if (-not (Get-Command $dotnetBin -ErrorAction SilentlyContinue)) {
   throw "dotnet binary not found at DOTNET_BIN or in PATH."
 }
 
-$godotPath = (Get-Command $godotBin).Source
-
-# Kill existing clients launched by this script (same Godot binary + player-name).
-Get-CimInstance Win32_Process |
-  Where-Object { $_.CommandLine -match "--player-name" -and $_.ExecutablePath -eq $godotPath } |
-  ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+# Kill every running Godot instance before launching new clients.
+Get-Process -Name "godot" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 

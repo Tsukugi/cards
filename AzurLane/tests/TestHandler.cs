@@ -22,7 +22,7 @@ namespace TCG.Tests
             await AsyncHandler.RunAsyncFunctionsSequentially(tasks);
             GD.Print($"[RunTestsSequentially] Tests complete! {rootNode.GetType()} Total {tests.Count}");
             PrintSummary(tests.Count);
-            QuitIfHeadless();
+            QuitAfterTests();
         }
 
         public async Task RunTestsParallel(List<TestImplAsync> tests)
@@ -32,7 +32,7 @@ namespace TCG.Tests
             await Task.WhenAll(taskResults.ToArray());
             GD.Print($"[RunTestsSequentially] Tests complete! {rootNode.GetType()} Total {tests.Count}");
             PrintSummary(tests.Count);
-            QuitIfHeadless();
+            QuitAfterTests();
         }
 
         public Task RunTest(TestImplAsync impl)
@@ -48,25 +48,10 @@ namespace TCG.Tests
             }
         }
 
-        private void QuitIfHeadless()
+        private void QuitAfterTests()
         {
-            if (!IsHeadless())
-            {
-                return;
-            }
-
             int exitCode = failedAsserts > 0 ? 1 : 0;
             rootNode.GetTree().Quit(exitCode);
-        }
-
-        private static bool IsHeadless()
-        {
-            if (OS.HasFeature("headless"))
-            {
-                return true;
-            }
-
-            return DisplayServer.GetName() == "headless";
         }
 
         private void PrintSummary(int totalTests)
