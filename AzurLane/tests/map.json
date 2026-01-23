@@ -1,0 +1,62 @@
+{
+	"own": [
+		[
+			"CubeDeck",
+			"Cost",
+			"Cost2",
+			"Cost3",
+			"Retreat"
+		],
+		[
+			"-",
+			"BackRow",
+			"Flagship",
+			"BackRow2",
+			"Deck"
+		],
+		[
+			"-",
+			"FrontRow",
+			"FrontRow2",
+			"FrontRow3",
+			"Phase Button"
+		]
+	],
+	"own_hand": [
+		"Hand0",
+		"Hand1",
+		"Hand2",
+		"Hand3",
+		"Hand4"
+	],
+	"enemy": [
+		[
+			"-",
+			"FrontRow",
+			"FrontRow2",
+			"FrontRow3",
+			"Phase Button"
+		],
+		[
+			"-",
+			"Deck",
+			"BackRow2",
+			"Flagship",
+			"BackRow"
+		],
+		[
+			"Retreat",
+			"Cost3",
+			"Cost2",
+			"Cost",
+			"CubeDeck"
+		]
+	],
+	"enemy_hand": [
+		"Hand4",
+		"Hand3",
+		"Hand2",
+		"Hand1",
+		"Hand0"
+	]
+}

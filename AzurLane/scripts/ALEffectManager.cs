@@ -7,6 +7,15 @@ using Godot;
 public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffects, ALPlayer _ownerPlayer, ALGameMatchManager _matchManager) : EffectManager(_card, _activeStatusEffects, _ownerPlayer)
 {
     readonly ALGameMatchManager matchManager = _matchManager;
+
+    static ALBoardSide GetSideFromScope(string scope)
+    {
+        if (scope == PlayerType.Self || scope == PlayerType.Ally) return ALBoardSide.Player;
+        if (scope == PlayerType.Enemy) return ALBoardSide.Enemy;
+        throw new InvalidOperationException($"[ALEffectManager] Unknown scope '{scope}'.");
+    }
+
+    ALBoard GetBoard() => ownerPlayer.GetPlayerBoard<ALBoard>();
     public bool CheckCanTriggerEffect(CardEffectDTO effectDTO)
     {
         List<CardEffectConditionDTO> conditionsFulfilled = [];
@@ -63,9 +72,28 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
 
     protected override List<Card> GetCardListBasedOnArgs(string boardType, string scope)
     {
-        ALPlayer player = (ALPlayer)GetPlayerBasedOnScope(scope);
-        if (boardType == ALBoardType.CubeDeckArea) return [.. player.GetCubesInBoard()];
-        return base.GetCardListBasedOnArgs(boardType, scope);
+        ALPlayer player = (ALPlayer)ownerPlayer;
+        ALBoard board = GetBoard();
+        ALBoardSide side = GetSideFromScope(scope);
+
+        if (boardType == ALBoardType.CubeDeckArea)
+        {
+            return side == ALBoardSide.Enemy ? [.. player.GetEnemyCubesInBoard()] : [.. player.GetCubesInBoard()];
+        }
+        if (boardType == BoardType.Hand)
+        {
+            if (side == ALBoardSide.Enemy)
+            {
+                throw new InvalidOperationException("[ALEffectManager.GetCardListBasedOnArgs] Enemy hand is not tracked.");
+            }
+            return player.GetPlayerHand<PlayerHand>().GetCardsInTree();
+        }
+        if (boardType == BoardType.Board)
+        {
+            List<Card> cards = board.GetCardsInTree();
+            return cards.FindAll(card => board.IsCardInSide(card, side));
+        }
+        throw new InvalidOperationException($"[ALEffectManager.GetCardListBasedOnArgs] Unknown board type '{boardType}'.");
     }
 
     // * --- Condition --- *
@@ -76,11 +104,13 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         string comparator = conditionDTO.conditionArgs[2] ?? "LessThan";
         int value = (conditionDTO.conditionArgs[3] ?? "0").ToInt();
 
-        Board targetBoard = GetPlayerBasedOnScope(scope).GetPlayerBoard<ALBoard>();
+        ALBoardSide side = GetSideFromScope(scope);
+        ALBoard targetBoard = GetBoard();
 
         bool fulfillsCondition = targetBoard.GetCardsInTree().FindAll((field) =>
         {
             if (field is not ALCard card) return false;
+            if (!targetBoard.IsCardInSide(card, side)) return false;
             if (!card.IsCardUnit()) return false;
             if (card.GetIsAFlagship()) return false; // ONLY Ships
             int attr = card.GetAttributeWithModifiers<ALCardDTO>(attributeToCompare);
@@ -98,7 +128,12 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         string comparator = conditionDTO.conditionArgs[2] ?? "LessThan";
         int value = (conditionDTO.conditionArgs[3] ?? "0").ToInt();
 
-        Board targetBoard = GetPlayerBasedOnScope(scope).GetPlayerBoard<ALBoard>();
+        ALBoardSide side = GetSideFromScope(scope);
+        if (side == ALBoardSide.Enemy)
+        {
+            throw new InvalidOperationException("[CheckCardsInHand] Enemy hand is not tracked.");
+        }
+        Board targetBoard = ownerPlayer.GetPlayerHand<ALHand>();
 
         bool fulfillsCondition = targetBoard.GetCardsInTree().FindAll((field) =>
         {
@@ -166,10 +201,11 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         string whoShouldBePlaying = conditionDTO.conditionArgs[0] ?? PlayerType.Self;
         bool fulfillsCondition = false;
 
-        if (whoShouldBePlaying == PlayerType.Self) fulfillsCondition = matchManager.GetPlayerPlayingTurn() == ownerPlayer;
-        else if (whoShouldBePlaying == PlayerType.Enemy) fulfillsCondition = matchManager.GetPlayerPlayingTurn() != ownerPlayer;
+        if (whoShouldBePlaying == PlayerType.Self) fulfillsCondition = matchManager.IsLocalTurn();
+        else if (whoShouldBePlaying == PlayerType.Enemy) fulfillsCondition = !matchManager.IsLocalTurn();
+        else throw new InvalidOperationException($"[Condition - CurrentPlayerPlayingTurn] Unknown scope '{whoShouldBePlaying}'.");
 
-        GD.Print($"[Condition - CurrentPlayerPlayingTurn] {whoShouldBePlaying}: {ownerPlayer.Name} - {matchManager.GetPlayerPlayingTurn().Name} => {fulfillsCondition}");
+        GD.Print($"[Condition - CurrentPlayerPlayingTurn] {whoShouldBePlaying}: localTurn={matchManager.IsLocalTurn()} => {fulfillsCondition}");
         return fulfillsCondition;
     }
 
@@ -194,12 +230,22 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         GD.Print($"[Effect - SelectAndGivePower]");
         int amount = (effectDTO.effectValue[0] ?? "0").ToInt();
         string scope = effectDTO.effectValue[1] ?? PlayerType.Self;
+        ALBoardSide side = GetSideFromScope(scope);
+        ALBoard board = GetBoard();
 
         bool isFinished = false;
 
         async Task OnAfterSelectAndGivePower(Card selectedTarget)
         {
             GD.Print($"[Effect - OnAfterSelectAndGivePower]");
+            if (selectedTarget is not ALCard targetCard)
+            {
+                throw new InvalidOperationException("[Effect - OnAfterSelectAndGivePower] Target must be an ALCard.");
+            }
+            if (!board.IsCardInSide(targetCard, side))
+            {
+                throw new InvalidOperationException("[Effect - OnAfterSelectAndGivePower] Selected card is not in the requested scope.");
+            }
             selectedTarget.AddModifier(new AttributeModifier()
             {
                 Id = $"{card.Name}-{effectDTO.effectId}",
@@ -211,9 +257,8 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
             isFinished = true;
         }
 
-        Board targetBoard = GetPlayerBasedOnScope(scope).GetPlayerBoard<ALBoard>();
         await ApplySelectEffectTargetAction(
-               targetBoard,
+               board,
                OnAfterSelectAndGivePower,
                () => isFinished
             );
@@ -243,10 +288,10 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         string attributeToCompare = effectDTO.effectValue[0] ?? "Cost";
         string comparator = effectDTO.effectValue[1] ?? "LessThan";
         string value = effectDTO.effectValue[2] ?? "0";
+        ALBoard board = GetBoard();
 
         async Task OnAfterSelectReturningCard(Card selectedTarget)
         {
-            var board = ownerPlayer.GetPlayerBoard<ALBoard>();
             GD.Print($"[Effect - OnAfterSelectReturningCard]");
             var attrs = selectedTarget.GetAttributes<ALCardDTO>();
             if (attrs.cardType != ALCardType.Ship)
@@ -255,10 +300,13 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
                 return;
             }
             int attr = selectedTarget.GetAttributeWithModifiers<ALCardDTO>(attributeToCompare);
+            if (!board.IsEnemyCard(selectedTarget))
+            {
+                throw new InvalidOperationException("[Effect - OnAfterSelectReturningCard] Selected target is not an enemy card.");
+            }
             if (LogicUtils.ApplyComparison(attr, comparator, value.ToInt()))
             {
-                ALPlayer enemyPlayer = selectedTarget.GetOwnerPlayer<ALPlayer>();
-                await enemyPlayer.AddCardToHand(selectedTarget.GetAttributes<ALCardDTO>());
+                ((ALPlayer)ownerPlayer).AddEnemyCardToHand(selectedTarget.GetAttributes<ALCardDTO>());
                 selectedTarget.DestroyCard();
                 await ownerPlayer.GoBackInHistoryState();
                 return;
@@ -267,7 +315,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         }
 
         await ApplySelectEffectTargetAction(
-                ownerPlayer.GetEnemyPlayerBoard<PlayerBoard>(),
+                board,
                 OnAfterSelectReturningCard
             );
 
@@ -343,11 +391,16 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
     public async Task RestEnemy(CardEffectDTO effectDTO)
     {
         GD.Print($"[Effect - RestEnemy]");
+        ALBoard board = GetBoard();
 
         async Task OnSelectToRestCard(Card selectedTarget)
         {
             if (selectedTarget is ALCard target && target.IsCardUnit() && target.GetIsInActiveState())
             {
+                if (!board.IsEnemyCard(target))
+                {
+                    throw new InvalidOperationException("[OnSelectToRestCard] Selected target is not an enemy card.");
+                }
                 target.SetIsInActiveState(false);
                 GD.Print($"[OnSelectToRestCard] Resting: {target.GetAttributes<CardDTO>().name}");
                 await ownerPlayer.GoBackInHistoryState();
@@ -357,18 +410,23 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         }
 
         await ApplySelectEffectTargetAction(
-                ownerPlayer.GetEnemyPlayerBoard<PlayerBoard>(),
+                board,
                 OnSelectToRestCard
             );
     }
     public async Task RestOrDestroyEnemy(CardEffectDTO effectDTO)
     {
         GD.Print($"[Effect - RestOrDestroyEnemy]");
+        ALBoard board = GetBoard();
 
         async Task OnSelectToRestOrDestroyCard(Card selectedTarget)
         {
             if (selectedTarget is ALCard target && target.IsCardUnit())
             {
+                if (!board.IsEnemyCard(target))
+                {
+                    throw new InvalidOperationException("[OnSelectToRestOrDestroyCard] Selected target is not an enemy card.");
+                }
                 // If active, rest it. If resting, destroy it.
                 if (target.GetIsInActiveState())
                 {
@@ -387,7 +445,7 @@ public class ALEffectManager(ALCard _card, List<CardEffectDTO> _activeStatusEffe
         }
 
         await ApplySelectEffectTargetAction(
-                ownerPlayer.GetEnemyPlayerBoard<PlayerBoard>(),
+                board,
                 OnSelectToRestOrDestroyCard
             );
     }

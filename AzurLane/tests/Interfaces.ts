@@ -1,0 +1,1 @@
+type MapStep = [string, string][] // Client A position, client B position

@@ -18,6 +18,7 @@ public class ALPhase
     EALTurnPhase currentPhase = EALTurnPhase.Reset;
     readonly ALPlayer player;
     readonly AsyncHandler asyncPhase;
+    bool skipAutoPhases = false;
 
     public ALPhase(ALPlayer _player)
     {
@@ -35,6 +36,11 @@ public class ALPhase
     public async void StartTurn()
     {
         GD.Print($"[{player.Name}.StartTurn] --------------- Start of turn ---------------");
+        if (skipAutoPhases)
+        {
+            GD.Print($"[{player.Name}.StartTurn] Skipped auto phases.");
+            return;
+        }
         await PlayResetPhase();
     }
 
@@ -88,6 +94,11 @@ public class ALPhase
 
     async Task ApplyPhase(EALTurnPhase phase)
     {
+        if (skipAutoPhases && phase != EALTurnPhase.Main)
+        {
+            GD.Print($"[{player.Name}.ApplyPhase] Skipped phase {phase}.");
+            return;
+        }
         switch (phase)
         {
             case EALTurnPhase.Reset: await PlayResetPhase(); return;
@@ -100,6 +111,11 @@ public class ALPhase
 
     public void PlayNextPhase()
     {
+        if (skipAutoPhases)
+        {
+            GD.Print($"[{player.Name}.PlayNextPhase] Skipped due to auto phase suppression.");
+            return;
+        }
         EALTurnPhase nextPhase = currentPhase + 1;
         if (nextPhase > EALTurnPhase.End)
         {
@@ -117,6 +133,15 @@ public class ALPhase
         currentPhase = phase;
         if (syncToNet) ALNetwork.Instance.SendMatchPhase((int)phase);
         if (OnPhaseChange is not null) OnPhaseChange(phase);
+    }
+
+    public void SetSkipAutoPhases(bool value) => skipAutoPhases = value;
+
+    public async Task ForceMainPhase(bool syncToNet = true)
+    {
+        skipAutoPhases = true;
+        await player.SetPlayState(EPlayState.SelectCardToPlay, null, false);
+        UpdatePhase(EALTurnPhase.Main, syncToNet);
     }
 
     public async Task EndBattlePhaseIfNoActiveCards()

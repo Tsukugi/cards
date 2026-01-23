@@ -23,6 +23,8 @@ public partial class ALPlayer : Player
 
     // --- Refs ---
     ALDeckSet deckSet = null;
+    ALDeckSet enemyDeckSet = null;
+    readonly List<ALCardDTO> enemyHandCards = [];
     ALGameMatchManager matchManager;
     // --- AI ---
     ALBasicAI ai;
@@ -34,6 +36,10 @@ public partial class ALPlayer : Player
     [Export]
     ALPhaseButton phaseButtonField;
     ALBoardArea costArea, durabilityArea;
+    Node3D enemyUnitsArea;
+    ALBoardArea enemyCostArea, enemyDurabilityArea;
+    ALCard enemyDeckField, enemyCubeDeckField, enemyFlagshipField, enemyRetreatField;
+    ALPhaseButton enemyPhaseButtonField;
 
     // --- Phase ---
     AsyncHandler playerAsyncHandler;
@@ -51,9 +57,40 @@ public partial class ALPlayer : Player
         phaseManager = new(this);
 
         ALBoard board = GetPlayerBoard<ALBoard>();
-        costArea = board.GetNode<ALBoardArea>("CostArea");
-        unitsArea = board.GetNode<Node3D>("Units");
-        durabilityArea = board.GetNode<ALBoardArea>("FlagshipDurability");
+        ALHand hand = GetPlayerHand<ALHand>();
+        SetBoardExitMapping(hand, board, _ => new Vector2I(1, 1));
+        SetBoardExitMapping(board, hand, position =>
+        {
+            int maxX = hand.GetCardsInTree().Count - 1;
+            if (maxX < 0)
+            {
+                throw new InvalidOperationException("[ALPlayer.SetBoardExitMapping] Hand has no cards for exit mapping.");
+            }
+            int clampedX = Math.Clamp(position.X, 0, maxX);
+            return new Vector2I(clampedX, 0);
+        });
+        ALHand enemyHand = GetEnemyPlayerHand<ALHand>();
+        if (enemyHand is not null)
+        {
+            SetBoardExitMapping(enemyHand, board, _ => new Vector2I(1, -2));
+        }
+        costArea = board.GetCostArea(ALBoardSide.Player);
+        unitsArea = board.GetUnitsRoot(ALBoardSide.Player);
+        durabilityArea = board.GetDurabilityArea(ALBoardSide.Player);
+        deckField = board.GetDeckField(ALBoardSide.Player);
+        cubeDeckField = board.GetCubeDeckField(ALBoardSide.Player);
+        flagshipField = board.GetFlagship(ALBoardSide.Player);
+        retreatField = board.GetRetreatField(ALBoardSide.Player);
+        phaseButtonField = board.GetPhaseButton(ALBoardSide.Player);
+
+        enemyUnitsArea = board.GetUnitsRoot(ALBoardSide.Enemy);
+        enemyCostArea = board.GetCostArea(ALBoardSide.Enemy);
+        enemyDurabilityArea = board.GetDurabilityArea(ALBoardSide.Enemy);
+        enemyDeckField = board.GetDeckField(ALBoardSide.Enemy);
+        enemyCubeDeckField = board.GetCubeDeckField(ALBoardSide.Enemy);
+        enemyFlagshipField = board.GetFlagship(ALBoardSide.Enemy);
+        enemyRetreatField = board.GetRetreatField(ALBoardSide.Enemy);
+        enemyPhaseButtonField = board.GetPhaseButton(ALBoardSide.Enemy);
 
         Callable.From(InitializeEvents).CallDeferred();
     }
@@ -77,6 +114,21 @@ public partial class ALPlayer : Player
         GD.Print($"[AssignDeck] Name {newDeckSet.name} - Deck size: {newDeckSet.deck.Count}");
     }
 
+    public void AssignEnemyDeck(ALDeckSet newDeckSet)
+    {
+        enemyDeckSet = newDeckSet;
+        GD.Print($"[AssignEnemyDeck] Name {newDeckSet.name} - Deck size: {newDeckSet.deck.Count}");
+        enemyDeckField.CardStack = enemyDeckSet.deck.Count;
+        enemyDeckField.UpdateAttributes(enemyDeckSet.deck[^1]);
+        enemyCubeDeckField.CardStack = enemyDeckSet.cubeDeck.Count;
+        enemyCubeDeckField.UpdateAttributes(enemyDeckSet.cubeDeck[^1]);
+        UpdateEnemyFlagship(enemyDeckSet.flagship);
+    }
+
+    public bool HasValidEnemyDeck() => enemyDeckSet is not null;
+
+    public void UpdateEnemyFlagship(ALCardDTO card) => enemyFlagshipField.UpdateAttributes(card);
+
     public async Task StartGameForPlayer(ALDeckSet deckSet)
     {
         // Deck setup
@@ -95,8 +147,8 @@ public partial class ALPlayer : Player
         {
             await DrawCardToHand();
         }
-        SelectBoard(this, hand);
         hand.SelectCardField(this, Vector2I.Zero);
+        SelectBoard(this, hand);
         await ApplyFlagshipDurability(); // Manual says that this step is after drawing hand cards
     }
 
@@ -328,6 +380,10 @@ public partial class ALPlayer : Player
         // "Draw" the card to hand 
         ALHand hand = GetPlayerHand<ALHand>();
         ALCard durabilityCardInHand = await hand.AddCardToHand(durabilityCardInBoard.GetAttributes<ALCardDTO>());
+        if (GetIsControllerPlayer())
+        {
+            ALNetwork.Instance.SyncDurabilityDamage(durabilityCardInHand.GetAttributes<ALCardDTO>().id);
+        }
         durabilityCardInBoard.DestroyCard(); // Destroy card from board
         await TryToTriggerOnAllCards(ALCardEffectTrigger.OnDamageReceived);
         GD.Print($"[OnDurabilityDamageHandler] {Name} takes damage, durability is {durabilityCards.FindAll(durabilityCard => durabilityCard.GetIsFaceDown()).Count}/{durabilityCards.Count}");
@@ -340,7 +396,8 @@ public partial class ALPlayer : Player
     public async Task StartBattle(ALCard attacker)
     {
         var attrs = attacker.GetAttributes<ALCardDTO>();
-        if (attacker.GetBoard() != GetPlayerBoard<ALBoard>() || !attacker.GetIsInActiveState())
+        ALBoard board = GetPlayerBoard<ALBoard>();
+        if (board.IsEnemyCard(attacker) || !attacker.GetIsInActiveState())
         {
             GD.PrintErr($"[StartBattle] You must start an attack from your board and with an active card - Attacker: {attrs.name}");
             return;
@@ -360,14 +417,12 @@ public partial class ALPlayer : Player
     // Flagship -> All Ships
     public void AttackCard(ALCard attacker, ALCard target)
     {
-        if (target.GetBoard() != GetEnemyPlayerBoard<ALBoard>() || !target.IsCardUnit())
+        ALBoard board = GetPlayerBoard<ALBoard>();
+        bool attackerEnemy = board.IsEnemyCard(attacker);
+        bool targetEnemy = board.IsEnemyCard(target);
+        if (attackerEnemy == targetEnemy || !target.IsCardUnit())
         {
-            GD.PrintErr($"[AttackCard] Target must be from the enemy board and has to be a placed unit card - Target: {target.GetBoard().Name}.{target.GetAttributes<ALCardDTO>().name}");
-            return;
-        }
-        if (attacker.GetBoard().GetIsEnemyBoard() == target.GetBoard().GetIsEnemyBoard())
-        {
-            GD.PrintErr($"[AttackCard] {attacker.Name} cannot attack {target.Name} as they are allies!");
+            GD.PrintErr($"[AttackCard] Target must be a placed unit card from the opposite side - Target: {target.GetAttributes<ALCardDTO>().name}");
             return;
         }
         //  if Flagship, they can attack everyone
@@ -533,15 +588,23 @@ public partial class ALPlayer : Player
     }
 
     public List<ALCard> GetUnitsInBoard() => unitsArea.TryGetAllChildOfType<ALCard>();
+    public List<ALCard> GetEnemyUnitsInBoard() => enemyUnitsArea.TryGetAllChildOfType<ALCard>();
     public List<ALCard> GetCardsInHand() => GetPlayerHand<ALHand>().TryGetAllChildOfType<ALCard>();
     public List<ALCard> GetActiveUnitsInBoard() => GetUnitsInBoard().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetActiveCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
+    public List<ALCard> GetEnemyActiveCubesInBoard() => enemyCostArea.TryGetAllChildOfType<ALCard>().FindAll(card => card.GetIsInActiveState());
     public List<ALCard> GetDurabilityCards() => durabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.GetIsEmptyField());
     public List<ALCard> GetCubesInBoard() => costArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.GetIsEmptyField());
+    public List<ALCard> GetEnemyDurabilityCards() => enemyDurabilityArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.GetIsEmptyField());
+    public List<ALCard> GetEnemyCubesInBoard() => enemyCostArea.TryGetAllChildOfType<ALCard>().FindAll(card => !card.GetIsEmptyField());
     public ALDeckSet GetDeckSet() => deckSet;
+    public ALDeckSet GetEnemyDeckSet() => enemyDeckSet;
     public ALCardDTO DrawFromDeck() => DrawCard(deckSet.deck, deckField);
     public ALCardDTO DrawFromCubeDeck() => DrawCard(deckSet.cubeDeck, cubeDeckField);
+    public ALCardDTO DrawFromEnemyDeck() => DrawCard(enemyDeckSet.deck, enemyDeckField);
+    public ALCardDTO DrawFromEnemyCubeDeck() => DrawCard(enemyDeckSet.cubeDeck, enemyCubeDeckField);
     public bool HasValidDeck() => deckSet is not null;
+    public int GetEnemyHandCount() => enemyHandCards.Count;
     public void UpdateFlagship(ALCardDTO card) => flagshipField.UpdateAttributes(card);
 
     public bool IsAwaitingBattleGuard() =>
@@ -565,9 +628,8 @@ public partial class ALPlayer : Player
     public void TriggerPhaseButton(Player player)
     {
         ALBoard board = player.GetPlayerBoard<ALBoard>();
-        SelectBoard(player, board);
-        // Select phase button
         board.SelectCardField(player, phaseButtonField.PositionInBoard);
+        SelectBoard(player, board);
         GD.Print($"[TriggerPhaseButton] {board.GetSelectedCard<Card>(player)}");
         TriggerAction(player, InputAction.Ok);
     }
@@ -584,6 +646,41 @@ public partial class ALPlayer : Player
         ALHand hand = GetPlayerHand<ALHand>();
         await hand.AddCardToHand(card);
         await this.Wait(DrawDelay);
+    }
+
+    public void AddEnemyCardToHand(ALCardDTO card)
+    {
+        if (card is null)
+        {
+            throw new InvalidOperationException("[AddEnemyCardToHand] Card is required.");
+        }
+        enemyHandCards.Add(card);
+        PlayerHand enemyPlayerHand = GetEnemyPlayerHand<PlayerHand>();
+        if (enemyPlayerHand is not ALHand enemyHandBoard)
+        {
+            throw new InvalidOperationException("[AddEnemyCardToHand] Enemy hand board is missing or invalid.");
+        }
+        enemyHandBoard.AddEnemyCardToHand(card);
+    }
+
+    public void RemoveEnemyCardFromHand(string cardId)
+    {
+        if (string.IsNullOrWhiteSpace(cardId))
+        {
+            throw new InvalidOperationException("[RemoveEnemyCardFromHand] Card id is required.");
+        }
+        int index = enemyHandCards.FindIndex(card => card.id == cardId);
+        if (index < 0)
+        {
+            throw new InvalidOperationException($"[RemoveEnemyCardFromHand] Card id not found in enemy hand: {cardId}");
+        }
+        enemyHandCards.RemoveAt(index);
+        PlayerHand enemyPlayerHand = GetEnemyPlayerHand<PlayerHand>();
+        if (enemyPlayerHand is not ALHand enemyHandBoard)
+        {
+            throw new InvalidOperationException("[RemoveEnemyCardFromHand] Enemy hand board is missing or invalid.");
+        }
+        enemyHandBoard.RemoveEnemyCardFromHand(cardId);
     }
 
     public void SetBoardCardsAsActive()
@@ -622,7 +719,104 @@ public partial class ALPlayer : Player
         }
     }
 
+    public async Task PlaceEnemyCubeToBoard(ALCardDTO cube)
+    {
+        try
+        {
+            Card cubeField = PlayerBoard.FindLastEmptyFieldInRow(
+                   enemyCostArea.TryGetAllChildOfType<Card>()
+               );
+            if (cubeField is not ALCard enemyCube)
+            {
+                throw new InvalidOperationException("[PlaceEnemyCubeToBoard] No cube field available.");
+            }
+            enemyCube.IsInputSelectable = true;
+            enemyCube.UpdateAttributes(cube);
+            await Task.CompletedTask;
+        }
+        catch (Exception e)
+        {
+            GD.Print(e); // Expected when cube deck is empty
+            return;
+        }
+    }
+
+    public async Task PlaceEnemyDurabilityCard(ALCardDTO card)
+    {
+        ALCard emptyDurability = enemyDurabilityArea.TryGetAllChildOfType<ALCard>().Find(durability => durability.GetIsEmptyField());
+        if (emptyDurability is null)
+        {
+            GD.PrintErr("[PlaceEnemyDurabilityCard] Cannot add more durability to the enemy board");
+            return;
+        }
+        emptyDurability.UpdateAttributes(card);
+        emptyDurability.IsInputSelectable = true;
+        await this.Wait(DrawDelay);
+    }
+
+    public void ApplyEnemyDurabilityDamage(ALCardDTO card)
+    {
+        if (card is null)
+        {
+            throw new InvalidOperationException("[ApplyEnemyDurabilityDamage] Card is required.");
+        }
+        ALCard durabilityCardInBoard = GetEnemyDurabilityCards().FindLast(durabilityCard => durabilityCard.GetIsFaceDown());
+        if (durabilityCardInBoard is null)
+        {
+            throw new InvalidOperationException("[ApplyEnemyDurabilityDamage] No enemy durability card available.");
+        }
+        durabilityCardInBoard.DestroyCard();
+        AddEnemyCardToHand(card);
+    }
+
+    public async Task PlaceEnemyCardToBoard(ALCardDTO card, string boardName, string fieldPath)
+    {
+        if (card is null)
+        {
+            throw new InvalidOperationException("[PlaceEnemyCardToBoard] Card is required.");
+        }
+        if (string.IsNullOrWhiteSpace(boardName))
+        {
+            throw new InvalidOperationException("[PlaceEnemyCardToBoard] Board name is required.");
+        }
+        if (string.IsNullOrWhiteSpace(fieldPath))
+        {
+            throw new InvalidOperationException("[PlaceEnemyCardToBoard] Field path is required.");
+        }
+        if (boardName != "Board")
+        {
+            throw new InvalidOperationException($"[PlaceEnemyCardToBoard] Unsupported board name: {boardName}");
+        }
+        ALBoard board = GetPlayerBoard<ALBoard>() ?? throw new InvalidOperationException("[PlaceEnemyCardToBoard] Player board is missing.");
+        string enemyFieldPath = fieldPath.Replace("Player/", "EnemyPlayer/");
+        Node enemyNode = board.GetNodeOrNull(enemyFieldPath);
+        if (enemyNode is not ALCard targetField)
+        {
+            throw new InvalidOperationException($"[PlaceEnemyCardToBoard] Enemy field not found for path {enemyFieldPath}.");
+        }
+        if (!targetField.GetIsEmptyField())
+        {
+            AddEnemyToRetreatAreaOnTop(targetField.GetAttributes<ALCardDTO>());
+        }
+        targetField.UpdateAttributes(card);
+        await targetField.GetEffectManager<ALEffectManager>().AddStatusEffect(ALCardStatusEffects.BattlefieldDelayImpl);
+        RemoveEnemyCardFromHand(card.id);
+    }
+
     public ALBasicAI GetPlayerAIController() => ai;
+
+    void AddEnemyToRetreatAreaOnTop(ALCardDTO cardToAdd)
+    {
+        if (cardToAdd is null)
+        {
+            throw new InvalidOperationException("[AddEnemyToRetreatAreaOnTop] Card is required.");
+        }
+        if (enemyDeckSet is null)
+        {
+            throw new InvalidOperationException("[AddEnemyToRetreatAreaOnTop] Enemy deck is required.");
+        }
+        AddCardToDeck(cardToAdd, enemyDeckSet.retreatDeck, enemyRetreatField, false);
+    }
 
 }
 

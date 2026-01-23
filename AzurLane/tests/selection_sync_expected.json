@@ -1,0 +1,68 @@
+{
+  "Hand.Start": {
+    "Board": "Hand",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "None"
+  },
+  "Hand.ToBoard.Step1": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Up"
+  },
+  "Hand.ToBoard": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Up"
+  },
+  "Board.ToEnemyFront": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, -1],
+    "Axis": "Up"
+  },
+  "Board.ToEnemyBack": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, -2],
+    "Axis": "Up"
+  },
+  "Board.ToEnemyFront2": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, -1],
+    "Axis": "Down"
+  },
+  "Board.ToPlayerFront": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "Board.ToHand.Step1": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [0, 1],
+    "Axis": "Down"
+  },
+  "Board.ToHand.Step2": {
+    "Board": "Board",
+    "Enemy": false,
+    "Pos": [-1, 2],
+    "Axis": "Down"
+  },
+  "Board.ToHand.Step3": {
+    "Board": "Hand",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  },
+  "Board.ToHand": {
+    "Board": "Hand",
+    "Enemy": false,
+    "Pos": [0, 0],
+    "Axis": "Down"
+  }
+}

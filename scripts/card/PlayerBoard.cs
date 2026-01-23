@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Godot;
@@ -10,7 +11,8 @@ public partial class PlayerBoard : Board
     public override void OnInputAxisChange(Player player, Vector2I axis)
     {
         if (axis == Vector2I.Zero) return;
-        if (OnSelectFixedCardEdge is not null && GetSelectedCard<Card>(player) is Card selectedCard)
+        Card selectedCard = GetSelectedCard<Card>(player);
+        if (OnSelectFixedCardEdge is not null && selectedCard is not null)
         {
             // Override search with predefined edges
             if (axis == Vector2I.Up && selectedCard.EdgeUp is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeUp); return; }
@@ -19,16 +21,59 @@ public partial class PlayerBoard : Board
             if (axis == Vector2I.Right && selectedCard.EdgeRight is not null) { OnSelectFixedCardEdge(this, selectedCard.EdgeRight); return; }
         }
 
-        Card? card = SearchForCardInBoard(selectedCardPosition, axis, 1, 10);
+        if (selectedCard is null)
+        {
+            throw new System.InvalidOperationException("[PlayerBoard.OnInputAxisChange] No selected card found.");
+        }
+
+        if (axis.Y > 0 && selectedCard.PositionInBoard.Y >= 2)
+        {
+            if (OnBoardEdge is not null) OnBoardEdge(this, axis);
+            return;
+        }
+
+        Vector2I startingPosition = GetSelectedCardPosition(player);
+        int searchRange = GetAxisSearchRange(startingPosition, axis);
+        Card? card = SearchForCardInBoard(startingPosition, axis, searchRange, 10);
         if (card is null) // We didn't find a card with the specified position
         {
             if (OnBoardEdge is not null) OnBoardEdge(this, axis);
             return;
         }
 
-        selectedCardPosition = card.PositionInBoard;
-        SelectCardField(player, selectedCardPosition);
+        SelectCardField(player, card.PositionInBoard);
         // GD.Print($"[{player.Name}.PlayerBoard.OnAxisChangeHandler] SelectCardField in board for position {selectedCardPosition}");
+    }
+
+    int GetAxisSearchRange(Vector2I startingPosition, Vector2I axis)
+    {
+        int maxRange = 0;
+        List<Card> cards = GetCardsInTree();
+        foreach (Card card in cards)
+        {
+            if (!card.IsInputSelectable) continue;
+            Vector2I delta = card.PositionInBoard - startingPosition;
+            if (axis == Vector2I.Right && delta.X > 0)
+            {
+                maxRange = Math.Max(maxRange, delta.X);
+                continue;
+            }
+            if (axis == Vector2I.Left && delta.X < 0)
+            {
+                maxRange = Math.Max(maxRange, -delta.X);
+                continue;
+            }
+            if (axis == Vector2I.Down && delta.Y > 0)
+            {
+                maxRange = Math.Max(maxRange, delta.Y);
+                continue;
+            }
+            if (axis == Vector2I.Up && delta.Y < 0)
+            {
+                maxRange = Math.Max(maxRange, -delta.Y);
+            }
+        }
+        return maxRange;
     }
 
     // --- Public API ---

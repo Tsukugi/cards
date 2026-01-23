@@ -31,10 +31,9 @@ font_size = 72
 outline_size = 30
 outline_color = Color(0.165305, 0.553033, 0.742496, 1)
 
-[node name="main" type="Node3D" node_paths=PackedStringArray("userPlayer", "enemyPlayer")]
+[node name="main" type="Node3D" node_paths=PackedStringArray("userPlayer")]
 script = ExtResource("1_ph0l5")
 userPlayer = NodePath("UserPlayer")
-enemyPlayer = NodePath("EnemyPlayer")
 
 [node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.631353, -0.0986169, -0.769199, -0.762464, 0.260007, 0.592491, 0.141568, 0.960558, -0.239348, -7.10733, 32.8051, 0.102968)
@@ -54,37 +53,6 @@ directional_shadow_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 12.5)
 isControlledPlayer = true
 playerColor = Color(0.305956, 0.345494, 0.829654, 1)
-
-[node name="FrontRow" parent="UserPlayer/Board/Units" index="0" node_paths=PackedStringArray("EdgeUp")]
-EdgeUp = NodePath("../../../../EnemyPlayer/Board/Units/FrontRow3")
-
-[node name="FrontRow2" parent="UserPlayer/Board/Units" index="1" node_paths=PackedStringArray("EdgeUp")]
-EdgeUp = NodePath("../../../../EnemyPlayer/Board/Units/FrontRow2")
-
-[node name="FrontRow3" parent="UserPlayer/Board/Units" index="2" node_paths=PackedStringArray("EdgeUp")]
-EdgeUp = NodePath("../../../../EnemyPlayer/Board/Units/FrontRow")
-
-[node name="Count" parent="UserPlayer/Board/CostArea" index="10"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -8.25968, 0.2, 4.73929)
-
-[node name="EnemyPlayer" parent="." instance=ExtResource("2_ij60e")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, -12.5)
-playerColor = Color(0.837848, 0.180546, 0.530967, 1)
-
-[node name="FrontRow" parent="EnemyPlayer/Board/Units" index="0" node_paths=PackedStringArray("EdgeUp")]
-EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow3")
-
-[node name="FrontRow2" parent="EnemyPlayer/Board/Units" index="1" node_paths=PackedStringArray("EdgeUp")]
-EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow2")
-
-[node name="FrontRow3" parent="EnemyPlayer/Board/Units" index="2" node_paths=PackedStringArray("EdgeUp")]
-EdgeUp = NodePath("../../../../UserPlayer/Board/Units/FrontRow")
-
-[node name="Count" parent="EnemyPlayer/Board/FlagshipDurability" index="10"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -12.2177, 0.601988, -11.3278)
-
-[node name="Count" parent="EnemyPlayer/Board/CostArea" index="10"]
-transform = Transform3D(-1, 8.74228e-08, 3.82137e-15, 0, -4.37114e-08, 1, 8.74228e-08, 1, 4.37114e-08, -7.84487, 0.2, 4.92469)
 
 [node name="Control" type="Control" parent="." node_paths=PackedStringArray("playStateLabel", "phaseLabel", "gameOverLabel", "peerIdLabel", "matchMenuBtn")]
 layout_mode = 3
@@ -258,6 +226,3 @@ offset_right = 40.0
 offset_bottom = 23.0
 
 [editable path="UserPlayer"]
-[editable path="UserPlayer/Board"]
-[editable path="EnemyPlayer"]
-[editable path="EnemyPlayer/Board"]

@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://dwehtg5qp6rru"]
 
 [ext_resource type="Script" uid="uid://3sefuh1epk1p" path="res://AzurLane/scripts/MainScene/ALMain.cs" id="1_pa05j"]
-[ext_resource type="Shader" path="res://shaders/hex.gdshader" id="2_evx30"]
+[ext_resource type="Shader" uid="uid://dr7xse5usy45k" path="res://shaders/hex.gdshader" id="2_evx30"]
 [ext_resource type="Theme" uid="uid://da83adtsk1ikk" path="res://Material/UITheme.tres" id="2_skdpf"]
 [ext_resource type="Script" uid="uid://bb8pb2ugqvowr" path="res://AzurLane/scripts/ALLobbyUI.cs" id="4_spqid"]
 
@@ -16,7 +16,7 @@ shader_parameter/animation_speed = 0.03
 shader_parameter/time_multiplier = 1.0
 shader_parameter/pixel_size = 512.0
 
-[node name="Main" type="Control" node_paths=PackedStringArray("startBtn", "optionsBtn", "exitBtn", "createGameBtn", "joinBtn")]
+[node name="Main" type="Control" node_paths=PackedStringArray("startBtn", "optionsBtn", "exitBtn", "createGameBtn", "joinBtn", "debugBtn", "errorLabel", "debugPanel", "simulateErrorBtn", "debugCloseBtn", "autoHostMatchToggle", "autoJoinMatchToggle", "playerNameInput", "joinAddressInput", "joinPortInput", "joinConfirmBtn", "joinAddressLabel", "joinPortLabel")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,6 +29,19 @@ optionsBtn = NodePath("Panel/Vert/Options")
 exitBtn = NodePath("Panel/Vert/Exit")
 createGameBtn = NodePath("Panel/Vert/CreateGame")
 joinBtn = NodePath("Panel/Vert/JoinGame")
+debugBtn = NodePath("Panel/Vert/Debug")
+errorLabel = NodePath("ErrorLabel")
+debugPanel = NodePath("DebugPanel")
+simulateErrorBtn = NodePath("DebugPanel/DebugList/RowSimError/Run")
+debugCloseBtn = NodePath("DebugPanel/DebugList/RowClose/Close")
+autoHostMatchToggle = NodePath("DebugPanel/DebugList/RowAutoHostMatch/Toggle")
+autoJoinMatchToggle = NodePath("DebugPanel/DebugList/RowAutoJoinMatch/Toggle")
+playerNameInput = NodePath("DebugPanel/DebugList/RowPlayerName/NameInput")
+joinAddressInput = NodePath("LobbyManager/LobbyLayout/Options/RowAddress/AddressInput")
+joinPortInput = NodePath("LobbyManager/LobbyLayout/Options/RowPort/PortInput")
+joinConfirmBtn = NodePath("LobbyManager/LobbyLayout/Options/RowActions/Join")
+joinAddressLabel = NodePath("LobbyManager/LobbyLayout/Options/RowAddress/Label")
+joinPortLabel = NodePath("LobbyManager/LobbyLayout/Options/RowPort/Label")
 
 [node name="Panel" type="Panel" parent="."]
 material = SubResource("ShaderMaterial_p83fu")
@@ -64,7 +77,7 @@ size_flags_vertical = 3
 focus_neighbor_top = NodePath("../Start")
 focus_neighbor_bottom = NodePath("../Exit")
 theme = ExtResource("2_skdpf")
-text = "Create Game
+text = "Host Match
 "
 
 [node name="JoinGame" type="Button" parent="Panel/Vert"]
@@ -73,8 +86,16 @@ size_flags_vertical = 3
 focus_neighbor_top = NodePath("../Start")
 focus_neighbor_bottom = NodePath("../Exit")
 theme = ExtResource("2_skdpf")
-text = "Join Game
+text = "Connect
 "
+
+[node name="Debug" type="Button" parent="Panel/Vert"]
+layout_mode = 2
+size_flags_vertical = 3
+focus_neighbor_top = NodePath("../JoinGame")
+focus_neighbor_bottom = NodePath("../Options")
+theme = ExtResource("2_skdpf")
+text = "Debug"
 
 [node name="Options" type="Button" parent="Panel/Vert"]
 layout_mode = 2
@@ -91,6 +112,117 @@ focus_neighbor_top = NodePath("../Options")
 theme = ExtResource("2_skdpf")
 text = "Exit"
 
+[node name="ErrorLabel" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -250.0
+offset_top = -35.0
+offset_right = 250.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+horizontal_alignment = 1
+
+[node name="DebugPanel" type="Panel" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_p83fu")
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 366.0
+offset_top = -163.0
+offset_right = 909.0
+offset_bottom = 159.0
+grow_vertical = 2
+
+[node name="DebugList" type="VBoxContainer" parent="DebugPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 18.0
+offset_right = -20.0
+offset_bottom = -18.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RowSimError" type="HBoxContainer" parent="DebugPanel/DebugList"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="DebugPanel/DebugList/RowSimError"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Simulate Error Message"
+
+[node name="Run" type="Button" parent="DebugPanel/DebugList/RowSimError"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_skdpf")
+text = "Run"
+
+[node name="RowAutoHostMatch" type="HBoxContainer" parent="DebugPanel/DebugList"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="DebugPanel/DebugList/RowAutoHostMatch"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Enable auto host match"
+
+[node name="Toggle" type="CheckButton" parent="DebugPanel/DebugList/RowAutoHostMatch"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RowAutoJoinMatch" type="HBoxContainer" parent="DebugPanel/DebugList"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="DebugPanel/DebugList/RowAutoJoinMatch"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Enable auto join match"
+
+[node name="Toggle" type="CheckButton" parent="DebugPanel/DebugList/RowAutoJoinMatch"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RowPlayerName" type="HBoxContainer" parent="DebugPanel/DebugList"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="DebugPanel/DebugList/RowPlayerName"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Player Name"
+
+[node name="NameInput" type="LineEdit" parent="DebugPanel/DebugList/RowPlayerName"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "PlayerName"
+
+[node name="RowClose" type="HBoxContainer" parent="DebugPanel/DebugList"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="DebugPanel/DebugList/RowClose"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Close"
+
+[node name="Close" type="Button" parent="DebugPanel/DebugList/RowClose"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_skdpf")
+text = "Close"
+
 [node name="LobbyManager" type="Panel" parent="." node_paths=PackedStringArray("cancelBtn", "playersList")]
 visible = false
 material = SubResource("ShaderMaterial_p83fu")
@@ -104,28 +236,71 @@ offset_right = 909.0
 offset_bottom = 159.0
 grow_vertical = 2
 script = ExtResource("4_spqid")
-cancelBtn = NodePath("Cancel")
-playersList = NodePath("ItemList")
+cancelBtn = NodePath("LobbyLayout/Options/RowActions/Cancel")
+playersList = NodePath("LobbyLayout/ItemList")
 
-[node name="ItemList" type="ItemList" parent="LobbyManager"]
+[node name="LobbyLayout" type="HBoxContainer" parent="LobbyManager"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
 offset_top = 18.0
-offset_right = -124.0
-offset_bottom = -17.0
+offset_right = -20.0
+offset_bottom = -18.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Cancel" type="Button" parent="LobbyManager"]
-layout_mode = 0
-offset_left = 431.0
-offset_top = 17.0
-offset_right = 524.0
-offset_bottom = 56.0
+[node name="ItemList" type="ItemList" parent="LobbyManager/LobbyLayout"]
+layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
-focus_neighbor_top = NodePath("../Options")
+
+[node name="Options" type="VBoxContainer" parent="LobbyManager/LobbyLayout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RowAddress" type="HBoxContainer" parent="LobbyManager/LobbyLayout/Options"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="LobbyManager/LobbyLayout/Options/RowAddress"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remote Address"
+
+[node name="AddressInput" type="LineEdit" parent="LobbyManager/LobbyLayout/Options/RowAddress"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "127.0.0.1"
+
+[node name="RowPort" type="HBoxContainer" parent="LobbyManager/LobbyLayout/Options"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="LobbyManager/LobbyLayout/Options/RowPort"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remote Port"
+
+[node name="PortInput" type="LineEdit" parent="LobbyManager/LobbyLayout/Options/RowPort"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "7000"
+
+[node name="RowActions" type="HBoxContainer" parent="LobbyManager/LobbyLayout/Options"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Join" type="Button" parent="LobbyManager/LobbyLayout/Options/RowActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_skdpf")
+text = "Connect"
+
+[node name="Cancel" type="Button" parent="LobbyManager/LobbyLayout/Options/RowActions"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme = ExtResource("2_skdpf")
 text = "Cancel"

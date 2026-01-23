@@ -11,6 +11,10 @@ public partial class AxisInputHandler
     {
         inverted = value;
     }
+    public Vector2I ApplyInversion(Vector2I axis)
+    {
+        return inverted ? axis * -1 : axis;
+    }
     public Vector2I GetAxis()
     {
         Vector2I axis = InputAxisType switch
@@ -21,7 +25,7 @@ public partial class AxisInputHandler
             AxisType.EightAxis => GetFullAxis(),
             _ => Vector2I.Zero,
         };
-        return inverted ? axis * -1 : axis;
+        return ApplyInversion(axis);
     }
 
     bool IsPressed(string key)

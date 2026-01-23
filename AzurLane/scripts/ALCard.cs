@@ -38,9 +38,9 @@ public partial class ALCard : Card
         ALCardDTO attrs = GetAttributes<ALCardDTO>();
         if (UI is not null)
         {
-            // This rotates the Card UI to be seen from an inverted board (enemyBoard)
-            if (!board.GetIsEnemyBoard()) UI.RotationDegrees = UI.RotationDegrees.WithY(0);
-            else UI.RotationDegrees = UI.RotationDegrees.WithY(180);
+            // Rotate UI so enemy-side cards face the local player.
+            bool isEnemy = board is ALBoard alBoard && alBoard.IsEnemyCard(this);
+            UI.RotationDegrees = UI.RotationDegrees.WithY(isEnemy ? 180 : 0);
         }
 
         if (powerLabel is not null)

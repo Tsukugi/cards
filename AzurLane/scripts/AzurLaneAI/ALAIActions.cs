@@ -69,8 +69,8 @@ public class ALAIActions
         GD.Print($"[BattlePhaseAttackFlagship]");
         await BattlePhaseAttack(() =>
         {
-            ALBoard enemyBoard = player.GetEnemyPlayerBoard<ALBoard>();
-            return enemyBoard.GetFlagship();
+            ALBoard board = player.GetPlayerBoard<ALBoard>();
+            return board.GetFlagship(ALBoardSide.Enemy);
         });
     }
     public async Task BattlePhaseAttackRandom()
@@ -78,7 +78,7 @@ public class ALAIActions
         GD.Print($"[BattlePhaseAttackRandom]");
         await BattlePhaseAttack(() =>
         {
-            List<ALCard> enemyUnits = player.GetEnemyPlayerBoard<ALBoard>().GetUnits(); // Find all placed cards
+            List<ALCard> enemyUnits = player.GetPlayerBoard<ALBoard>().GetUnits(ALBoardSide.Enemy); // Find all placed cards
             var selected = enemyUnits.GetRandomFromList();
             GD.Print($"[BattlePhaseAttackRandom] {selected.GetAttributes<CardDTO>().name}");
             return selected;

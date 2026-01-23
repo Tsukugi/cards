@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Godot;
 
@@ -23,12 +24,21 @@ public partial class Board : Node3D
 
     // --- State ---
     bool isEnemyBoard = false;
-    readonly Dictionary<string, Card> selectedCard = []; // <PlayerName selecting the card, Card>
+    readonly Dictionary<int, Card> selectedCard = []; // <PlayerId selecting the card, Card>
+    readonly Dictionary<int, Vector2I> selectedCardPositionByPlayer = [];
+    readonly Dictionary<Card, HashSet<int>> cardSelectors = [];
+    readonly Dictionary<int, Player> playerByPeerId = [];
+    protected Player ownerPlayer;
 
     [Export]
-    protected Vector2I selectedCardPosition = Vector2I.Zero;
+    protected Vector2I selectedCardPosition = Vector2I.Zero; // Owner player's selection for layout
     [Export]
     public Vector2I BoardPositionInGrid = new();
+
+    public override void _Ready()
+    {
+        ownerPlayer = this.TryFindParentNodeOfType<Player>();
+    }
 
     public virtual async Task TriggerCardEffectOnTargetSelected(Card card)
     {
@@ -72,7 +82,8 @@ public partial class Board : Node3D
         int currentRange = 1;
         while (currentRange <= searchMaxRange)
         {
-            for (int sideOffset = -(currentRange * sideOffsetRange); sideOffset <= (currentRange * sideOffsetRange); sideOffset++)
+            int maxSideOffset = currentRange * sideOffsetRange;
+            foreach (int sideOffset in BuildSideOffsets(maxSideOffset))
             {
                 var newOffset = FindOffsetBasedOnAxis(axis, currentRange, sideOffset);
                 var newPosition = startingPosition + newOffset;
@@ -85,34 +96,70 @@ public partial class Board : Node3D
         return null;
     }
 
+    static IEnumerable<int> BuildSideOffsets(int maxSideOffset)
+    {
+        if (maxSideOffset < 0)
+        {
+            throw new System.InvalidOperationException("[BuildSideOffsets] maxSideOffset must be non-negative.");
+        }
+        yield return 0;
+        for (int offset = 1; offset <= maxSideOffset; offset++)
+        {
+            yield return offset;
+            yield return -offset;
+        }
+    }
+
     // --- Public API---
     public Vector2I GetSelectedCardPosition() => selectedCardPosition;
+    protected Vector2I GetOwnerSelectedCardPosition() => selectedCardPosition;
+    public Vector2I GetSelectedCardPosition(Player player)
+    {
+        int playerId = player.MultiplayerId;
+        if (!selectedCardPositionByPlayer.TryGetValue(playerId, out Vector2I position))
+        {
+            throw new System.InvalidOperationException($"[GetSelectedCardPosition] No selected position stored for player {playerId} on board {Name}.");
+        }
+        return position;
+    }
     public virtual void SelectCardField(Player player, Vector2I position, bool syncToNet = true)
     {
-        string playerName = player.Name.ToString();
-        selectedCardPosition = position;
+        int playerId = player.MultiplayerId;
+        playerByPeerId[playerId] = player;
+        selectedCardPositionByPlayer[playerId] = position;
+        if (player == ownerPlayer) selectedCardPosition = position;
 
         ClearSelectionForPlayer(player);
 
         List<Card> allCards = GetCardsInTree();
         if (allCards.Count == 0)
         {
-            GD.PrintErr($"[SelectCardField] Cannot select card, no cards assigned");
+            GD.Print($"[Board.SelectCardField] Board '{Name}' has no cards for player {player.Name}({playerId}) pos={position}");
             return;
         }
 
         Card foundCard = allCards.Find(card => card.PositionInBoard == position);
         if (foundCard is null)
         {
-            GD.PrintErr($"[SelectCardField] {position} cannot be found");
-            SelectCardField(player, Vector2I.Zero);
-            return;
+            throw new System.InvalidOperationException($"[SelectCardField] Position {position} cannot be found on board {Name}.");
         }
-        selectedCard[playerName] = foundCard;
-        GD.Print($"[SelectCardField] {player.Name}.{Name} - {foundCard.Name}");
-        foundCard.UpdatePlayerSelectedColor(player);
-        foundCard.SetIsSelected(true);
-        if (syncToNet) Network.Instance.SendSelectCardField(player.MultiplayerId, this, position);
+        selectedCard[playerId] = foundCard;
+        GD.Print($"[SelectCardField] player={player.Name}({playerId}) board={Name} enemy={isEnemyBoard} pos={position} card={foundCard.Name} cardPos={foundCard.PositionInBoard} sync={syncToNet}");
+        if (!cardSelectors.TryGetValue(foundCard, out HashSet<int> selectors))
+        {
+            selectors = [];
+            cardSelectors[foundCard] = selectors;
+        }
+        selectors.Add(playerId);
+        ApplyIndicatorForCard(foundCard);
+        if (syncToNet)
+        {
+            if (ownerPlayer is null)
+            {
+                throw new System.InvalidOperationException($"[SelectCardField] Board owner is missing for {Name}.");
+            }
+            Network.Instance.SendSelectCardField(player.MultiplayerId, ownerPlayer.MultiplayerId, this, position);
+        }
     }
 
     public virtual void OnInputAxisChange(Player player, Vector2I axis) => GD.Print($"[OnInputAxisChange] {player.Name}.{axis}");
@@ -130,21 +177,107 @@ public partial class Board : Node3D
     }
     public T? GetSelectedCard<T>(Player player) where T : Card
     {
-        string playerName = player.Name.ToString();
-        var res = selectedCard.TryGetValue(playerName, out Card value) ? value as T : null;
+        int playerId = player.MultiplayerId;
+        var res = selectedCard.TryGetValue(playerId, out Card value) ? value as T : null;
         if (value is not T && value is not null) GD.PushError($"[GetSelectedCard] Value exists but is not of type {typeof(T)} => {value.GetType()}");
         return res;
     }
     public void ClearSelectionForPlayer(Player player)
     {
-        string playerName = player.Name.ToString();
-        if (selectedCard.TryGetValue(playerName, out Card value))
+        int playerId = player.MultiplayerId;
+        if (selectedCard.TryGetValue(playerId, out Card value))
         {
             // GD.Print($"[ClearSelectionForPlayer] {playerName} {value.Name} ");
-            value.SetIsSelected(false);
-            selectedCard.Remove(playerName);
+            selectedCard.Remove(playerId);
+            if (cardSelectors.TryGetValue(value, out HashSet<int> selectors))
+            {
+                selectors.Remove(playerId);
+                if (selectors.Count == 0) cardSelectors.Remove(value);
+            }
+            ApplyIndicatorForCard(value);
         }
     }
     public void SetIsEnemyBoard(bool value) => isEnemyBoard = value;
     public bool GetIsEnemyBoard() => isEnemyBoard;
+    public Player GetOwnerPlayer() => ownerPlayer;
+
+    public Vector2I MirrorPosition(Vector2I position)
+    {
+        List<Card> cards = GetCardsInTree();
+        int minX = int.MaxValue;
+        int maxX = int.MinValue;
+        int minY = int.MaxValue;
+        int maxY = int.MinValue;
+        foreach (Card card in cards)
+        {
+            if (!card.IsInputSelectable) continue;
+            Vector2I cardPosition = card.PositionInBoard;
+            if (cardPosition.X < minX) minX = cardPosition.X;
+            if (cardPosition.X > maxX) maxX = cardPosition.X;
+            if (cardPosition.Y < minY) minY = cardPosition.Y;
+            if (cardPosition.Y > maxY) maxY = cardPosition.Y;
+        }
+        if (minX == int.MaxValue)
+        {
+            throw new System.InvalidOperationException($"[MirrorPosition] No selectable cards found on board {Name}.");
+        }
+        return new Vector2I(minX + maxX - position.X, minY + maxY - position.Y);
+    }
+
+    void ApplyIndicatorForCard(Card card)
+    {
+        if (!cardSelectors.TryGetValue(card, out HashSet<int> selectors) || selectors.Count == 0)
+        {
+            card.UpdateSelectionIndicators(false, default, false, default);
+            card.SetIsSelected(false);
+            return;
+        }
+
+        Player localSelector = null;
+        Player enemySelector = null;
+        foreach (int selectorId in selectors)
+        {
+            if (!playerByPeerId.TryGetValue(selectorId, out Player selectorPlayer))
+            {
+                throw new System.InvalidOperationException($"[ApplyIndicatorForCard] Selector {selectorId} not registered for board {Name}.");
+            }
+            if (selectorPlayer.GetIsControllerPlayer())
+            {
+                if (localSelector is not null && localSelector.MultiplayerId != selectorPlayer.MultiplayerId)
+                {
+                    throw new System.InvalidOperationException($"[ApplyIndicatorForCard] Multiple local selectors on board {Name}.");
+                }
+                localSelector = selectorPlayer;
+                continue;
+            }
+            if (enemySelector is not null && enemySelector.MultiplayerId != selectorPlayer.MultiplayerId)
+            {
+                throw new System.InvalidOperationException($"[ApplyIndicatorForCard] Multiple enemy selectors on board {Name}.");
+            }
+            enemySelector = selectorPlayer;
+        }
+        var selectorInfo = new StringBuilder();
+        foreach (int selectorId in selectors)
+        {
+            if (selectorInfo.Length > 0) selectorInfo.Append(", ");
+            if (playerByPeerId.TryGetValue(selectorId, out Player selectorPlayer))
+            {
+                selectorInfo.Append($"{selectorPlayer.Name}({selectorId}) controller={selectorPlayer.GetIsControllerPlayer()}");
+            }
+            else
+            {
+                selectorInfo.Append($"Unknown({selectorId})");
+            }
+        }
+        bool localSelected = localSelector is not null;
+        bool enemySelected = enemySelector is not null;
+        Color localColor = localSelected ? localSelector.GetPlayerColor() : default;
+        Color enemyColor = enemySelected ? enemySelector.GetPlayerColor() : default;
+        string localLabel = localSelected ? $"{localSelector.Name}({localSelector.MultiplayerId})" : "None";
+        string enemyLabel = enemySelected ? $"{enemySelector.Name}({enemySelector.MultiplayerId})" : "None";
+        GD.Print($"[SelectIndicator] board={Name} card={card.Name} selectors=[{selectorInfo}] local={localLabel} enemy={enemyLabel}");
+        card.UpdateSelectionIndicators(localSelected, localColor, enemySelected, enemyColor);
+        card.SetIsSelected(localSelected || enemySelected);
+        GD.Print($"[SelectIndicatorState] board={Name} enemyBoard={isEnemyBoard} card={card.Name} pos={card.PositionInBoard} localSelected={localSelected} enemySelected={enemySelected} localColor={localColor} enemyColor={enemyColor}");
+    }
 }
