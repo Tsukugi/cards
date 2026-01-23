@@ -56,6 +56,13 @@ AzurLane/
 - Default networking port: 7000 (see `docs/network_api.md`)
 - Check the docs for more information (/docs)
 
+## Docs
+- `docs/al_card_effects.md`
+- `docs/card_effects_implementation.md`
+- `docs/build-and-run.md`
+- `docs/create_join_flow.md`
+- `docs/network_api.md`
+
 ## Testing (Local Build + Run)
 Use the build/run helpers to compile and launch two clients with player names.
 
