@@ -72,6 +72,7 @@ isEmptyField = true
 
 [node name="Flagship" parent="Board/Player/Units" instance=ExtResource("2_6xv5f")]
 attackFieldType = 1
+isFlagshipField = true
 PositionInBoard = Vector2i(1, 1)
 IsPlayerPlaceable = false
 
@@ -375,6 +376,7 @@ isEmptyField = true
 
 [node name="Flagship" parent="Board/EnemyPlayer/Units" instance=ExtResource("2_6xv5f")]
 attackFieldType = 1
+isFlagshipField = true
 PositionInBoard = Vector2i(1, -2)
 IsPlayerPlaceable = false
 

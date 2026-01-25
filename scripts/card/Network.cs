@@ -158,7 +158,7 @@ public partial class Network : Node
         if (OnSendInputActionEvent is not null) OnSendInputActionEvent(Multiplayer.GetRemoteSenderId(), (InputAction)inputAction);
     }
     public void SendTurnEnd() => Rpc(MethodName.OnSendTurnEnd, []);
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.UnreliableOrdered)]
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
     protected void OnSendTurnEnd()
     {
         GD.Print($"[OnSendTurnEnd] {Multiplayer.GetUniqueId()}: {Multiplayer.GetRemoteSenderId()} -------------!");

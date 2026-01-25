@@ -87,6 +87,16 @@ public partial class ALGameMatchManager : Node
         ALNetwork.Instance.OnSyncPlaceCard += HandleOnSyncPlaceCard;
         ALNetwork.Instance.OnSyncPlaceCardGuard -= HandleOnSyncPlaceCardGuard;
         ALNetwork.Instance.OnSyncPlaceCardGuard += HandleOnSyncPlaceCardGuard;
+        ALNetwork.Instance.OnGuardPhaseStartEvent -= HandleOnGuardPhaseStartEvent;
+        ALNetwork.Instance.OnGuardPhaseStartEvent += HandleOnGuardPhaseStartEvent;
+        ALNetwork.Instance.OnGuardPhaseEndEvent -= HandleOnGuardPhaseEndEvent;
+        ALNetwork.Instance.OnGuardPhaseEndEvent += HandleOnGuardPhaseEndEvent;
+        ALNetwork.Instance.OnGuardProvidedEvent -= HandleOnGuardProvidedEvent;
+        ALNetwork.Instance.OnGuardProvidedEvent += HandleOnGuardProvidedEvent;
+        ALNetwork.Instance.OnBattleResolutionEvent -= HandleOnBattleResolutionEvent;
+        ALNetwork.Instance.OnBattleResolutionEvent += HandleOnBattleResolutionEvent;
+        ALNetwork.Instance.OnCardActiveStateEvent -= HandleOnCardActiveStateEvent;
+        ALNetwork.Instance.OnCardActiveStateEvent += HandleOnCardActiveStateEvent;
         ALNetwork.Instance.OnSendSelectCardEvent -= HandleOnCardSelectEvent;
         ALNetwork.Instance.OnSendSelectCardEvent += HandleOnCardSelectEvent;
         ALNetwork.Instance.OnSendInputActionEvent -= HandleOnInputActionEvent;
@@ -178,6 +188,71 @@ public partial class ALGameMatchManager : Node
             throw new System.InvalidOperationException($"[HandleOnSyncPlaceCardGuard] Card id not found: {cardId}");
         }
         await userPlayer.PlaceEnemyCardToBoard(synchedCard, boardName, fieldPath);
+    }
+
+    async void HandleOnGuardPhaseStartEvent(int peerId, string attackerCardId, string attackedCardId)
+    {
+        GD.Print($"[HandleOnGuardPhaseStartEvent] To {userPlayer.MultiplayerId}: From {peerId}: attacker={attackerCardId} attacked={attackedCardId}");
+        if (peerId == userPlayer.MultiplayerId)
+        {
+            await Task.CompletedTask;
+            return;
+        }
+        RegisterEnemyPeer(peerId);
+        SetAttackContextFromRemote(attackerCardId, attackedCardId);
+        await userPlayer.SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectGuardingUnit);
+        UpdateRemotePlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
+    }
+
+    async void HandleOnGuardPhaseEndEvent(int peerId)
+    {
+        GD.Print($"[HandleOnGuardPhaseEndEvent] To {userPlayer.MultiplayerId}: From {peerId}");
+        if (peerId == userPlayer.MultiplayerId)
+        {
+            await Task.CompletedTask;
+            return;
+        }
+        RegisterEnemyPeer(peerId);
+        await ResolveGuardPhaseFromRemote();
+    }
+
+    async void HandleOnGuardProvidedEvent(int peerId, string guardCardId)
+    {
+        GD.Print($"[HandleOnGuardProvidedEvent] To {userPlayer.MultiplayerId}: From {peerId}: guard={guardCardId}");
+        if (peerId == userPlayer.MultiplayerId)
+        {
+            await Task.CompletedTask;
+            return;
+        }
+        RegisterEnemyPeer(peerId);
+        await ApplyRemoteGuard(guardCardId);
+    }
+
+    async void HandleOnBattleResolutionEvent(int peerId, string attackerCardId, string attackedCardId, bool isAttackSuccessful)
+    {
+        GD.Print($"[HandleOnBattleResolutionEvent] To {userPlayer.MultiplayerId}: From {peerId}: attacker={attackerCardId} attacked={attackedCardId} success={isAttackSuccessful}");
+        if (peerId == userPlayer.MultiplayerId)
+        {
+            await Task.CompletedTask;
+            return;
+        }
+        RegisterEnemyPeer(peerId);
+        SetAttackContextFromRemote(attackerCardId, attackedCardId);
+        await ResolveBattleFromRemote(isAttackSuccessful);
+    }
+
+    async void HandleOnCardActiveStateEvent(int peerId, string cardId, bool isActive)
+    {
+        GD.Print($"[HandleOnCardActiveStateEvent] To {userPlayer.MultiplayerId}: From {peerId}: {cardId} active={isActive}");
+        if (peerId == userPlayer.MultiplayerId)
+        {
+            await Task.CompletedTask;
+            return;
+        }
+        RegisterEnemyPeer(peerId);
+        ALCard targetCard = FindCardById(cardId);
+        targetCard.SetIsInActiveState(isActive, false);
+        await Task.CompletedTask;
     }
     async void HandleOnCardSelectEvent(int peerId, int targetOwnerPeerId, string boardName, Vector2I position)
     {
@@ -482,6 +557,8 @@ public partial class ALGameMatchManager : Node
         await attackerPlayer.SetPlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
         if (attackedIsEnemy)
         {
+            EnsureEnemyPeerId("OnAttackGuardStartHandler");
+            ALNetwork.Instance.SyncGuardPhaseStart(GetAttackerCard().GetAttributes<ALCardDTO>().id, GetAttackedCard().GetAttributes<ALCardDTO>().id);
             UpdateRemotePlayState(EPlayState.SelectTarget, ALInteractionState.SelectGuardingUnit);
             return;
         }
@@ -492,12 +569,22 @@ public partial class ALGameMatchManager : Node
 
     async Task OnAttackGuardEndHandler(Player guardingPlayer)
     {
+        if (!IsAttackInProgress())
+        {
+            throw new System.InvalidOperationException("[OnAttackGuardEndHandler] Guard phase ended without an active attack.");
+        }
+        ALBoard board = userPlayer.GetPlayerBoard<ALBoard>();
+        bool attackedIsEnemy = board.IsEnemyCard(GetAttackedCard());
         await guardingPlayer.SetPlayState(EPlayState.Wait);
-        ALPlayer attackerPlayer = GetAttackerCard().GetOwnerPlayer<ALPlayer>();
-        await attackerPlayer.SetPlayState(EPlayState.Wait);
-        await GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsAttacked);
-        await attackerPlayer.SettleBattle(playerUI);
-        GD.Print($"[OnAttackGuardEndHandler]");
+        if (!attackedIsEnemy)
+        {
+            EnsureEnemyPeerId("OnAttackGuardEndHandler");
+            UpdateRemotePlayState(EPlayState.Wait, ALInteractionState.AwaitOtherPlayerInteraction);
+            ALNetwork.Instance.SyncGuardPhaseEnd();
+            GD.Print($"[OnAttackGuardEndHandler] Sent guard end to attacker.");
+            return;
+        }
+        await ResolveGuardPhaseLocally();
     }
 
     async Task OnRetaliationHandler(Player damagedPlayer, Card retaliatingCard)
@@ -530,13 +617,18 @@ public partial class ALGameMatchManager : Node
         });
         await GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsBattleSupported);
         GD.Print($"[OnGuardProvidedHandler] Add Guard Modifier for {GetAttackedCard().GetAttributes<ALCardDTO>().name}");
+        ALBoard board = userPlayer.GetPlayerBoard<ALBoard>();
+        bool attackedIsEnemy = board.IsEnemyCard(GetAttackedCard());
+        if (!attackedIsEnemy)
+        {
+            EnsureEnemyPeerId("OnGuardProvidedHandler");
+            ALNetwork.Instance.SyncGuardProvided(card.GetAttributes<ALCardDTO>().id);
+        }
     }
 
     async Task OnAttackEndHandler(Player guardingPlayer)
     {
-        await userPlayer.TryToExpireCardsModifierDuration(ALCardEffectDuration.CurrentBattle);
-        attackerCard = null;
-        attackedCard = null;
+        await FinishBattleResolution();
         GD.Print($"[OnAttackEndHandler]");
     }
 
@@ -672,6 +764,229 @@ public partial class ALGameMatchManager : Node
         if (IsAttackInProgress()) return attackedCard;
         GD.PushError($"[GetAttackedCard] Attack not in progress");
         return null;
+    }
+
+    void EnsureEnemyPeerId(string context)
+    {
+        if (enemyPeerId != 0)
+        {
+            return;
+        }
+        throw new System.InvalidOperationException($"[{context}] Enemy peer id is not registered.");
+    }
+
+    void SetAttackContextFromRemote(string attackerCardId, string attackedCardId)
+    {
+        attackerCard = FindBoardCardById(attackerCardId);
+        attackedCard = FindBoardCardById(attackedCardId);
+    }
+
+    ALCard FindBoardCardById(string cardId)
+    {
+        if (string.IsNullOrWhiteSpace(cardId))
+        {
+            throw new System.InvalidOperationException("[FindBoardCardById] Card id is required.");
+        }
+        ALBoard board = userPlayer.GetPlayerBoard<ALBoard>() ?? throw new System.InvalidOperationException("[FindBoardCardById] Player board is missing.");
+        List<Card> cards = board.GetCardsInTree();
+        foreach (Card card in cards)
+        {
+            if (card is not ALCard alCard)
+            {
+                continue;
+            }
+            if (alCard.GetAttributes<ALCardDTO>().id == cardId)
+            {
+                return alCard;
+            }
+        }
+        throw new System.InvalidOperationException($"[FindBoardCardById] Card id not found: {cardId}");
+    }
+
+    ALCard FindCardById(string cardId)
+    {
+        if (string.IsNullOrWhiteSpace(cardId))
+        {
+            throw new System.InvalidOperationException("[FindCardById] Card id is required.");
+        }
+        ALCard boardCard = TryFindBoardCardById(cardId);
+        if (boardCard is not null) return boardCard;
+        ALHand hand = userPlayer.GetPlayerHand<ALHand>();
+        if (hand is not null)
+        {
+            List<Card> handCards = hand.GetCardsInTree();
+            foreach (Card card in handCards)
+            {
+                if (card is ALCard alCard && alCard.GetAttributes<ALCardDTO>().id == cardId)
+                {
+                    return alCard;
+                }
+            }
+        }
+        ALHand enemyHand = userPlayer.GetEnemyPlayerHand<ALHand>();
+        if (enemyHand is not null)
+        {
+            List<Card> enemyHandCards = enemyHand.GetCardsInTree();
+            foreach (Card card in enemyHandCards)
+            {
+                if (card is ALCard alCard && alCard.GetAttributes<ALCardDTO>().id == cardId)
+                {
+                    return alCard;
+                }
+            }
+        }
+        throw new System.InvalidOperationException($"[FindCardById] Card id not found: {cardId}");
+    }
+
+    ALCard TryFindBoardCardById(string cardId)
+    {
+        if (string.IsNullOrWhiteSpace(cardId))
+        {
+            throw new System.InvalidOperationException("[TryFindBoardCardById] Card id is required.");
+        }
+        ALBoard board = userPlayer.GetPlayerBoard<ALBoard>();
+        if (board is null)
+        {
+            throw new System.InvalidOperationException("[TryFindBoardCardById] Player board is missing.");
+        }
+        List<Card> cards = board.GetCardsInTree();
+        foreach (Card card in cards)
+        {
+            if (card is not ALCard alCard)
+            {
+                continue;
+            }
+            if (alCard.GetAttributes<ALCardDTO>().id == cardId)
+            {
+                return alCard;
+            }
+        }
+        return null;
+    }
+
+    async Task ApplyRemoteGuard(string guardCardId)
+    {
+        if (!IsAttackInProgress())
+        {
+            throw new System.InvalidOperationException("[ApplyRemoteGuard] No attack is in progress.");
+        }
+        if (!database.cards.TryGetValue(guardCardId, out ALCardDTO guardCard))
+        {
+            throw new System.InvalidOperationException($"[ApplyRemoteGuard] Guard card id not found: {guardCardId}");
+        }
+        GetAttackedCard().AddModifier(new AttributeModifier()
+        {
+            Id = "Guard",
+            AttributeName = "Power",
+            Duration = ALCardEffectDuration.CurrentBattle,
+            Amount = guardCard.supportValue,
+            StackableModifier = true
+        });
+        await GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsBattleSupported);
+        GD.Print($"[ApplyRemoteGuard] Add Guard Modifier for {GetAttackedCard().GetAttributes<ALCardDTO>().name}");
+    }
+
+    async Task ResolveGuardPhaseFromRemote()
+    {
+        if (!IsAttackInProgress())
+        {
+            throw new System.InvalidOperationException("[ResolveGuardPhaseFromRemote] Guard phase ended without an active attack.");
+        }
+        await ResolveGuardPhaseLocally();
+    }
+
+    async Task ResolveGuardPhaseLocally()
+    {
+        if (!IsAttackInProgress())
+        {
+            throw new System.InvalidOperationException("[ResolveGuardPhaseLocally] Guard phase ended without an active attack.");
+        }
+        ALBoard board = userPlayer.GetPlayerBoard<ALBoard>();
+        bool attackedIsEnemy = board.IsEnemyCard(GetAttackedCard());
+        bool isAttackSuccessful = GetBattleOutcome(GetAttackerCard(), GetAttackedCard());
+        if (attackedIsEnemy)
+        {
+            EnsureEnemyPeerId("ResolveGuardPhaseLocally");
+            ALNetwork.Instance.SyncBattleResolution(GetAttackerCard().GetAttributes<ALCardDTO>().id, GetAttackedCard().GetAttributes<ALCardDTO>().id, isAttackSuccessful);
+        }
+        ALPlayer attackerPlayer = GetAttackerCard().GetOwnerPlayer<ALPlayer>();
+        await attackerPlayer.SetPlayState(EPlayState.Wait);
+        await GetAttackedCard().TryToTriggerCardEffect(ALCardEffectTrigger.IsAttacked);
+        await attackerPlayer.SettleBattle(playerUI);
+        GD.Print($"[ResolveGuardPhaseLocally]");
+    }
+
+    async Task ResolveBattleFromRemote(bool isAttackSuccessful)
+    {
+        if (!IsAttackInProgress())
+        {
+            throw new System.InvalidOperationException("[ResolveBattleFromRemote] Battle resolution without an active attack.");
+        }
+        ALBoard board = userPlayer.GetPlayerBoard<ALBoard>();
+        bool attackedIsEnemy = board.IsEnemyCard(GetAttackedCard());
+        System.Func<ALCard, Task> applyFlagshipDamage = _ => Task.CompletedTask;
+        System.Func<ALCard, Task> destroyUnit = _ => Task.CompletedTask;
+        if (!attackedIsEnemy)
+        {
+            applyFlagshipDamage = card =>
+            {
+                GD.Print($"[ResolveBattleFromRemote] {card.Name} Takes durability damage!");
+                card.TakeDurabilityDamage();
+                return Task.CompletedTask;
+            };
+            destroyUnit = async card =>
+            {
+                GD.Print($"[ResolveBattleFromRemote] {card.Name} destroyed!");
+                await ALPlayer.DestroyUnitCard(card);
+            };
+        }
+        await ApplyBattleResolution(GetAttackerCard(), GetAttackedCard(), isAttackSuccessful, applyFlagshipDamage, destroyUnit);
+        await FinishBattleResolution();
+    }
+
+    static bool GetBattleOutcome(ALCard attacker, ALCard attacked)
+    {
+        float attackerPower = attacker.GetAttributeWithModifiers<ALCardDTO>("Power");
+        float attackedPower = attacked.GetAttributeWithModifiers<ALCardDTO>("Power");
+        return attackerPower >= attackedPower;
+    }
+
+    public async Task ApplyBattleResolution(ALCard attacker, ALCard attacked, bool isAttackSuccessful, System.Func<ALCard, Task> applyFlagshipDamage, System.Func<ALCard, Task> destroyUnit)
+    {
+        if (attacker is null)
+        {
+            throw new System.InvalidOperationException("[ApplyBattleResolution] Attacker is required.");
+        }
+        if (attacked is null)
+        {
+            throw new System.InvalidOperationException("[ApplyBattleResolution] Attacked card is required.");
+        }
+        if (applyFlagshipDamage is null)
+        {
+            throw new System.InvalidOperationException("[ApplyBattleResolution] Flagship damage handler is required.");
+        }
+        if (destroyUnit is null)
+        {
+            throw new System.InvalidOperationException("[ApplyBattleResolution] Destroy unit handler is required.");
+        }
+        await playerUI.OnSettleBattleUI(attacker, attacked, isAttackSuccessful);
+        if (!isAttackSuccessful)
+        {
+            return;
+        }
+        if (attacked.GetIsAFlagship())
+        {
+            await applyFlagshipDamage(attacked);
+            return;
+        }
+        await destroyUnit(attacked);
+    }
+
+    async Task FinishBattleResolution()
+    {
+        await userPlayer.TryToExpireCardsModifierDuration(ALCardEffectDuration.CurrentBattle);
+        attackerCard = null;
+        attackedCard = null;
     }
 
     public ALDeckSet BuildDeckSet(string deckId)

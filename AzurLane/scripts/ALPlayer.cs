@@ -163,6 +163,7 @@ public partial class ALPlayer : Player
     {
         await TryToTriggerOnAllCards(ALCardEffectTrigger.EndOfTurn);
         await TryToExpireCardsModifierDuration(CardEffectDuration.UntilEndOfTurn);
+        SetBoardCardsAsActive();
         if (OnTurnEnd is not null) OnTurnEnd();
     }
 
@@ -467,28 +468,20 @@ public partial class ALPlayer : Player
         bool isAttackSuccessful = attackerPower >= attackedPower;
         GD.Print($"[SettleBattle] {attackerAttrs.name} Power: has base {attackerAttrs.power} with modifiers {attackerPower}");
         GD.Print($"[SettleBattle] {attackedAttrs.name} Power: has base {attackedAttrs.power} with modifiers {attackedPower}");
-        GD.Print($"[SettleBattle] Is attack succesful: {isAttackSuccessful}");
+        GD.Print($"[SettleBattle] Is attack successful: {isAttackSuccessful}");
 
-        await playerUI.OnSettleBattleUI(attackerCard, attackedCard, isAttackSuccessful);
-
-        if (isAttackSuccessful)
+        static Task applyFlagshipDamage(ALCard card)
         {
-
-            if (attackedCard.GetIsAFlagship())
-            {
-                GD.Print($"[SettleBattle] {attackedAttrs.name} Takes durability damage!");
-                attackedCard.TakeDurabilityDamage();
-            }
-            else
-            {
-                GD.Print($"[SettleBattle] {attackedAttrs.name} destroyed!");
-                await DestroyUnitCard(attackedCard);
-            }
+            GD.Print($"[SettleBattle] {card.Name} Takes durability damage!");
+            card.TakeDurabilityDamage();
+            return Task.CompletedTask;
         }
-        else
+        static async Task destroyUnit(ALCard card)
         {
-            GD.PrintErr($"[SettleBattle] Attack from {attackerAttrs.name} did not go through");
+            GD.Print($"[SettleBattle] {card.Name} destroyed!");
+            await DestroyUnitCard(card);
         }
+        await matchManager.ApplyBattleResolution(attackerCard, attackedCard, isAttackSuccessful, applyFlagshipDamage, destroyUnit);
 
         // Clean
         await SetPlayState(EPlayState.SelectTarget, ALInteractionState.SelectAttackerUnit);
@@ -497,10 +490,16 @@ public partial class ALPlayer : Player
     }
 
 
-    static async Task DestroyUnitCard(ALCard card)
+    public static async Task DestroyUnitCard(ALCard card)
     {
-
-        card.GetOwnerPlayer<ALPlayer>().AddToRetreatAreaOnTop(card.GetAttributes<ALCardDTO>());
+        if (card is null)
+        {
+            throw new InvalidOperationException("[DestroyUnitCard] Card is required.");
+        }
+        ALPlayer owner = card.GetOwnerPlayer<ALPlayer>() ?? throw new InvalidOperationException("[DestroyUnitCard] Owner player is required.");
+        ALBoard board = owner.GetPlayerBoard<ALBoard>() ?? throw new InvalidOperationException("[DestroyUnitCard] Player board is missing.");
+        bool attackedIsEnemy = board.IsEnemyCard(card);
+        owner.AddToRetreatAreaOnTop(card.GetAttributes<ALCardDTO>(), attackedIsEnemy);
         await card.TryToTriggerCardEffect(ALCardEffectTrigger.OnCardDestroyed);
         card.GetBoard().RetireCard(card);
         card.DestroyCard();
@@ -548,9 +547,14 @@ public partial class ALPlayer : Player
     }
 
     // Public Player Actions 
-    public void AddToRetreatAreaOnTop(ALCardDTO cardToAdd)
+    public void AddToRetreatAreaOnTop(ALCardDTO cardToAdd, bool addToEnemy = false)
     {
         // We add to the bottom as the deck works flipped down
+        if (addToEnemy)
+        {
+            AddEnemyToRetreatAreaOnTop(cardToAdd);
+            return;
+        }
         AddCardToDeck(cardToAdd, deckSet.retreatDeck, retreatField, false);
     }
     public async Task CancelAttack(Player player)

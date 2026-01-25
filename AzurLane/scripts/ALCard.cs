@@ -135,10 +135,33 @@ public partial class ALCard : Card
         }
         return stringBuilder.ToString();
     }
-    public void SetIsInActiveState(bool isActive)
+    public void SetIsInActiveState(bool isActive, bool syncToNet = true)
     {
+        if (isInActiveState == isActive)
+        {
+            return;
+        }
         isInActiveState = isActive;
         SetIsSideWays(!isActive);
+        if (!syncToNet)
+        {
+            return;
+        }
+        ALPlayer owner = GetOwnerPlayer<ALPlayer>() ?? throw new System.InvalidOperationException("[SetIsInActiveState] Owner player is required for sync.");
+        if (!owner.GetIsControllerPlayer() || GetIsEmptyField())
+        {
+            return;
+        }
+        string cardId = GetAttributes<ALCardDTO>().id;
+        if (string.IsNullOrWhiteSpace(cardId))
+        {
+            throw new System.InvalidOperationException("[SetIsInActiveState] Card id is required for sync.");
+        }
+        if (ALNetwork.Instance is null)
+        {
+            throw new System.InvalidOperationException("[SetIsInActiveState] ALNetwork instance is missing.");
+        }
+        ALNetwork.Instance.SyncCardActiveState(cardId, isActive);
     }
 
     public bool GetIsInActiveState() => !GetIsEmptyField() && isInActiveState;

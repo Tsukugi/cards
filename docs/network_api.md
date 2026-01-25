@@ -40,6 +40,12 @@ The network architecture consists of a base `Network` class that handles general
 - `SyncDurabilityDamage(string cardId)` - Synchronizes a flagship durability damage draw to hand
 - `SendMatchPhase(int matchPhase)` - Sends the current match phase
 - `SyncPlaceCard(string cardId, string boardName, string fieldPath)` - Synchronizes a card placement using a board-relative field path
+- `SyncPlaceCardGuard(string cardId, string boardName, string fieldPath)` - Synchronizes a guard card placement
+- `SyncGuardPhaseStart(string attackerCardId, string attackedCardId)` - Starts guard phase on the defending client
+- `SyncGuardPhaseEnd()` - Ends guard phase on the defending client
+- `SyncGuardProvided(string guardCardId)` - Sends the selected guard card for battle support
+- `SyncBattleResolution(string attackerCardId, string attackedCardId, bool isAttackSuccessful)` - Syncs battle outcome and animation
+- `SyncCardActiveState(string cardId, bool isActive)` - Syncs active/inactive state for a card
 - `OnMatchStart()` - Initializes match start procedures
 
 ## Signal Definitions
@@ -63,6 +69,11 @@ The network architecture consists of a base `Network` class that handles general
 - `ALPlayerDrawEvent(int peerId, string cardId, ALDrawType drawType)` - Event for card draw actions
 - `ALPlayerSyncCardEvent(int peerId, string cardId)` - Event for durability damage sync (emitted as OnSyncDurabilityDamageEvent)
 - `ALPlayerSyncPlaceCardEvent(int peerId, string cardId, string boardName, string fieldPath)` - Event for placing cards using a board-relative field path
+- `ALPlayerGuardPhaseStartEvent(int peerId, string attackerCardId, string attackedCardId)` - Event for starting guard phase
+- `ALPlayerGuardPhaseEndEvent(int peerId)` - Event for ending guard phase
+- `ALPlayerGuardProvidedEvent(int peerId, string guardCardId)` - Event for guard card selection
+- `ALPlayerBattleResolutionEvent(int peerId, string attackerCardId, string attackedCardId, bool isAttackSuccessful)` - Event for battle outcome sync
+- `ALPlayerCardActiveStateEvent(int peerId, string cardId, bool isActive)` - Event for active/inactive card state changes
 
 ## Internal RPC Callbacks
 
@@ -86,6 +97,12 @@ The network architecture consists of a base `Network` class that handles general
 - `OnSyncDurabilityDamage(string cardId)` - Handles durability damage sync
 - `OnSendMatchPhase(int matchPhase)` - Handles match phase updates from other peers
 - `OnSyncPlaceCardRpc(string cardId, string boardName, string fieldPath)` - Handles card placement sync using a board-relative field path
+- `OnSyncPlaceCardGuardRpc(string cardId, string boardName, string fieldPath)` - Handles guard placement sync
+- `OnSyncGuardPhaseStartRpc(string attackerCardId, string attackedCardId)` - Handles guard phase start sync
+- `OnSyncGuardPhaseEndRpc()` - Handles guard phase end sync
+- `OnSyncGuardProvidedRpc(string guardCardId)` - Handles guard selection sync
+- `OnSyncBattleResolutionRpc(string attackerCardId, string attackedCardId, bool isAttackSuccessful)` - Handles battle resolution sync
+- `OnSyncCardActiveStateRpc(string cardId, bool isActive)` - Handles card active state sync
 
 ## Placement Sync Notes
 - Card placement sync uses `fieldPath` from `Board.GetPathTo(selectedField)` (e.g., `Player/Units/FrontRow2`).
@@ -95,11 +112,20 @@ The network architecture consists of a base `Network` class that handles general
 - Durability damage sync sends the revealed card id and removes the last facedown durability card from the enemy board.
 - The receiving client adds the revealed card to the enemy hand as a facedown card.
 
+## Guard + Battle Resolution Notes
+- Guard phase is started on the defending client via `SyncGuardPhaseStart`.
+- Defenders can cancel (guard end) or provide a guard card, which syncs back to the attacker.
+- Battle resolution is synced to play attack animations on both clients and apply defender-side durability/unit cleanup.
+
+## Card Active State Sync Notes
+- `SetIsInActiveState` now syncs active/inactive changes for non-empty fields from the controlling player.
+- Remote clients apply the state without re-sending it.
+
 ## Network Architecture Notes
 - Uses Godot's built-in multiplayer system with ENet
 - Supports both client (joining) and server (hosting) modes
 - Uses RPC (Remote Procedure Calls) for communication between peers
-- Implements both reliable and unreliable ordered transfers depending on the importance of the data
+- Uses reliable transfers for all gameplay-critical RPCs
 - Maintains player information in a dictionary with peer IDs as keys
 
 This network API enables a peer-to-peer or client-server multiplayer card game where players can connect, exchange game state information, and synchronize gameplay actions in real-time.
