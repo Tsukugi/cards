@@ -42,3 +42,7 @@ Azur Lane prototype and exposes local match, create game, and join game flows.
 ## Networking notes
 Networking is autoloaded via `res://AzurLane/scripts/ALNetwork.cs` and the main
 menu exposes Create/Join flows. The default server IP is defined in code.
+
+## AI match (planned)
+See `docs/match_against_ai.md` for the planned “Match against AI” design that
+keeps the two-client model by spawning a headless AI client.

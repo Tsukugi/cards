@@ -68,3 +68,11 @@ Environment variables:
 - `RENDERING_DRIVER`: Godot rendering driver (defaults to `vulkan`).
 - `QUIT_AFTER`: If set, adds `--quit-after=<seconds>` to Godot.
 - `SCRIPT_TIMEOUT`: If set, kills client processes after this many seconds.
+
+## Match Against AI (planned)
+
+The planned “Match against AI” flow is documented in:
+- `docs/match_against_ai.md`
+
+The design keeps the two-client networking path but automates the second client
+by spawning a headless AI process.
